@@ -1,12 +1,32 @@
+import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
-import { Target, Eye, Users, Award } from "lucide-react";
+import { Loader2, Target, Eye, Users, Award } from "lucide-react";
 
 export default function About() {
-  // ✅ HARDCODED IMAGES - No need to fetch from database or admin panel
+  // ✅ Fetch text content from database (editable via admin panel)
+  const { data: pageContent, isLoading } = trpc.admin.getPageContent.useQuery(
+    { pageKey: "about" },
+    { 
+      staleTime: 0,
+      cacheTime: 0,
+      refetchOnMount: true,
+      refetchOnWindowFocus: true
+    }
+  );
+
+  // ✅ HARDCODED IMAGES - Never change, no caching issues
   const missionImageUrl = "/uploads/Gemini_Generated_Image_g1ud5zg1ud5zg1ud-min.png";
   const visionImageUrl = "/uploads/Gemini_Generated_Image_bv1myvbv1myvbv1m.png";
   const founderImageUrl = "/uploads/photo_2024-10-17_17-45-27.jpg";
   const companyImageUrl = "/uploads/Gemini_Generated_Image_1j1rdb1j1rdb1j1r.png";
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -32,7 +52,8 @@ export default function About() {
                 <h2 className="text-4xl font-bold text-slate-900">Our Mission</h2>
               </div>
               <p className="text-lg text-slate-700 leading-relaxed">
-                At InfinityX, we're on a mission to democratize tech education and make cutting-edge skills accessible to everyone. We believe that with the right guidance and resources, anyone can become a tech professional and transform their career.
+                {pageContent?.missionText || 
+                  "At InfinityX, we're on a mission to democratize tech education and make cutting-edge skills accessible to everyone. We believe that with the right guidance and resources, anyone can become a tech professional and transform their career."}
               </p>
             </div>
             <div>
@@ -65,7 +86,8 @@ export default function About() {
                 <h2 className="text-4xl font-bold text-slate-900">Our Vision</h2>
               </div>
               <p className="text-lg text-slate-700 leading-relaxed">
-                We envision a world where quality tech education is accessible to all, bridging the gap between traditional learning and industry demands. Through innovative teaching methods and real-world projects, we're building the tech workforce of tomorrow.
+                {pageContent?.visionText || 
+                  "We envision a world where quality tech education is accessible to all, bridging the gap between traditional learning and industry demands. Through innovative teaching methods and real-world projects, we're building the tech workforce of tomorrow."}
               </p>
             </div>
           </div>
@@ -93,14 +115,16 @@ export default function About() {
             </div>
             <div>
               <h3 className="text-3xl font-bold mb-4 text-slate-900">
-                Ahmed Farahat
+                {pageContent?.founderName || "Ahmed Farahat"}
               </h3>
               <p className="text-lg text-slate-700 mb-6 leading-relaxed">
-                With over 15 years of experience in tech education and software development, our founder has trained thousands of students and helped them launch successful careers in technology.
+                {pageContent?.founderBio || 
+                  "With over 15 years of experience in tech education and software development, our founder has trained thousands of students and helped them launch successful careers in technology."}
               </p>
               <div className="bg-blue-50 border-l-4 border-blue-600 p-6 rounded">
                 <p className="text-slate-700 italic">
-                  "Education is the most powerful tool we have to change the world. At InfinityX, we're committed to providing world-class tech education that transforms lives and creates opportunities."
+                  "{pageContent?.founderMessage || 
+                    "Education is the most powerful tool we have to change the world. At InfinityX, we're committed to providing world-class tech education that transforms lives and creates opportunities."}"
                 </p>
               </div>
             </div>
@@ -118,7 +142,8 @@ export default function About() {
                 <h2 className="text-4xl font-bold text-slate-900">About Our Company</h2>
               </div>
               <p className="text-lg text-slate-700 leading-relaxed mb-6">
-                InfinityX EdTech is a leading technology education platform dedicated to bridging the gap between academic learning and industry requirements. We offer comprehensive programs in software development, cybersecurity, data science, and more.
+                {pageContent?.aboutCompany || 
+                  "InfinityX EdTech is a leading technology education platform dedicated to bridging the gap between academic learning and industry requirements. We offer comprehensive programs in software development, cybersecurity, data science, and more."}
               </p>
               <div className="grid grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-lg shadow-md">
