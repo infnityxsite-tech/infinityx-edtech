@@ -1,7 +1,7 @@
 // init-db.js - Initialize PostgreSQL database with schema and default data
 import { readFileSync } from 'fs';
 import { Pool } from 'pg';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 
 dotenv.config();

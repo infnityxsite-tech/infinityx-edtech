@@ -143,6 +143,19 @@ CREATE INDEX idx_messages_status ON messages(status);
 CREATE INDEX idx_messages_created ON messages(created_at DESC);
 
 -- ============================================
+-- SITE SETTINGS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS site_settings (
+  id SERIAL PRIMARY KEY,
+  key VARCHAR(255) UNIQUE NOT NULL,
+  value TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_site_settings_key ON site_settings(key);
+
+-- ============================================
 -- SEED DATA - Initial Page Content
 -- ============================================
 INSERT INTO page_content (page_key, headline, sub_headline, students_trained, expert_instructors, job_placement_rate)
@@ -194,4 +207,7 @@ CREATE TRIGGER update_applications_updated_at BEFORE UPDATE ON applications
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_messages_updated_at BEFORE UPDATE ON messages
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_site_settings_updated_at BEFORE UPDATE ON site_settings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

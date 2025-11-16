@@ -1,5 +1,5 @@
 // test-auth.js - Test authentication system
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 async function testAuth() {
   console.log('\n🧪 Testing Authentication System...\n');

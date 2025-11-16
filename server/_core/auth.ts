@@ -1,5 +1,5 @@
 // server/_core/auth.ts - Simple JWT Authentication System
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { ENV } from './env';
 import { query, queryOne } from '../database';

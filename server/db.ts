@@ -484,3 +484,52 @@ export async function updateMessageStatus(id: string, status: string) {
 export async function deleteMessage(id: string) {
   await query(`DELETE FROM messages WHERE id = $1`, [id]);
 }
+
+
+// ==============================
+// 💼 JOB LISTINGS OPERATIONS (Aliases for Careers)
+// ==============================
+
+// These are aliases for career functions to maintain compatibility
+export const getJobListings = getCareers;
+export const getAllJobListings = getCareers;
+export const createJobListing = createCareer;
+export const updateJobListing = updateCareer;
+export const deleteJobListing = deleteCareer;
+
+// ==============================
+// 📝 STUDENT APPLICATIONS (Aliases)
+// ==============================
+
+export const getStudentApplications = getApplications;
+export const createStudentApplication = createApplication;
+export const deleteStudentApplication = deleteApplication;
+
+// ==============================
+// 💬 CONTACT MESSAGES (Aliases)
+// ==============================
+
+export const getContactMessages = getMessages;
+export const createContactMessage = createMessage;
+export const deleteContactMessage = deleteMessage;
+
+// ==============================
+// ⚙️ SITE SETTINGS
+// ==============================
+
+export async function setSiteSetting(key: string, value: string) {
+  await query(
+    `INSERT INTO site_settings (key, value) 
+     VALUES ($1, $2)
+     ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP`,
+    [key, value]
+  );
+}
+
+export async function getSiteSetting(key: string): Promise<string | null> {
+  const result = await queryOne<{ value: string }>(
+    `SELECT value FROM site_settings WHERE key = $1`,
+    [key]
+  );
+  return result?.value || null;
+}
