@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "framework": null,
+  "buildCommand": "pnpm install && pnpm build",
+  "installCommand": "pnpm install",
+  "outputDirectory": "dist/public",
+
+  "rewrites": [
+    {
+      "source": "/api/trpc/:path*",
+      "destination": "/api/trpc/[trpc]"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "/dist/public/uploads/:path*"
+    },
+    {
+      "source": "/:path*.(js|css|png|jpg|jpeg|gif|svg|ico|txt|json|webp|woff2?)",
+      "destination": "/:path*"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}
