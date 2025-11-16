@@ -1,26 +1,12 @@
-import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
-import { Loader2, Target, Eye, Users, Award } from "lucide-react";
+import { Target, Eye, Users, Award } from "lucide-react";
 
 export default function About() {
-  // ✅ FIX: Disable caching so images update immediately after admin changes
-  const { data: pageContent, isLoading } = trpc.admin.getPageContent.useQuery(
-    { pageKey: "about" },
-    { 
-      staleTime: 0,  // Always consider data stale
-      cacheTime: 0,  // Don't cache at all
-      refetchOnMount: true,  // Refetch when component mounts
-      refetchOnWindowFocus: true  // Refetch when user returns to tab
-    }
-  );
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  // ✅ HARDCODED IMAGES - No need to fetch from database or admin panel
+  const missionImageUrl = "/uploads/Gemini_Generated_Image_g1ud5zg1ud5zg1ud-min.png";
+  const visionImageUrl = "/uploads/Gemini_Generated_Image_bv1myvbv1myvbv1m.png";
+  const founderImageUrl = "/uploads/photo_2024-10-17_17-45-27.jpg";
+  const companyImageUrl = "/uploads/Gemini_Generated_Image_1j1rdb1j1rdb1j1r.png";
 
   return (
     <div className="min-h-screen bg-white">
@@ -46,13 +32,12 @@ export default function About() {
                 <h2 className="text-4xl font-bold text-slate-900">Our Mission</h2>
               </div>
               <p className="text-lg text-slate-700 leading-relaxed">
-                {pageContent?.missionText || 
-                  "At InfinityX, we're on a mission to democratize tech education and make cutting-edge skills accessible to everyone. We believe that with the right guidance and resources, anyone can become a tech professional and transform their career."}
+                At InfinityX, we're on a mission to democratize tech education and make cutting-edge skills accessible to everyone. We believe that with the right guidance and resources, anyone can become a tech professional and transform their career.
               </p>
             </div>
             <div>
               <img
-                src={pageContent?.missionImageUrl || "/assets/mission.jpg"}
+                src={missionImageUrl}
                 alt="Our Mission"
                 className="rounded-lg shadow-2xl w-full"
                 loading="lazy"
@@ -68,7 +53,7 @@ export default function About() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="order-2 md:order-1">
               <img
-                src={pageContent?.visionImageUrl || "/assets/vision.jpg"}
+                src={visionImageUrl}
                 alt="Our Vision"
                 className="rounded-lg shadow-2xl w-full"
                 loading="lazy"
@@ -80,8 +65,7 @@ export default function About() {
                 <h2 className="text-4xl font-bold text-slate-900">Our Vision</h2>
               </div>
               <p className="text-lg text-slate-700 leading-relaxed">
-                {pageContent?.visionText || 
-                  "We envision a world where quality tech education is accessible to all, bridging the gap between traditional learning and industry demands. Through innovative teaching methods and real-world projects, we're building the tech workforce of tomorrow."}
+                We envision a world where quality tech education is accessible to all, bridging the gap between traditional learning and industry demands. Through innovative teaching methods and real-world projects, we're building the tech workforce of tomorrow.
               </p>
             </div>
           </div>
@@ -101,7 +85,7 @@ export default function About() {
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
             <div className="flex justify-center">
               <img
-                src={pageContent?.founderImageUrl || "/assets/founder.jpg"}
+                src={founderImageUrl}
                 alt="Founder"
                 className="rounded-lg shadow-2xl w-full max-w-md"
                 loading="lazy"
@@ -109,16 +93,14 @@ export default function About() {
             </div>
             <div>
               <h3 className="text-3xl font-bold mb-4 text-slate-900">
-                {pageContent?.founderName || "Ahmed Farahat"}
+                Ahmed Farahat
               </h3>
               <p className="text-lg text-slate-700 mb-6 leading-relaxed">
-                {pageContent?.founderBio || 
-                  "With over 15 years of experience in tech education and software development, our founder has trained thousands of students and helped them launch successful careers in technology."}
+                With over 15 years of experience in tech education and software development, our founder has trained thousands of students and helped them launch successful careers in technology.
               </p>
               <div className="bg-blue-50 border-l-4 border-blue-600 p-6 rounded">
                 <p className="text-slate-700 italic">
-                  "{pageContent?.founderMessage || 
-                    "Education is the most powerful tool we have to change the world. At InfinityX, we're committed to providing world-class tech education that transforms lives and creates opportunities."}"
+                  "Education is the most powerful tool we have to change the world. At InfinityX, we're committed to providing world-class tech education that transforms lives and creates opportunities."
                 </p>
               </div>
             </div>
@@ -136,8 +118,7 @@ export default function About() {
                 <h2 className="text-4xl font-bold text-slate-900">About Our Company</h2>
               </div>
               <p className="text-lg text-slate-700 leading-relaxed mb-6">
-                {pageContent?.aboutCompany || 
-                  "InfinityX EdTech is a leading technology education platform dedicated to bridging the gap between academic learning and industry requirements. We offer comprehensive programs in software development, cybersecurity, data science, and more."}
+                InfinityX EdTech is a leading technology education platform dedicated to bridging the gap between academic learning and industry requirements. We offer comprehensive programs in software development, cybersecurity, data science, and more.
               </p>
               <div className="grid grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-lg shadow-md">
@@ -160,7 +141,7 @@ export default function About() {
             </div>
             <div>
               <img
-                src={pageContent?.companyImageUrl || "/assets/company.jpg"}
+                src={companyImageUrl}
                 alt="Our Company"
                 className="rounded-lg shadow-2xl w-full"
                 loading="lazy"

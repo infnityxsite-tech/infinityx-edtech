@@ -1,9 +1,7 @@
-import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import {
-  Loader2,
   Users,
   Brain,
   Shield,
@@ -15,24 +13,9 @@ import {
 } from "lucide-react";
 
 export default function Home() {
-  // ✅ FIX: Disable caching so images update immediately after admin changes
-  const { data: pageContent, isLoading } = trpc.admin.getPageContent.useQuery(
-    { pageKey: "home" },
-    { 
-      staleTime: 0,  // Always consider data stale
-      cacheTime: 0,  // Don't cache at all
-      refetchOnMount: true,  // Refetch when component mounts
-      refetchOnWindowFocus: true  // Refetch when user returns to tab
-    }
-  );
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  // ✅ HARDCODED IMAGES - No need to fetch from database or admin panel
+  const heroImageUrl = "/uploads/Gemini_Generated_Image_3p3go53p3go53p3g.png";
+  const visionImageUrl = "/uploads/Gemini_Generated_Image_9qv2m9qv2m9qv2m9.png";
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
@@ -42,9 +25,7 @@ export default function Home() {
       <section
         className="relative text-white py-32 md:py-40 bg-cover bg-center"
         style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${
-            pageContent?.heroImageUrl || "/assets/hero-banner.jpg"
-          })`,
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${heroImageUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -52,12 +33,10 @@ export default function Home() {
         <div className="relative z-10 max-w-7xl mx-auto px-6">
           <div className="max-w-3xl">
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              {pageContent?.headline ||
-                "Empowering the Next Generation of Tech Leaders"}
+              Empowering the Next Generation of Tech Leaders
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-slate-200">
-              {pageContent?.subHeadline ||
-                "Master cutting-edge technologies through hands-on learning, expert mentorship, and real-world projects that prepare you for the future."}
+              Master cutting-edge technologies through hands-on learning, expert mentorship, and real-world projects that prepare you for the future.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/courses">
@@ -85,23 +64,17 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div>
               <Users className="w-12 h-12 mx-auto mb-4" />
-              <div className="text-5xl font-bold mb-2">
-                {pageContent?.studentsTrained || 500}+
-              </div>
+              <div className="text-5xl font-bold mb-2">500+</div>
               <div className="text-xl">Students Trained</div>
             </div>
             <div>
               <Brain className="w-12 h-12 mx-auto mb-4" />
-              <div className="text-5xl font-bold mb-2">
-                {pageContent?.expertInstructors || 15}+
-              </div>
+              <div className="text-5xl font-bold mb-2">15+</div>
               <div className="text-xl">Expert Instructors</div>
             </div>
             <div>
               <Rocket className="w-12 h-12 mx-auto mb-4" />
-              <div className="text-5xl font-bold mb-2">
-                {pageContent?.jobPlacementRate || 95}%
-              </div>
+              <div className="text-5xl font-bold mb-2">95%</div>
               <div className="text-xl">Job Placement Rate</div>
             </div>
           </div>
@@ -114,7 +87,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-4xl font-bold mb-6 text-slate-900">
-                {pageContent?.visionText || "Our Vision for Tech Education"}
+                Our Vision for Tech Education
               </h2>
               <p className="text-lg text-slate-700 mb-6">
                 We believe in transforming lives through technology education. Our mission is to make cutting-edge tech skills accessible to everyone, regardless of their background.
@@ -136,7 +109,7 @@ export default function Home() {
             </div>
             <div className="relative">
               <img
-                src={pageContent?.visionImageUrl || "/assets/vision-section.jpg"}
+                src={visionImageUrl}
                 alt="Vision"
                 className="rounded-lg shadow-2xl w-full"
                 loading="lazy"
