@@ -81,6 +81,7 @@ export const appRouter = router({
     updatePageContent: protectedProcedure
       .input(
         z.object({
+          id: z.union([z.string(), z.number()]).optional(),
           pageKey: z.string(),
           headline: z.string().optional(),
           subHeadline: z.string().optional(),
@@ -106,7 +107,8 @@ export const appRouter = router({
       )
 
       .mutation(async ({ ctx, input }) => {
-await db.updatePageContent(input.pageKey, input);
+        const { id, pageKey, ...data } = input;
+        await db.updatePageContent(pageKey, data);
         return { success: true };
       }),
 
@@ -140,7 +142,7 @@ return await db.createCourse({
     updateCourse: protectedProcedure
       .input(
         z.object({
-          id: z.string(),
+          id: z.union([z.string(), z.number()]).transform(String),
           title: z.string().optional(),
           description: z.string().optional(),
           imageUrl: z.string().optional(),
@@ -162,7 +164,7 @@ const { id, ...data } = input;
       }),
 
     deleteCourse: protectedProcedure
-      .input(z.object({ id: z.string() }))
+      .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
       .mutation(async ({ ctx, input }) => {
 await db.deleteCourse(input.id);
         return { success: true };
@@ -190,7 +192,7 @@ return await db.createProgram(input);
     updateProgram: protectedProcedure
       .input(
         z.object({
-          id: z.string(),
+          id: z.union([z.string(), z.number()]).transform(String),
           title: z.string().optional(),
           description: z.string().optional(),
           imageUrl: z.string().optional(),
@@ -205,7 +207,7 @@ const { id, ...data } = input;
       }),
 
     deleteProgram: protectedProcedure
-      .input(z.object({ id: z.string() }))
+      .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
       .mutation(async ({ ctx, input }) => {
 await db.deleteProgram(input.id);
         return { success: true };
@@ -237,7 +239,7 @@ return await db.createBlogPost({
     updateBlogPost: protectedProcedure
       .input(
         z.object({
-          id: z.string(),
+          id: z.union([z.string(), z.number()]).transform(String),
           title: z.string().optional(),
           author: z.string().optional(),
           content: z.string().optional(),
@@ -253,7 +255,7 @@ const { id, ...data } = input;
       }),
 
     deleteBlogPost: protectedProcedure
-      .input(z.object({ id: z.string() }))
+      .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
       .mutation(async ({ ctx, input }) => {
 await db.deleteBlogPost(input.id);
         return { success: true };
@@ -286,7 +288,7 @@ return await db.createJobListing({ ...input, isActive: true });
     updateJobListing: protectedProcedure
       .input(
         z.object({
-          id: z.string(),
+          id: z.union([z.string(), z.number()]).transform(String),
           title: z.string().optional(),
           location: z.string().optional(),
           description: z.string().optional(),
@@ -303,7 +305,7 @@ const { id, ...data } = input;
       }),
 
     deleteJobListing: protectedProcedure
-      .input(z.object({ id: z.string() }))
+      .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
       .mutation(async ({ ctx, input }) => {
 await db.deleteJobListing(input.id);
         return { success: true };
@@ -331,7 +333,7 @@ return await db.getStudentApplications();
       }),
 
     deleteApplication: protectedProcedure
-      .input(z.object({ id: z.string() }))
+      .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
       .mutation(async ({ ctx, input }) => {
 await db.deleteStudentApplication(input.id);
         return { success: true };
@@ -360,7 +362,7 @@ return await db.getContactMessages();
       }),
 
     deleteMessage: protectedProcedure
-      .input(z.object({ id: z.string() }))
+      .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
       .mutation(async ({ ctx, input }) => {
 await db.deleteContactMessage(input.id);
         return { success: true };
