@@ -17,7 +17,7 @@ export default function About() {
   // ✅ HARDCODED IMAGES - Never change, no caching issues
   const missionImageUrl = "/uploads/Gemini_Generated_Image_g1ud5zg1ud5zg1ud-min.png";
   const visionImageUrl = "/uploads/Gemini_Generated_Image_bv1myvbv1myvbv1m.png";
-  const founderImageUrl = "/uploads/photo_2024-10-17_17-45-27.jpg";
+  const founderImageUrl = "/uploads/Gemini_Generated_Image_160tii160tii160t.png";
   const companyImageUrl = "/uploads/Gemini_Generated_Image_1j1rdb1j1rdb1j1r.png";
 
   if (isLoading) {
