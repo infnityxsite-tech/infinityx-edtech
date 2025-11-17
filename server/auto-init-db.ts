@@ -5,6 +5,26 @@ import fs from 'fs';
 import path from 'path';
 
 /**
+ * Run database migrations
+ */
+async function runMigrations(): Promise<void> {
+  try {
+    // Migration 1: Add course_link column to courses table
+    await query(`
+      ALTER TABLE courses 
+      ADD COLUMN IF NOT EXISTS course_link TEXT
+    `);
+    console.log('✅ Migration: Added course_link column to courses table');
+  } catch (error: any) {
+    if (error.message?.includes('already exists') || error.message?.includes('duplicate column')) {
+      console.log('ℹ️  Migration: course_link column already exists');
+    } else {
+      console.error('❌ Migration error:', error);
+    }
+  }
+}
+
+/**
  * Check if database is initialized by checking if admin_users table exists
  */
 async function isDatabaseInitialized(): Promise<boolean> {
@@ -34,6 +54,11 @@ export async function autoInitializeDatabase(): Promise<void> {
     
     if (isInitialized) {
       console.log('✅ Database already initialized');
+      
+      // Run migrations even if database is initialized
+      console.log('🔄 Running database migrations...');
+      await runMigrations();
+      
       return;
     }
 
