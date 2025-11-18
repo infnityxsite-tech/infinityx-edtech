@@ -22,6 +22,8 @@ export default function CoursesManager() {
     priceEgp: 0,
     priceUsd: 0,
     courseLink: "",
+    category: "",
+    courseType: "",
   });
 
   const utils = trpc.useUtils();
@@ -66,6 +68,8 @@ export default function CoursesManager() {
       priceEgp: 0,
       priceUsd: 0,
       courseLink: "",
+      category: "",
+      courseType: "",
     });
     setEditingId(null);
   };
@@ -100,6 +104,8 @@ export default function CoursesManager() {
       priceEgp: course.priceEgp ?? 0,
       priceUsd: course.priceUsd ?? 0,
       courseLink: course.courseLink || "",
+      category: course.category || "",
+      courseType: course.courseType || "",
     });
     setEditingId(course.id);
     setOpen(true);
@@ -231,6 +237,37 @@ export default function CoursesManager() {
                   placeholder="https://shorturl.at/pvLp3"
                 />
                 <p className="text-xs text-slate-500">External link for "Know More" button</p>
+              </div>
+
+              {/* Category & Course Type */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <select
+                    id="category"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Artificial Intelligence & Applications">Artificial Intelligence & Applications</option>
+                    <option value="Web Development">Web Development</option>
+                    <option value="Cybersecurity">Cybersecurity</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="courseType">Course Type</Label>
+                  <select
+                    id="courseType"
+                    value={formData.courseType}
+                    onChange={(e) => setFormData({ ...formData, courseType: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="Professional Diploma">Professional Diploma (100+ hours)</option>
+                    <option value="Skill Booster">Skill Booster (&lt;100 hours)</option>
+                  </select>
+                </div>
               </div>
 
               <Button

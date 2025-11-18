@@ -130,6 +130,8 @@ export const appRouter = router({
           priceEgp: z.number().default(0),
           priceUsd: z.number().default(0),
           courseLink: z.string().optional(),
+          category: z.string().optional(),
+          courseType: z.string().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -154,6 +156,8 @@ return await db.createCourse({
           priceEgp: z.number().optional(),
           priceUsd: z.number().optional(),
           courseLink: z.string().optional(),
+          category: z.string().optional(),
+          courseType: z.string().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {

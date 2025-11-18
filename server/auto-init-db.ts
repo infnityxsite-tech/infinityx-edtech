@@ -22,6 +22,36 @@ async function runMigrations(): Promise<void> {
       console.error('❌ Migration error:', error);
     }
   }
+
+  try {
+    // Migration 2: Add category column to courses table
+    await query(`
+      ALTER TABLE courses 
+      ADD COLUMN IF NOT EXISTS category VARCHAR(100)
+    `);
+    console.log('✅ Migration: Added category column to courses table');
+  } catch (error: any) {
+    if (error.message?.includes('already exists') || error.message?.includes('duplicate column')) {
+      console.log('ℹ️  Migration: category column already exists');
+    } else {
+      console.error('❌ Migration error:', error);
+    }
+  }
+
+  try {
+    // Migration 3: Add course_type column to courses table
+    await query(`
+      ALTER TABLE courses 
+      ADD COLUMN IF NOT EXISTS course_type VARCHAR(50)
+    `);
+    console.log('✅ Migration: Added course_type column to courses table');
+  } catch (error: any) {
+    if (error.message?.includes('already exists') || error.message?.includes('duplicate column')) {
+      console.log('ℹ️  Migration: course_type column already exists');
+    } else {
+      console.error('❌ Migration error:', error);
+    }
+  }
 }
 
 /**

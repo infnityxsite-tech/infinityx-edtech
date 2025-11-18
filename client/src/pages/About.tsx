@@ -159,7 +159,7 @@ export default function About() {
                   <div className="text-slate-600">Job Placement</div>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-md">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">50+</div>
+                  <div className="text-3xl font-bold text-blue-600 mb-2">5+</div>
                   <div className="text-slate-600">Partner Companies</div>
                 </div>
               </div>
