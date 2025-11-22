@@ -9,35 +9,47 @@ export default function BlogDetail() {
   const [match, params] = useRoute("/blog/:id");
   const postId = params?.id || null;
 
-  const { data: posts = [] } = trpc.admin.getBlogPosts.useQuery();
-  const post = posts.find((p: any) => p.id === postId);
-  const isLoading = false;
+  // FIX 1: Extract 'isLoading' from the query instead of hardcoding it
+  const { data: posts = [], isLoading } = trpc.admin.getBlogPosts.useQuery();
 
+  // FIX 2: Convert both IDs to String to ensure they match (e.g. "5" matches 5)
+  const post = posts.find((p: any) => String(p.id) === String(postId));
+
+  // 1. Check if ID exists in URL
   if (!postId) {
     return (
       <div className="min-h-screen bg-white">
         <Navigation />
         <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-          <p className="text-slate-600">Post not found</p>
+          <p className="text-slate-600">Invalid Post URL</p>
         </div>
       </div>
     );
   }
 
+  // 2. Show loading spinner WHILE data is fetching
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="min-h-screen bg-white">
+        <Navigation />
+        <div className="flex items-center justify-center h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        </div>
       </div>
     );
   }
 
+  // 3. If data loaded but post is still missing, THEN show Not Found
   if (!post) {
     return (
       <div className="min-h-screen bg-white">
         <Navigation />
         <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-          <p className="text-slate-600">Post not found</p>
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">Post Not Found</h1>
+          <p className="text-slate-600 mb-6">The article you are looking for does not exist or has been removed.</p>
+          <Link href="/blog">
+            <Button>Return to Blog</Button>
+          </Link>
         </div>
       </div>
     );
