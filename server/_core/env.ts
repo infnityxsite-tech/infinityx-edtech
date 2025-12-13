@@ -7,7 +7,7 @@ const envSchema = z.object({
   jwtSecret: z.string().default("secret"),
   appId: z.string().default("infinityx"),
   
-  // ✅ ADDED THESE TO FIX BUILD ERRORS
+  // ✅ FIXED: Added these missing properties to the schema
   ownerOpenId: z.string().optional().default(""),
   forgeApiUrl: z.string().optional().default(""),
   forgeApiKey: z.string().optional().default(""),
@@ -21,7 +21,7 @@ export const ENV = envSchema.parse({
   jwtSecret: process.env.JWT_SECRET,
   appId: process.env.VITE_APP_ID,
   
-  // Map process envs to these keys
+  // ✅ FIXED: Mapping the environment variables
   ownerOpenId: process.env.OWNER_OPEN_ID,
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL,
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY,

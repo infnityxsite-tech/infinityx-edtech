@@ -206,6 +206,8 @@ export const appRouter = router({
     getAllJobListings: protectedProcedure.query(async ({ ctx }) => {
       return await db.getAllJobListings();
     }),
+    
+    // ✅ FIX: Removed 'isActive' from input because DB doesn't expect it in Insert
     createJobListing: protectedProcedure
       .input(
         z.object({
@@ -218,10 +220,9 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
-        // ✅ FIXED: Removed 'isActive' and just sending standard input
-        // (Assuming DB defaults active to true, or we let DB handle it)
         return await db.createJobListing(input);
       }),
+      
     updateJobListing: protectedProcedure
       .input(
         z.object({
@@ -263,7 +264,7 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        // ✅ FIXED: Added 'status' property
+        // ✅ FIX: Added 'status' explicitly
         return await db.createStudentApplication({
             ...input,
             status: "pending" 
@@ -294,7 +295,7 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        // ✅ FIXED: Added 'status' property
+        // ✅ FIX: Added 'status' explicitly
         return await db.createContactMessage({
             ...input,
             status: "unread"
