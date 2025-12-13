@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import {
   Loader2,
-  Users,
   Brain,
   Shield,
   Code,
@@ -14,18 +13,10 @@ import {
   CheckCircle,
   Globe,
   Satellite,
-  PlayCircle,
-  Award,
-  Terminal,
-  Database,
-  Cpu,
-  Lock,
-  ChevronDown,
   Video,
   Library,
   MessageCircle,
-  Zap,
-  Check
+  Zap
 } from "lucide-react";
 
 export default function Home() {
@@ -45,10 +36,7 @@ export default function Home() {
   };
 
   const isRTL = lang === 'ar';
-
-  // ✅ IMAGES
   const heroImageUrl = "/uploads/Gemini_Generated_Image_3p3go53p3go53p3g.png";
-  const certImage = "https://images.unsplash.com/photo-1589330694653-418b725487c7?auto=format&fit=crop&q=80&w=800"; // Placeholder for certificate
 
   if (isLoading) {
     return (
@@ -113,13 +101,6 @@ export default function Home() {
                 </Button>
               </Link>
             </div>
-            
-            {/* Trust Badges */}
-            <div className="mt-12 flex items-center gap-6 text-sm text-slate-400 font-medium">
-               <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> {t("Certified Curriculum", "مناهج معتمدة", "Certified Curriculum")}</div>
-               <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> {t("Live Mentorship", "توجيه مباشر", "Live Mentorship")}</div>
-               <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> {t("Project-Based", "قائم على المشاريع", "Project-Based")}</div>
-            </div>
           </div>
         </div>
       </section>
@@ -138,7 +119,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* === LEARNING EXPERIENCE (Live + Platform) - NEW SECTION === */}
+      {/* === LEARNING EXPERIENCE (Hybrid) === */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
@@ -157,7 +138,7 @@ export default function Home() {
                     </div>
                     <h3 className="text-xl font-bold mb-3 text-slate-900">{t("Live Interactive Sessions", "محاضرات تفاعلية مباشرة", "Live Interactive Sessions")}</h3>
                     <p className="text-slate-600 leading-relaxed text-sm">
-                        {t("Join expert instructors on Google Meet. Ask questions in real-time, code together, and get immediate feedback on your work.", "انضم إلى الخبراء عبر Google Meet. اسأل في الوقت الفعلي، برمج معهم، واحصل على تعليقات فورية.", "Live sessions on Google Meet.")}
+                        {t("Join expert instructors on Google Meet. Ask questions in real-time, code together, and get immediate feedback.", "انضم إلى الخبراء عبر Google Meet. اسأل في الوقت الفعلي واحصل على تعليقات فورية.", "Live sessions on Google Meet.")}
                     </p>
                 </div>
 
@@ -167,7 +148,7 @@ export default function Home() {
                     </div>
                     <h3 className="text-xl font-bold mb-3 text-slate-900">{t("Dedicated LMS Platform", "منصة تعليمية متكاملة", "Dedicated LMS Platform")}</h3>
                     <p className="text-slate-600 leading-relaxed text-sm">
-                        {t("Missed a session? No problem. Access high-quality recordings, slides, source code, and extra resources on our private portal 24/7.", "فاتتك محاضرة؟ لا مشكلة. ادخل إلى التسجيلات، الشرائح، والأكواد المصدرية على بوابتنا الخاصة 24/7.", "Access resources 24/7.")}
+                        {t("Access high-quality recordings, slides, source code, and extra resources on our private portal 24/7.", "ادخل إلى التسجيلات، الشرائح، والأكواد المصدرية على بوابتنا الخاصة 24/7.", "Access resources 24/7.")}
                     </p>
                 </div>
 
@@ -177,108 +158,139 @@ export default function Home() {
                     </div>
                     <h3 className="text-xl font-bold mb-3 text-slate-900">{t("Community & Support", "مجتمع ودعم مستمر", "Community & Support")}</h3>
                     <p className="text-slate-600 leading-relaxed text-sm">
-                        {t("Join private discord/whatsapp groups for your batch. Collaborate on projects and get unstuck with help from mentors and peers.", "انضم إلى مجموعات خاصة بدفعتك. تعاون في المشاريع واحصل على المساعدة من الموجهين والزملاء.", "Join private community groups.")}
+                        {t("Join private groups for your batch. Collaborate on projects and get unstuck with help from mentors.", "انضم إلى مجموعات خاصة بدفعتك. تعاون في المشاريع واحصل على المساعدة من الموجهين.", "Join private community groups.")}
                     </p>
                 </div>
             </div>
         </div>
       </section>
 
-      {/* === SCHOOLS (Updated Space Logic) === */}
+      {/* === SCHOOLS (BALANCED LAYOUT) === */}
       <section className="py-24 bg-slate-900 text-white">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-16">
+          <div className="text-center mb-16">
+            <div className="inline-block bg-white/10 text-white/90 text-sm font-bold px-4 py-1 rounded-full mb-4">
+               {t("CHOOSE YOUR PATH", "اختر مسارك", "CHOOSE YOUR PATH")}
+            </div>
             <h2 className="text-4xl font-bold mb-4">
-              {t("Specialized Schools", "كليات متخصصة", "Specialized Schools")}
+              {t("Our Specialized Schools", "كلياتنا المتخصصة", "Our Specialized Schools")}
             </h2>
-            <p className="text-slate-400 max-w-2xl">
-              {t("Curriculum designed for the modern industry demands.", "مناهج مصممة لمتطلبات الصناعة الحديثة.", "Curriculum designed for modern industry.")}
+            <p className="text-slate-400 max-w-2xl mx-auto">
+              {t("Four pillars of excellence. Each designed to take you from beginner to professional.", "أربعة ركائز للتميز. كل منها مصمم ليأخذك من مبتدئ إلى محترف.", "Four pillars of excellence.")}
             </p>
           </div>
 
-          <div className="space-y-12">
+          <div className="grid md:grid-cols-2 gap-8">
             
-            {/* SPACE TECH (The Star) */}
-            <div className="bg-gradient-to-r from-blue-900 to-slate-800 rounded-3xl p-8 md:p-12 border border-blue-700/50 relative overflow-hidden flex flex-col md:flex-row items-center gap-12">
-               <div className="md:w-3/5 relative z-10">
-                    <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-300 text-xs font-bold px-3 py-1 rounded mb-4">
-                        <Rocket className="w-4 h-4" /> {t("FLAGSHIP PROGRAM", "البرنامج الرائد", "FLAGSHIP PROGRAM")}
-                    </div>
-                    <h3 className="text-3xl md:text-4xl font-bold mb-6">{t("School of Space Technology & AI", "مدرسة تكنولوجيا الفضاء والذكاء الاصطناعي", "School of Space Technology & AI")}</h3>
-                    
-                    <p className="text-blue-100 text-lg mb-6 leading-relaxed">
-                        {t(
-                            "We bridge the gap between AI and Orbital Sciences. This is not just simulation—this is applying Deep Learning to solve real challenges in the commercial space sector.",
-                            "نحن نجسّر الفجوة بين الذكاء الاصطناعي وعلوم المدارات. هذه ليست مجرد محاكاة، بل تطبيق للتعلم العميق لحل تحديات حقيقية في قطاع الفضاء التجاري.",
-                            "Bridging AI and Orbital Sciences."
-                        )}
-                    </p>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                        <div className="flex items-start">
-                            <CheckCircle className="w-5 h-5 text-blue-400 mr-3 mt-1 flex-shrink-0" />
-                            <span className="text-sm text-slate-300">{t("AI for Orbital Debris Mitigation", "الذكاء الاصطناعي للحد من الحطام الفضائي", "AI for Debris")}</span>
-                        </div>
-                        <div className="flex items-start">
-                            <CheckCircle className="w-5 h-5 text-blue-400 mr-3 mt-1 flex-shrink-0" />
-                            <span className="text-sm text-slate-300">{t("Satellite Imagery Analysis (CNNs)", "تحليل صور الأقمار الصناعية", "Satellite Imagery")}</span>
-                        </div>
-                        <div className="flex items-start">
-                            <CheckCircle className="w-5 h-5 text-blue-400 mr-3 mt-1 flex-shrink-0" />
-                            <span className="text-sm text-slate-300">{t("Predictive Maintenance for Space Assets", "الصيانة التنبؤية للأصول الفضائية", "Predictive Maintenance")}</span>
-                        </div>
-                        <div className="flex items-start">
-                            <CheckCircle className="w-5 h-5 text-blue-400 mr-3 mt-1 flex-shrink-0" />
-                            <span className="text-sm text-slate-300">{t("Commercial Space Data Applications", "تطبيقات بيانات الفضاء التجارية", "Commercial Space Data")}</span>
-                        </div>
-                    </div>
-                    
-                    <Link href="/programs/space">
-                        <Button className="bg-white text-blue-900 hover:bg-blue-50 font-bold">
-                            {t("View Space Curriculum", "عرض منهج الفضاء", "View Curriculum")}
-                        </Button>
-                    </Link>
+            {/* 1. SCHOOL OF AI */}
+            <div className="bg-gradient-to-br from-emerald-900 to-slate-900 rounded-3xl p-10 relative overflow-hidden group border border-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all">
+               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                 <Brain className="w-48 h-48 text-emerald-400" />
                </div>
-               <div className="md:w-2/5 flex justify-center relative">
-                    <div className="absolute inset-0 bg-blue-500 blur-[100px] opacity-20"></div>
-                    <Satellite className="w-64 h-64 text-blue-200 relative z-10 drop-shadow-2xl animate-pulse-slow" />
+               <div className="relative z-10">
+                 <div className="bg-emerald-500/20 w-fit p-3 rounded-xl mb-6 backdrop-blur-sm border border-emerald-500/30">
+                   <Brain className="w-8 h-8 text-emerald-300" />
+                 </div>
+                 <h3 className="text-2xl font-bold mb-4 text-white">{t("School of AI & Data", "مدرسة الذكاء الاصطناعي", "School of AI")}</h3>
+                 <p className="text-emerald-100/80 mb-6 leading-relaxed h-16">
+                   {t("Build smart systems that see, hear, and predict. From Computer Vision to Predictive Maintenance.", "بناء أنظمة ذكية ترى وتسمع وتتنبأ. من الرؤية الحاسوبية إلى الصيانة التنبؤية.", "Build smart systems.")}
+                 </p>
+                 <ul className="space-y-3 mb-8">
+                    <li className="flex items-center text-sm text-emerald-200"><CheckCircle className="w-4 h-4 mr-2 text-emerald-500" /> TensorFlow & Deep Learning</li>
+                    <li className="flex items-center text-sm text-emerald-200"><CheckCircle className="w-4 h-4 mr-2 text-emerald-500" /> Computer Vision (YOLO/CNN)</li>
+                    <li className="flex items-center text-sm text-emerald-200"><CheckCircle className="w-4 h-4 mr-2 text-emerald-500" /> Predictive Maintenance Models</li>
+                 </ul>
+                 <Link href="/programs/ai">
+                   <Button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold">
+                     {t("View AI Tracks", "عرض مسارات الذكاء الاصطناعي", "View AI Tracks")} <ArrowRight className="ml-2 w-4 h-4" />
+                   </Button>
+                 </Link>
                </div>
             </div>
 
-            {/* AI & SOFTWARE (Side by Side) */}
-            <div className="grid md:grid-cols-2 gap-8">
-                <div className="bg-slate-800 border border-slate-700 rounded-3xl p-10 hover:border-green-500/50 transition-colors group">
-                    <Brain className="w-12 h-12 text-green-500 mb-6 group-hover:scale-110 transition-transform" />
-                    <h3 className="text-2xl font-bold mb-4 text-white">{t("School of AI & Data", "مدرسة الذكاء الاصطناعي", "School of AI")}</h3>
-                    <p className="text-slate-400 mb-6 leading-relaxed">
-                        {t("From Python fundamentals to advanced Computer Vision. Build smart classifiers that can see and understand the world.", "من أساسيات بايثون إلى الرؤية الحاسوبية المتقدمة. ابنِ مصنفات ذكية يمكنها رؤية وفهم العالم.", "Build smart classifiers.")}
-                    </p>
-                    <Link href="/programs/ai">
-                        <Button variant="link" className="text-green-400 p-0 h-auto group-hover:underline">
-                            {t("Explore AI Track", "استكشف مسار الذكاء الاصطناعي", "Explore AI Track")} <ArrowRight className="ml-2 w-4 h-4" />
-                        </Button>
-                    </Link>
-                </div>
+            {/* 2. SCHOOL OF SOFTWARE */}
+            <div className="bg-gradient-to-br from-purple-900 to-slate-900 rounded-3xl p-10 relative overflow-hidden group border border-purple-500/30 hover:shadow-2xl hover:shadow-purple-500/10 transition-all">
+               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                 <Code className="w-48 h-48 text-purple-400" />
+               </div>
+               <div className="relative z-10">
+                 <div className="bg-purple-500/20 w-fit p-3 rounded-xl mb-6 backdrop-blur-sm border border-purple-500/30">
+                   <Code className="w-8 h-8 text-purple-300" />
+                 </div>
+                 <h3 className="text-2xl font-bold mb-4 text-white">{t("School of Software Engineering", "مدرسة هندسة البرمجيات", "Software Engineering")}</h3>
+                 <p className="text-purple-100/80 mb-6 leading-relaxed h-16">
+                   {t("Architect scalable web solutions. Master the MERN stack, Cloud deployment, and System Design.", "هندسة حلول ويب قابلة للتوسع. أتقن MERN Stack، والنشر السحابي، وتصميم الأنظمة.", "Architect scalable web solutions.")}
+                 </p>
+                 <ul className="space-y-3 mb-8">
+                    <li className="flex items-center text-sm text-purple-200"><CheckCircle className="w-4 h-4 mr-2 text-purple-500" /> Full-Stack MERN</li>
+                    <li className="flex items-center text-sm text-purple-200"><CheckCircle className="w-4 h-4 mr-2 text-purple-500" /> Microservices & APIs</li>
+                    <li className="flex items-center text-sm text-purple-200"><CheckCircle className="w-4 h-4 mr-2 text-purple-500" /> Cloud Architecture (AWS)</li>
+                 </ul>
+                 <Link href="/programs/software">
+                   <Button className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold">
+                     {t("View Software Tracks", "عرض مسارات البرمجة", "View Software Tracks")} <ArrowRight className="ml-2 w-4 h-4" />
+                   </Button>
+                 </Link>
+               </div>
+            </div>
 
-                <div className="bg-slate-800 border border-slate-700 rounded-3xl p-10 hover:border-purple-500/50 transition-colors group">
-                    <Code className="w-12 h-12 text-purple-500 mb-6 group-hover:scale-110 transition-transform" />
-                    <h3 className="text-2xl font-bold mb-4 text-white">{t("Software Engineering", "هندسة البرمجيات", "Software Engineering")}</h3>
-                    <p className="text-slate-400 mb-6 leading-relaxed">
-                        {t("Don't just write code; architect systems. Full-Stack MERN development with a focus on scalability and clean architecture.", "لا تكتب كوداً فقط؛ هندس أنظمة. تطوير MERN كامل مع التركيز على القابلية للتوسع.", "Architect systems.")}
-                    </p>
-                    <Link href="/programs/software">
-                        <Button variant="link" className="text-purple-400 p-0 h-auto group-hover:underline">
-                            {t("Explore Software Track", "استكشف مسار البرمجيات", "Explore Software Track")} <ArrowRight className="ml-2 w-4 h-4" />
-                        </Button>
-                    </Link>
-                </div>
+            {/* 3. SCHOOL OF CYBERSECURITY */}
+            <div className="bg-gradient-to-br from-red-900 to-slate-900 rounded-3xl p-10 relative overflow-hidden group border border-red-500/30 hover:shadow-2xl hover:shadow-red-500/10 transition-all">
+               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                 <Shield className="w-48 h-48 text-red-400" />
+               </div>
+               <div className="relative z-10">
+                 <div className="bg-red-500/20 w-fit p-3 rounded-xl mb-6 backdrop-blur-sm border border-red-500/30">
+                   <Shield className="w-8 h-8 text-red-300" />
+                 </div>
+                 <h3 className="text-2xl font-bold mb-4 text-white">{t("School of Cybersecurity", "مدرسة الأمن السيبراني", "School of Cybersecurity")}</h3>
+                 <p className="text-red-100/80 mb-6 leading-relaxed h-16">
+                   {t("Defend the digital world. Learn Offensive Security, Penetration Testing, and SOC Analysis.", "الدفاع عن العالم الرقمي. تعلم الأمن الهجومي، واختبار الاختراق، وتحليل SOC.", "Defend the digital world.")}
+                 </p>
+                 <ul className="space-y-3 mb-8">
+                    <li className="flex items-center text-sm text-red-200"><CheckCircle className="w-4 h-4 mr-2 text-red-500" /> Ethical Hacking</li>
+                    <li className="flex items-center text-sm text-red-200"><CheckCircle className="w-4 h-4 mr-2 text-red-500" /> Penetration Testing</li>
+                    <li className="flex items-center text-sm text-red-200"><CheckCircle className="w-4 h-4 mr-2 text-red-500" /> SOC Analysis</li>
+                 </ul>
+                 <Link href="/programs/security">
+                   <Button className="w-full bg-red-600 hover:bg-red-500 text-white font-semibold">
+                     {t("View Security Tracks", "عرض مسارات الأمن", "View Security Tracks")} <ArrowRight className="ml-2 w-4 h-4" />
+                   </Button>
+                 </Link>
+               </div>
+            </div>
+
+            {/* 4. SCHOOL OF SPACE TECH (Balanced with others) */}
+            <div className="bg-gradient-to-br from-blue-900 to-slate-900 rounded-3xl p-10 relative overflow-hidden group border border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10 transition-all">
+               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                 <Satellite className="w-48 h-48 text-blue-400" />
+               </div>
+               <div className="relative z-10">
+                 <div className="bg-blue-500/20 w-fit p-3 rounded-xl mb-6 backdrop-blur-sm border border-blue-500/30">
+                   <Rocket className="w-8 h-8 text-blue-300" />
+                 </div>
+                 <h3 className="text-2xl font-bold mb-4 text-white">{t("School of Space & AI", "مدرسة الفضاء والذكاء الاصطناعي", "School of Space & AI")}</h3>
+                 <p className="text-blue-100/80 mb-6 leading-relaxed h-16">
+                   {t("Applying AI to Space challenges. Commercial space data analysis, Debris classification, and Orbital mechanics.", "تطبيق الذكاء الاصطناعي على تحديات الفضاء. تحليل البيانات التجارية، وتصنيف الحطام.", "Applying AI to Space challenges.")}
+                 </p>
+                 <ul className="space-y-3 mb-8">
+                    <li className="flex items-center text-sm text-blue-200"><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Orbital Mechanics & AI</li>
+                    <li className="flex items-center text-sm text-blue-200"><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Satellite Image Analysis</li>
+                    <li className="flex items-center text-sm text-blue-200"><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Debris Mitigation</li>
+                 </ul>
+                 <Link href="/programs/space">
+                   <Button className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold">
+                     {t("View Space Tracks", "عرض مسارات الفضاء", "View Space Tracks")} <ArrowRight className="ml-2 w-4 h-4" />
+                   </Button>
+                 </Link>
+               </div>
             </div>
 
           </div>
         </div>
       </section>
 
-      {/* === STUDENT PROJECTS (Proof of Competence) === */}
+      {/* === STUDENT PROJECTS === */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6">
             <h2 className="text-3xl font-bold text-center mb-4 text-slate-900">{t("What Our Students Build", "ماذا يبني طلابنا", "What Our Students Build")}</h2>
@@ -318,7 +330,7 @@ export default function Home() {
                 <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-200 group hover:shadow-xl transition-all">
                     <div className="h-48 bg-slate-200 flex items-center justify-center relative overflow-hidden">
                         <div className="absolute inset-0 bg-purple-900/10 group-hover:bg-transparent transition-colors"></div>
-                        <Lock className="w-16 h-16 text-slate-400" />
+                        <Shield className="w-16 h-16 text-slate-400" />
                     </div>
                     <div className="p-6">
                         <h4 className="font-bold text-lg mb-2">SecureChat</h4>
@@ -333,7 +345,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* === COMPARISON TABLE (Density) === */}
+      {/* === COMPARISON TABLE === */}
       <section className="py-24 bg-white border-t border-slate-100">
         <div className="max-w-5xl mx-auto px-6">
             <h2 className="text-3xl font-bold text-center mb-12 text-slate-900">{t("Why Choose InfinityX?", "لماذا تختار إنفينيتي إكس؟", "Why Choose InfinityX?")}</h2>
@@ -349,9 +361,9 @@ export default function Home() {
                     <tbody className="text-sm md:text-base">
                         {[
                             {feat: t("Instruction Mode", "نظام التعليم", "Instruction Mode"), us: t("Live + Recorded LMS", "مباشر + منصة مسجلة", "Live + Recorded"), them: t("Pre-recorded only", "مسجل فقط", "Recorded only")},
-                            {feat: t("Space Tech Focus", "التركيز على الفضاء", "Space Tech"), us: t("AI & Commercial Application", "تطبيقات تجارية وذكاء اصطناعي", "AI & Commercial"), them: t("Theory & Simulation", "نظرية ومحاكاة", "Theory only")},
+                            {feat: t("Curriculum", "المنهج", "Curriculum"), us: t("Project-Based & AI-Integrated", "قائم على المشاريع ودمج الذكاء الاصطناعي", "Project-Based"), them: t("Theoretical", "نظري", "Theoretical")},
                             {feat: t("Support", "الدعم", "Support"), us: t("Private Mentorship Groups", "مجموعات توجيه خاصة", "Private Mentorship"), them: t("Email Support Only", "دعم عبر البريد فقط", "Email only")},
-                            {feat: t("Projects", "المشاريع", "Projects"), us: t("Production-Ready Portfolio", "معرض أعمال جاهز للسوق", "Production Portfolio"), them: t("Basic Tutorials", "دروس أساسية", "Basic Tutorials")},
+                            {feat: t("Career", "المسار المهني", "Career"), us: t("Portfolio Building", "بناء معرض أعمال", "Portfolio"), them: t("Certificate Only", "شهادة فقط", "Certificate")},
                         ].map((row, idx) => (
                             <tr key={idx} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                                 <td className="p-4 font-semibold text-slate-700">{row.feat}</td>
@@ -365,7 +377,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* === FAQ SECTION (Expanded & Specific) === */}
+      {/* === FAQ SECTION === */}
       <section className="py-24 bg-slate-900 text-white">
         <div className="max-w-3xl mx-auto px-6">
             <h2 className="text-3xl font-bold mb-10 text-center">{t("Common Questions", "أسئلة شائعة", "FAQ")}</h2>
@@ -380,8 +392,8 @@ export default function Home() {
                         a: t("You have 24/7 access to our Learning Platform. Every session is recorded and uploaded along with the slides and code materials.", "لديك وصول 24/7 لمنصتنا التعليمية. يتم تسجيل كل جلسة ورفعها مع الشرائح والأكواد.", "Recorded on platform.")
                     },
                     {
-                        q: t("Is the Space track just physics simulation?", "هل مسار الفضاء مجرد محاكاة فيزيائية؟", "Space track physics?"), 
-                        a: t("No. While we understand orbital mechanics, our main focus is linking this with AI technologies to solve commercial data problems (debris, navigation, imagery).", "لا. بينما نفهم ميكانيكا المدارات، تركيزنا الأساسي هو ربط ذلك بتقنيات الذكاء الاصطناعي لحل مشاكل البيانات التجارية.", "Focus on AI & Commercial.")
+                        q: t("Do I need prior experience?", "هل أحتاج لخبرة سابقة؟", "Prior experience?"), 
+                        a: t("It depends on the track. We have beginner-friendly foundation courses and advanced tracks. Check the prerequisites for each school.", "يعتمد على المسار. لدينا دورات تأسيسية للمبتدئين ومسارات متقدمة. تحقق من المتطلبات لكل مدرسة.", "Depends on track.")
                     },
                     {
                         q: t("Can I access the material from my phone?", "هل يمكنني الوصول من الهاتف؟", "Mobile access?"), 

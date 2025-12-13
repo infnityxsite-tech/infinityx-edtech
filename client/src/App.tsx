@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Courses from "./pages/Courses";
 import Programs from "./pages/Programs";
+import SchoolLanding from "./pages/SchoolLanding"; // 👈 1. ADD THIS IMPORT
 import Blog from "./pages/Blog";
 import BlogDetail from "./pages/BlogDetail";
 import Careers from "./pages/Careers";
@@ -50,7 +51,13 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/courses" component={Courses} />
       <Route path="/apply" component={Apply} />
+      
+      {/* ✅ EXISTING ROUTE (The list of all programs) */}
       <Route path="/programs" component={Programs} />
+
+      {/* 🚀 2. ADD THIS NEW ROUTE (Handles /programs/space, /programs/ai, etc.) */}
+      <Route path="/programs/:category" component={SchoolLanding} />
+
       <Route path="/blog" component={Blog} />
       <Route path="/blog/:id" component={BlogDetail} />
       <Route path="/careers" component={Careers} />

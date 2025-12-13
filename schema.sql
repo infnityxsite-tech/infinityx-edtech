@@ -1,5 +1,5 @@
 -- InfinityX EdTech Platform - PostgreSQL Schema
--- Updated with Bilingual Support (English/Arabic)
+-- Updated with Bilingual Support & School Categories
 
 -- ============================================
 -- ADMIN USERS TABLE
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS page_content (
   founder_message TEXT,
   about_company TEXT,
 
-  -- Arabic Content (New Columns)
+  -- Arabic Content
   headline_ar TEXT,
   sub_headline_ar TEXT,
   mission_text_ar TEXT,
@@ -84,16 +84,18 @@ CREATE TABLE IF NOT EXISTS courses (
 CREATE INDEX idx_courses_title ON courses(title);
 
 -- ============================================
--- PROGRAMS TABLE (Bilingual Support)
+-- PROGRAMS TABLE (Bilingual + Categories)
 -- ============================================
 CREATE TABLE IF NOT EXISTS programs (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
-  title_ar VARCHAR(255),       -- Added for Arabic
+  title_ar VARCHAR(255),       -- Arabic Title
   description TEXT,
-  description_ar TEXT,         -- Added for Arabic
+  description_ar TEXT,         -- Arabic Description
   image_url TEXT,
   duration VARCHAR(100),
+  skills TEXT,                 -- Comma-separated skills (e.g. "React, Node")
+  category VARCHAR(50) DEFAULT 'other', -- e.g. "space", "ai", "software"
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -104,7 +106,7 @@ CREATE TABLE IF NOT EXISTS programs (
 -- ============================================
 DO $$
 BEGIN
-    -- Add Arabic columns to page_content if missing
+    -- 1. Add Arabic columns to page_content
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'page_content' AND column_name = 'headline_ar') THEN
         ALTER TABLE page_content 
         ADD COLUMN headline_ar TEXT,
@@ -116,14 +118,24 @@ BEGIN
         ADD COLUMN about_company_ar TEXT;
     END IF;
 
-    -- Add Arabic columns to courses if missing
+    -- 2. Add Arabic columns to courses
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'courses' AND column_name = 'title_ar') THEN
         ALTER TABLE courses ADD COLUMN title_ar VARCHAR(255), ADD COLUMN description_ar TEXT;
     END IF;
 
-    -- Add Arabic columns to programs if missing
+    -- 3. Add Arabic, Skills, and Category columns to programs
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'programs' AND column_name = 'title_ar') THEN
         ALTER TABLE programs ADD COLUMN title_ar VARCHAR(255), ADD COLUMN description_ar TEXT;
+    END IF;
+
+    -- Add 'skills' if missing
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'programs' AND column_name = 'skills') THEN
+        ALTER TABLE programs ADD COLUMN skills TEXT;
+    END IF;
+
+    -- Add 'category' if missing (Critical for School Pages)
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'programs' AND column_name = 'category') THEN
+        ALTER TABLE programs ADD COLUMN category VARCHAR(50) DEFAULT 'other';
     END IF;
 END $$;
 
@@ -234,7 +246,7 @@ VALUES
 ON CONFLICT (username) DO NOTHING;
 
 -- ============================================
--- TRIGGERS (Unchanged)
+-- TRIGGERS
 -- ============================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
