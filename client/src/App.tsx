@@ -8,7 +8,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Courses from "./pages/Courses";
 import Programs from "./pages/Programs";
-import SchoolLanding from "./pages/SchoolLanding"; // 👈 1. ADD THIS IMPORT
+import SchoolLanding from "./pages/SchoolLanding"; 
 import Blog from "./pages/Blog";
 import BlogDetail from "./pages/BlogDetail";
 import Careers from "./pages/Careers";
@@ -50,12 +50,15 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/about" component={About} />
       <Route path="/courses" component={Courses} />
+      
+      {/* 🚀 FIXED: Added route for specific application IDs */}
       <Route path="/apply" component={Apply} />
+      <Route path="/apply/:id" component={Apply} />
       
       {/* ✅ EXISTING ROUTE (The list of all programs) */}
       <Route path="/programs" component={Programs} />
 
-      {/* 🚀 2. ADD THIS NEW ROUTE (Handles /programs/space, /programs/ai, etc.) */}
+      {/* 🚀 School Landing Pages */}
       <Route path="/programs/:category" component={SchoolLanding} />
 
       <Route path="/blog" component={Blog} />

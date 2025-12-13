@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { APP_LOGO, APP_TITLE } from "@/const";
+import { APP_TITLE } from "@/const"; // Removed APP_LOGO import
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
@@ -14,9 +14,17 @@ export default function Navigation() {
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
+          {/* ✅ FIXED LOGO: Points directly to your uploaded file */}
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition" onClick={closeMenu}>
-            {APP_LOGO && <img src={APP_LOGO} alt={APP_TITLE} className="h-8 w-8" />}
+            <img 
+                src="/uploads/logo_new.png" 
+                alt={APP_TITLE} 
+                className="h-10 w-auto" 
+                onError={(e) => {
+                    // Fallback if image fails (shows a text placeholder)
+                    e.currentTarget.style.display = 'none';
+                }}
+            />
             <span className="font-bold text-lg text-slate-900">{APP_TITLE}</span>
           </Link>
 
