@@ -1,5 +1,5 @@
 -- InfinityX EdTech Platform - PostgreSQL Schema
--- Simplified schema without Manus dependencies
+-- Updated with Bilingual Support (English/Arabic)
 
 -- ============================================
 -- ADMIN USERS TABLE
@@ -18,27 +18,43 @@ CREATE TABLE IF NOT EXISTS admin_users (
 CREATE INDEX idx_admin_users_username ON admin_users(username);
 
 -- ============================================
--- PAGE CONTENT TABLE
+-- PAGE CONTENT TABLE (Bilingual)
 -- ============================================
 CREATE TABLE IF NOT EXISTS page_content (
   id SERIAL PRIMARY KEY,
   page_key VARCHAR(50) UNIQUE NOT NULL,
+  
+  -- English Content
   headline TEXT,
   sub_headline TEXT,
   mission_text TEXT,
   vision_text TEXT,
+  founder_bio TEXT,
+  founder_message TEXT,
+  about_company TEXT,
+
+  -- Arabic Content (New Columns)
+  headline_ar TEXT,
+  sub_headline_ar TEXT,
+  mission_text_ar TEXT,
+  vision_text_ar TEXT,
+  founder_bio_ar TEXT,
+  founder_message_ar TEXT,
+  about_company_ar TEXT,
+
+  -- Statistics
   students_trained INTEGER DEFAULT 0,
   expert_instructors INTEGER DEFAULT 0,
   job_placement_rate INTEGER DEFAULT 0,
+
+  -- Images
   hero_image_url TEXT,
   banner_image_url TEXT,
   founder_image_url TEXT,
   company_image_url TEXT,
   mission_image_url TEXT,
   vision_image_url TEXT,
-  founder_bio TEXT,
-  founder_message TEXT,
-  about_company TEXT,
+
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -46,12 +62,14 @@ CREATE TABLE IF NOT EXISTS page_content (
 CREATE INDEX idx_page_content_key ON page_content(page_key);
 
 -- ============================================
--- COURSES TABLE
+-- COURSES TABLE (Bilingual Support)
 -- ============================================
 CREATE TABLE IF NOT EXISTS courses (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
+  title_ar VARCHAR(255),        -- Added for Arabic
   description TEXT,
+  description_ar TEXT,          -- Added for Arabic
   image_url TEXT,
   duration VARCHAR(100),
   level VARCHAR(50),
@@ -66,12 +84,14 @@ CREATE TABLE IF NOT EXISTS courses (
 CREATE INDEX idx_courses_title ON courses(title);
 
 -- ============================================
--- PROGRAMS TABLE
+-- PROGRAMS TABLE (Bilingual Support)
 -- ============================================
 CREATE TABLE IF NOT EXISTS programs (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
+  title_ar VARCHAR(255),       -- Added for Arabic
   description TEXT,
+  description_ar TEXT,         -- Added for Arabic
   image_url TEXT,
   duration VARCHAR(100),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -79,8 +99,38 @@ CREATE TABLE IF NOT EXISTS programs (
 );
 
 -- ============================================
--- BLOG POSTS TABLE
+-- AUTOMATIC MIGRATION BLOCK
+-- This safely adds columns if they are missing (for Render deployment)
 -- ============================================
+DO $$
+BEGIN
+    -- Add Arabic columns to page_content if missing
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'page_content' AND column_name = 'headline_ar') THEN
+        ALTER TABLE page_content 
+        ADD COLUMN headline_ar TEXT,
+        ADD COLUMN sub_headline_ar TEXT,
+        ADD COLUMN mission_text_ar TEXT,
+        ADD COLUMN vision_text_ar TEXT,
+        ADD COLUMN founder_bio_ar TEXT,
+        ADD COLUMN founder_message_ar TEXT,
+        ADD COLUMN about_company_ar TEXT;
+    END IF;
+
+    -- Add Arabic columns to courses if missing
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'courses' AND column_name = 'title_ar') THEN
+        ALTER TABLE courses ADD COLUMN title_ar VARCHAR(255), ADD COLUMN description_ar TEXT;
+    END IF;
+
+    -- Add Arabic columns to programs if missing
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'programs' AND column_name = 'title_ar') THEN
+        ALTER TABLE programs ADD COLUMN title_ar VARCHAR(255), ADD COLUMN description_ar TEXT;
+    END IF;
+END $$;
+
+-- ============================================
+-- REST OF TABLES (Unchanged)
+-- ============================================
+
 CREATE TABLE IF NOT EXISTS blog_posts (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
@@ -95,9 +145,6 @@ CREATE TABLE IF NOT EXISTS blog_posts (
 
 CREATE INDEX idx_blog_published ON blog_posts(published_at DESC);
 
--- ============================================
--- CAREERS TABLE
--- ============================================
 CREATE TABLE IF NOT EXISTS careers (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
@@ -108,9 +155,6 @@ CREATE TABLE IF NOT EXISTS careers (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================
--- APPLICATIONS TABLE
--- ============================================
 CREATE TABLE IF NOT EXISTS applications (
   id SERIAL PRIMARY KEY,
   full_name VARCHAR(255) NOT NULL,
@@ -126,9 +170,6 @@ CREATE TABLE IF NOT EXISTS applications (
 CREATE INDEX idx_applications_email ON applications(email);
 CREATE INDEX idx_applications_status ON applications(status);
 
--- ============================================
--- MESSAGES TABLE (Contact Form)
--- ============================================
 CREATE TABLE IF NOT EXISTS messages (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
@@ -143,9 +184,6 @@ CREATE TABLE IF NOT EXISTS messages (
 CREATE INDEX idx_messages_status ON messages(status);
 CREATE INDEX idx_messages_created ON messages(created_at DESC);
 
--- ============================================
--- SITE SETTINGS TABLE
--- ============================================
 CREATE TABLE IF NOT EXISTS site_settings (
   id SERIAL PRIMARY KEY,
   key VARCHAR(255) UNIQUE NOT NULL,
@@ -157,17 +195,38 @@ CREATE TABLE IF NOT EXISTS site_settings (
 CREATE INDEX idx_site_settings_key ON site_settings(key);
 
 -- ============================================
--- SEED DATA - Initial Page Content
+-- SEED DATA - Updated with Professional/Bilingual Content
 -- ============================================
-INSERT INTO page_content (page_key, headline, sub_headline, students_trained, expert_instructors, job_placement_rate)
+INSERT INTO page_content (
+    page_key, 
+    headline, headline_ar, 
+    sub_headline, sub_headline_ar,
+    students_trained, expert_instructors, job_placement_rate
+)
 VALUES 
-  ('home', 'Empowering the Next Generation of Tech Leaders', 'Master cutting-edge technologies through hands-on learning, expert mentorship, and real-world projects that prepare you for the future.', 5000, 50, 95),
-  ('about', 'About InfinityX', 'Transforming education through technology, innovation, and a commitment to empowering the next generation of tech leaders.', 0, 0, 0)
-ON CONFLICT (page_key) DO NOTHING;
+  (
+    'home', 
+    'Empowering the Next Generation of Tech Leaders', 
+    'تمكين الجيل القادم من قادة التكنولوجيا في الشرق الأوسط',
+    'Master cutting-edge technologies through hands-on learning, expert mentorship, and real-world projects that prepare you for the future.', 
+    'أتقن أحدث التقنيات من خلال التعلم العملي والتوجيه من الخبراء والمشاريع الواقعية التي تعدك للمستقبل',
+    5000, 50, 95
+  ),
+  (
+    'about', 
+    'About InfinityX', 
+    'عن إنفينيتي إكس',
+    'Transforming education through technology, innovation, and a commitment to empowering the next generation of tech leaders.', 
+    'تحويل التعليم من خلال التكنولوجيا والابتكار والالتزام بتمكين الجيل القادم من قادة التكنولوجيا',
+    0, 0, 0
+  )
+ON CONFLICT (page_key) 
+DO UPDATE SET 
+    headline_ar = EXCLUDED.headline_ar,
+    sub_headline_ar = EXCLUDED.sub_headline_ar;
 
 -- ============================================
--- SEED DATA - Default Admin User
--- Password: admin123 (CHANGE THIS IMMEDIATELY AFTER FIRST LOGIN!)
+-- DEFAULT ADMIN (Change Password on Login)
 -- ============================================
 INSERT INTO admin_users (username, password_hash, email, name)
 VALUES 
@@ -175,7 +234,7 @@ VALUES
 ON CONFLICT (username) DO NOTHING;
 
 -- ============================================
--- UPDATE TIMESTAMP TRIGGER
+-- TRIGGERS (Unchanged)
 -- ============================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -185,30 +244,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Apply trigger to all tables
-CREATE TRIGGER update_admin_users_updated_at BEFORE UPDATE ON admin_users
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_page_content_updated_at BEFORE UPDATE ON page_content
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_courses_updated_at BEFORE UPDATE ON courses
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_programs_updated_at BEFORE UPDATE ON programs
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_blog_posts_updated_at BEFORE UPDATE ON blog_posts
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_careers_updated_at BEFORE UPDATE ON careers
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_applications_updated_at BEFORE UPDATE ON applications
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_messages_updated_at BEFORE UPDATE ON messages
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_site_settings_updated_at BEFORE UPDATE ON site_settings
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_admin_users_updated_at BEFORE UPDATE ON admin_users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_page_content_updated_at BEFORE UPDATE ON page_content FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_courses_updated_at BEFORE UPDATE ON courses FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_programs_updated_at BEFORE UPDATE ON programs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_blog_posts_updated_at BEFORE UPDATE ON blog_posts FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_careers_updated_at BEFORE UPDATE ON careers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_applications_updated_at BEFORE UPDATE ON applications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_messages_updated_at BEFORE UPDATE ON messages FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_site_settings_updated_at BEFORE UPDATE ON site_settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
