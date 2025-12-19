@@ -538,3 +538,29 @@ export async function getSiteSetting(key: string): Promise<string | null> {
   );
   return result?.value || null;
 }
+// ==============================
+// ⚙️ BULK SITE SETTINGS (Add this to fix the error)
+// ==============================
+
+export async function getSiteSettings(): Promise<Record<string, string>> {
+  // Get all settings
+  const rows = await queryMany<{ key: string; value: string }>(
+    `SELECT key, value FROM site_settings`
+  );
+  
+  // Convert from array [{key: 'x', value: 'y'}] to object {x: 'y'}
+  const settings: Record<string, string> = {};
+  rows.forEach(row => {
+    settings[row.key] = row.value;
+  });
+  
+  return settings;
+}
+
+export async function updateSiteSettings(settings: Record<string, string>) {
+  // Loop through the object and save each setting
+  for (const [key, value] of Object.entries(settings)) {
+    await setSiteSetting(key, value);
+  }
+  return { success: true };
+}

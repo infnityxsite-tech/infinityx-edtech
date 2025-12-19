@@ -207,7 +207,6 @@ export const appRouter = router({
       return await db.getAllJobListings();
     }),
     
-    // ✅ FIX: Removed 'isActive' from input because DB doesn't expect it in Insert
     createJobListing: protectedProcedure
       .input(
         z.object({
@@ -264,7 +263,6 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        // ✅ FIX: Added 'status' explicitly
         return await db.createStudentApplication({
             ...input,
             status: "pending" 
@@ -295,7 +293,6 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        // ✅ FIX: Added 'status' explicitly
         return await db.createContactMessage({
             ...input,
             status: "unread"
@@ -330,6 +327,24 @@ export const appRouter = router({
     }),
     deleteBlogPost: protectedProcedure.input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
     .mutation(async ({ ctx, input }) => { await db.deleteBlogPost(input.id); return { success: true }; }),
+
+    // ============================================
+    // ✅ ADDED FIX: SITE SETTINGS
+    // ============================================
+    getSiteSettings: protectedProcedure.query(async () => {
+      // Calls the function in db.ts to fetch settings
+      return await db.getSiteSettings();
+    }),
+
+    updateSiteSettings: protectedProcedure
+      .input(z.object({
+        settings: z.record(z.string())
+      }))
+      .mutation(async ({ input }) => {
+        // Calls the function in db.ts to update settings
+        return await db.updateSiteSettings(input.settings);
+      }),
+
   }),
 });
 
