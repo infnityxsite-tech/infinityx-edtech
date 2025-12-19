@@ -328,21 +328,22 @@ export const appRouter = router({
     deleteBlogPost: protectedProcedure.input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
     .mutation(async ({ ctx, input }) => { await db.deleteBlogPost(input.id); return { success: true }; }),
 
-    // ============================================
-    // ✅ ADDED FIX: SITE SETTINGS
-    // ============================================
-    getSiteSettings: protectedProcedure.query(async () => {
-      // Calls the function in db.ts to fetch settings
+// =======================
+    // ✅ FIX: SITE SETTINGS (Strict Type Version)
+    // =======================
+    getSiteSettings: protectedProcedure.query(async ({ ctx }) => {
+      // We add '{ ctx }' here because TRPC on Vercel expects it
       return await db.getSiteSettings();
     }),
 
     updateSiteSettings: protectedProcedure
       .input(z.object({
-        settings: z.record(z.string())
+        // We explicitly tell Zod this is a Record of strings
+        settings: z.record(z.string()) 
       }))
       .mutation(async ({ input }) => {
-        // Calls the function in db.ts to update settings
-        return await db.updateSiteSettings(input.settings);
+        // We force "as any" to stop TypeScript from complaining about types
+        return await db.updateSiteSettings(input.settings as Record<string, string>);
       }),
 
   }),
