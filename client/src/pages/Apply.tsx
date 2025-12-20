@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useLocation, useRoute } from "wouter"; 
 import { trpc } from "@/lib/trpc";
+import Navigation from "@/components/Navigation";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,175 +11,259 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { 
+  Loader2, 
+  Sparkles, 
+  ArrowRight, 
+  CheckCircle2, 
+  Rocket 
+} from "lucide-react";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2 } from "lucide-react";
-
-// ✅ CLEAN IMPORTS: No ErrorBoundary here!
+import { useLocation } from "wouter";
 
 export default function Apply() {
   const [location, navigate] = useLocation();
   
-  // 1. CATCH THE ID FROM URL PATH
-  const [match, params] = useRoute("/apply/:id");
-  const pathId = match ? params?.id : null;
+  // 1️⃣ جلب قائمة الكورسات من قاعدة البيانات (لعمل الـ Dropdown)
+  const { data: courses = [], isLoading: isLoadingCourses } = trpc.admin.getCourses.useQuery();
 
-  // 2. CATCH QUERY PARAMS
-  const searchString = window.location.search; 
-  const urlParams = new URLSearchParams(searchString);
-  const queryId = urlParams.get("courseId");
-  const courseName = urlParams.get("courseName");
+  // 2️⃣ دالة لاستخراج رقم الكورس من الرابط (URL)
+  const getUrlParameter = (name: string) => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
+  };
 
-  const finalCourseId = pathId || queryId || "";
+  const preSelectedId = getUrlParameter("courseId");
 
-  const [submitted, setSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
     fullName: "",
     email: "",
     phone: "",
+    courseId: "", // سيتم تحديده تلقائياً أو يدوياً
     message: "",
   });
 
+  // 3️⃣ عند تحميل الصفحة: إذا كان هناك كورس في الرابط، قم باختياره فوراً
+  useEffect(() => {
+    if (preSelectedId) {
+      setForm((prev) => ({ ...prev, courseId: preSelectedId }));
+    }
+  }, [preSelectedId]);
+
+  // إعداد دالة الإرسال (Mutation)
   const createApplication = trpc.admin.createApplication.useMutation({
     onSuccess: () => {
-      toast.success("Your application has been submitted successfully!");
-      setSubmitted(true);
-      setFormData({ fullName: "", email: "", phone: "", message: "" });
+      toast.success("Application submitted successfully! We will contact you soon.");
+      // تفريغ النموذج
+      setForm({ fullName: "", email: "", phone: "", courseId: "", message: "" });
+      setLoading(false);
+      
+      // توجيه المستخدم للصفحة الرئيسية بعد ثانيتين
+      setTimeout(() => navigate("/"), 2000);
     },
-    onError: () => {
-      toast.error("Something went wrong. Please try again later.");
+    onError: (error) => {
+      toast.error(`Failed to submit: ${error.message}`);
+      setLoading(false);
     },
   });
 
+  // معالجة الضغط على زر الإرسال
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.email) {
-      toast.error("Please fill in your name and email.");
+    
+    // التحقق من البيانات
+    if (!form.fullName || !form.email || !form.phone || !form.courseId) {
+      toast.error("Please fill in all required fields (Name, Email, Phone, Course).");
       return;
     }
 
-    if (!finalCourseId) {
-        toast.error("Error: No course selected. Please go back and select a course.");
-        return;
-    }
-
+    setLoading(true);
+    
+    // إرسال البيانات للسيرفر
     createApplication.mutate({
-      ...formData,
-      courseId: finalCourseId,
+      fullName: form.fullName,
+      email: form.email,
+      phone: form.phone,
+      courseId: form.courseId,
+      message: form.message,
     });
   };
 
-  if (submitted) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 px-4">
-        <Card className="max-w-md w-full text-center shadow-xl">
-          <CardHeader>
-            <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
-            <CardTitle className="text-2xl text-slate-900">
-              Application Submitted!
-            </CardTitle>
-            <CardDescription className="text-slate-600 mt-2">
-              Thank you for applying. Our team will contact you soon.
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+      <Navigation />
+
+      {/* 🏛️ HERO SECTION */}
+      <section className="relative bg-[#0b1120] text-white pt-36 pb-24 overflow-hidden">
+        {/* تأثيرات الخلفية */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none" 
+             style={{ 
+               backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', 
+               backgroundSize: '40px 40px' 
+             }}>
+        </div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl bg-indigo-600/20 blur-[120px] rounded-full pointer-events-none"></div>
+
+        <div className="relative max-w-4xl mx-auto px-6 text-center z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/40 border border-indigo-700/50 text-indigo-300 text-xs font-semibold mb-6">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Start Your Journey</span>
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-6">
+            Join the Next Cohort of <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Innovators.</span>
+          </h1>
+          
+          <p className="text-slate-400 text-lg max-w-2xl mx-auto mb-8 font-light">
+            Fill out the form below to reserve your spot. Our admissions team will review your application and get back to you within 24 hours.
+          </p>
+        </div>
+      </section>
+
+      {/* 📝 APPLICATION FORM */}
+      <section className="max-w-3xl mx-auto px-6 py-16 -mt-10 relative z-20">
+        <Card className="border border-slate-200 shadow-xl bg-white">
+          <CardHeader className="text-center border-b border-slate-100 pb-8">
+            <div className="w-14 h-14 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
+               <Rocket className="w-7 h-7" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-slate-900">Student Application</CardTitle>
+            <CardDescription>
+               Please ensure all information is correct to avoid delays.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button
-              onClick={() => navigate("/programs")}
-              className="w-full mt-4"
-            >
-              Back to Programs
-            </Button>
+          
+          <CardContent className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              
+              {/* الاسم ورقم الهاتف */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name *</Label>
+                  <Input
+                    id="fullName"
+                    placeholder="e.g. Ahmed Mohamed"
+                    value={form.fullName}
+                    onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                    required
+                    className="h-11 bg-slate-50 border-slate-200 focus:bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number (WhatsApp) *</Label>
+                  <Input
+                    id="phone"
+                    placeholder="e.g. +20 1xxx xxx xxxx"
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    required
+                    className="h-11 bg-slate-50 border-slate-200 focus:bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* البريد الإلكتروني */}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  required
+                  className="h-11 bg-slate-50 border-slate-200 focus:bg-white"
+                />
+              </div>
+
+              {/* 🎓 اختيار الكورس (Dropdown) */}
+              <div className="space-y-2">
+                <Label htmlFor="course">Select Program / Course *</Label>
+                
+                {isLoadingCourses ? (
+                  // شكل تحميل (Loading Skeleton)
+                  <div className="h-11 w-full bg-slate-100 animate-pulse rounded-md border border-slate-200"></div>
+                ) : (
+                  <Select 
+                    value={form.courseId} 
+                    onValueChange={(val) => setForm({ ...form, courseId: val })}
+                  >
+                    <SelectTrigger className="h-11 bg-slate-50 border-slate-200 focus:bg-white">
+                      <SelectValue placeholder="-- Choose a Course --" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {courses.map((course: any) => (
+                        <SelectItem key={course.id} value={course.id}>
+                          {course.title} {course.priceEgp ? `(${Number(course.priceEgp).toLocaleString()} EGP)` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {/* رسالة تأكيد إذا تم الاختيار تلقائياً */}
+                {preSelectedId && !isLoadingCourses && form.courseId === preSelectedId && (
+                   <p className="text-xs text-green-600 flex items-center mt-1 font-medium">
+                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                      Course automatically selected based on your choice.
+                   </p>
+                )}
+              </div>
+
+              {/* رسالة إضافية */}
+              <div className="space-y-2">
+                <Label htmlFor="message">Statement of Purpose (Optional)</Label>
+                <Textarea
+                  id="message"
+                  placeholder="Why do you want to join this program? (Optional)"
+                  rows={4}
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  className="bg-slate-50 border-slate-200 focus:bg-white resize-none"
+                />
+              </div>
+
+              {/* زر الإرسال */}
+              <Button
+                type="submit"
+                className="w-full bg-slate-900 hover:bg-indigo-600 text-white font-bold py-6 text-lg transition-all shadow-lg shadow-slate-900/10 mt-4"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Submitting...
+                  </>
+                ) : (
+                  <>
+                    Submit Application <ArrowRight className="w-5 h-5 ml-2" />
+                  </>
+                )}
+              </Button>
+            </form>
           </CardContent>
         </Card>
-      </div>
-    );
-  }
+      </section>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center px-4 py-20">
-      <Card className="w-full max-w-lg shadow-lg border border-slate-200">
-        <CardHeader>
-          <CardTitle className="text-2xl text-slate-900 text-center">
-            {courseName ? `Apply for ${decodeURIComponent(courseName)}` : "Student Application"}
-          </CardTitle>
-          <CardDescription className="text-center text-slate-600">
-            Fill in your details below to secure your spot.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            
-            <input type="hidden" value={finalCourseId} />
-
-            <div>
-              <Label htmlFor="fullName">Full Name *</Label>
-              <Input
-                id="fullName"
-                value={formData.fullName}
-                onChange={(e) =>
-                  setFormData({ ...formData, fullName: e.target.value })
-                }
-                placeholder="Your full name"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="email">Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                placeholder="+20 10 xxxx xxxx"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="message">Statement of Purpose (Optional)</Label>
-              <Textarea
-                id="message"
-                value={formData.message}
-                onChange={(e) =>
-                  setFormData({ ...formData, message: e.target.value })
-                }
-                placeholder="Why do you want to join this program?"
-                rows={3}
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700"
-              disabled={createApplication.isPending}
-            >
-              {createApplication.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Submitting...
-                </>
-              ) : (
-                "Submit Application"
-              )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      {/* FOOTER */}
+      <footer className="bg-slate-950 text-white py-12 border-t border-slate-900 mt-auto">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-4 text-center">
+          <p className="text-slate-500 text-sm">
+            By submitting this form, you agree to be contacted by InfinityX for enrollment purposes.
+          </p>
+          <p className="text-slate-600 text-sm">
+            © {new Date().getFullYear()} InfinityX EdTech. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -3,161 +3,222 @@ import Navigation from "@/components/Navigation";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Briefcase, MapPin, Clock, Users, Rocket, Heart, CheckCircle2 } from "lucide-react";
-import { useLocation } from "wouter";
-
-// تعريف شكل الوظيفة بناءً على ملف db.ts
-interface JobListing {
-  id: string;
-  title: string;
-  description: string | null;
-  location: string | null;
-  type: string | null;
-}
+import { Badge } from "@/components/ui/badge";
+import { 
+  Loader2, 
+  Briefcase, 
+  MapPin, 
+  Clock, 
+  Users, 
+  Rocket, 
+  Heart, 
+  CheckCircle2, 
+  ArrowRight, 
+  Sparkles,
+  Globe,
+  Zap
+} from "lucide-react";
+import { useLocation, Link } from "wouter";
 
 export default function Careers() {
-  // 1. الاتصال الصحيح بناءً على ملف routers.ts
   const { data: jobs = [], isLoading } = trpc.admin.getJobListings.useQuery(); 
   const [location, navigate] = useLocation();
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       <Navigation />
 
-      {/* HERO SECTION */}
-      <section className="bg-gradient-to-r from-emerald-700 to-teal-700 text-white py-24 text-center">
-        <div className="max-w-4xl mx-auto px-6">
-          <h1 className="text-5xl font-bold mb-4">Join Our Team</h1>
-          <p className="text-emerald-100 text-lg">
-            Help us shape the future of education technology. Work on things that matter.
+      {/* 🏛️ HERO SECTION */}
+      <section className="relative bg-[#0b1120] text-white pt-36 pb-24 overflow-hidden">
+        {/* Tech Grid Background Pattern */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none" 
+             style={{ 
+               backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', 
+               backgroundSize: '40px 40px' 
+             }}>
+        </div>
+        
+        {/* Radial Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl bg-emerald-600/20 blur-[120px] rounded-full pointer-events-none"></div>
+
+        <div className="relative max-w-5xl mx-auto px-6 text-center z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/40 border border-emerald-700/50 text-emerald-300 text-xs font-semibold mb-6">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>We are hiring!</span>
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6">
+            Build the Future of <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">EdTech.</span>
+          </h1>
+          
+          <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed font-light">
+            Join a team of innovators, engineers, and educators dedicated to transforming how the world learns Artificial Intelligence and Space Tech.
           </p>
-        </div>
-      </section>
 
-      {/* FEATURE SECTION */}
-      <section className="py-16 bg-slate-50">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          <div className="p-6 bg-white rounded-xl shadow hover:shadow-lg transition">
-            <Rocket className="w-12 h-12 text-emerald-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Innovation First</h3>
-            <p className="text-slate-600">
-              Work with cutting-edge AI and data tools to build the next generation of EdTech.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl shadow hover:shadow-lg transition">
-            <Users className="w-12 h-12 text-emerald-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Great Culture</h3>
-            <p className="text-slate-600">
-              Join a diverse, supportive team that values growth, mentorship, and collaboration.
-            </p>
-          </div>
-          <div className="p-6 bg-white rounded-xl shadow hover:shadow-lg transition">
-            <Heart className="w-12 h-12 text-emerald-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Work-Life Balance</h3>
-            <p className="text-slate-600">
-              Flexible working hours and remote options to help you perform at your best.
-            </p>
+          <div className="flex justify-center gap-4">
+            <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 font-semibold rounded-full px-8" onClick={() => {
+                document.getElementById('open-roles')?.scrollIntoView({ behavior: 'smooth' });
+            }}>
+                View Open Roles
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* JOB LISTINGS SECTION */}
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-10 text-center">Open Positions</h2>
-
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
-            </div>
-          ) : jobs.length === 0 ? (
-            <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl">
-              <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-600 text-lg">No open positions at the moment.</p>
-              <p className="text-slate-500 mt-2">We are always growing, so check back soon!</p>
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              {/* هنا بنعرض الوظائف الحقيقية من قاعدة البيانات */}
-              {jobs.map((job: any) => (
-                <Card
-                  key={job.id}
-                  className="hover:shadow-md transition border border-slate-200 group"
-                >
-                  <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    
-                    {/* Job Info */}
-                    <div className="space-y-2 flex-1">
-                      <CardTitle className="text-xl text-emerald-800 group-hover:text-emerald-600 transition-colors">
-                        {job.title}
-                      </CardTitle>
-                      <CardDescription className="text-slate-600 line-clamp-2">
-                        {job.description || "No description provided."}
-                      </CardDescription>
-                      
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 mt-3">
-                        {/* عرض نوع الوظيفة لو موجود */}
-                        {job.type && (
-                          <div className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded">
-                            <Briefcase className="w-3.5 h-3.5" />
-                            {job.type}
-                          </div>
-                        )}
-                        {/* عرض المكان لو موجود */}
-                        {job.location && (
-                          <div className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded">
-                            <MapPin className="w-3.5 h-3.5" />
-                            {job.location}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Action Button */}
-                    <div className="shrink-0">
-                      <Button
-                        onClick={() => navigate(`/apply/${job.id}?type=job`)}
-                        className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white"
-                      >
-                        Apply Now
-                      </Button>
-                    </div>
-                  </div>
+      {/* 🌟 CULTURE / VALUES SECTION */}
+      <section className="py-20 relative z-20 -mt-8">
+        <div className="max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Value 1 */}
+                <Card className="border border-slate-200 shadow-lg bg-white/95 backdrop-blur">
+                    <CardContent className="p-8 text-center">
+                        <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-emerald-600">
+                            <Rocket className="w-7 h-7" />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900 mb-3">Innovation First</h3>
+                        <p className="text-slate-600 leading-relaxed">
+                            We don't just teach tech; we build it. Work with cutting-edge AI, Satellite Data, and modern stacks.
+                        </p>
+                    </CardContent>
                 </Card>
-              ))}
+
+                {/* Value 2 */}
+                <Card className="border border-slate-200 shadow-lg bg-white/95 backdrop-blur">
+                    <CardContent className="p-8 text-center">
+                        <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-600">
+                            <Users className="w-7 h-7" />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900 mb-3">Collaborative Culture</h3>
+                        <p className="text-slate-600 leading-relaxed">
+                            No silos. Engineers, instructors, and designers work together to create world-class experiences.
+                        </p>
+                    </CardContent>
+                </Card>
+
+                {/* Value 3 */}
+                <Card className="border border-slate-200 shadow-lg bg-white/95 backdrop-blur">
+                    <CardContent className="p-8 text-center">
+                        <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-purple-600">
+                            <Zap className="w-7 h-7" />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900 mb-3">High Impact</h3>
+                        <p className="text-slate-600 leading-relaxed">
+                            Your code and content will directly impact thousands of students launching their careers.
+                        </p>
+                    </CardContent>
+                </Card>
             </div>
-          )}
         </div>
       </section>
 
-      {/* CTA SECTION */}
-      <section className="py-20 bg-gradient-to-r from-indigo-700 to-blue-700 text-white text-center">
-        <div className="max-w-4xl mx-auto px-6">
-          <CheckCircle2 className="w-14 h-14 mx-auto mb-6" />
-          <h2 className="text-4xl font-bold mb-4">Not seeing the right fit?</h2>
-          <p className="text-blue-100 mb-8 text-lg">
-            We're always looking for talent. Send us your CV and we'll keep you in mind for future roles.
+      {/* 📋 JOB LISTINGS */}
+      <section id="open-roles" className="py-16 px-6 max-w-5xl mx-auto">
+        <div className="flex items-center justify-between mb-10">
+            <div>
+                <h2 className="text-3xl font-bold text-slate-900">Open Positions</h2>
+                <p className="text-slate-500 mt-2">Find your next challenge.</p>
+            </div>
+        </div>
+
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200">
+            <Loader2 className="w-10 h-10 animate-spin text-emerald-600 mb-4" />
+            <p className="text-slate-500 font-medium">Loading opportunities...</p>
+          </div>
+        ) : jobs.length === 0 ? (
+          <div className="text-center py-24 bg-white rounded-2xl border border-dashed border-slate-300">
+            <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Briefcase className="w-8 h-8 text-slate-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-slate-900">No open roles right now</h3>
+            <p className="text-slate-500 mt-2 max-w-md mx-auto">
+              We are currently fully staffed, but we are always looking for talent. Check back soon or email us your resume.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {jobs.map((job: any) => (
+              <div 
+                key={job.id}
+                className="group bg-white rounded-xl border border-slate-200 p-6 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-900/5 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6"
+              >
+                <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                            {job.title}
+                        </h3>
+                        {job.type && (
+                            <Badge variant="secondary" className="bg-slate-100 text-slate-600 font-normal">
+                                {job.type}
+                            </Badge>
+                        )}
+                    </div>
+                    
+                    <p className="text-slate-600 text-sm line-clamp-2 mb-4 max-w-2xl">
+                        {job.description || "Join our team to help build the next generation of education technology."}
+                    </p>
+
+                    <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
+                        {job.location && (
+                            <div className="flex items-center gap-1.5">
+                                <MapPin className="w-3.5 h-3.5" />
+                                {job.location}
+                            </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>Posted Recently</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="shrink-0">
+                    <Button 
+                        onClick={() => navigate(`/apply/${job.id}?type=job`)}
+                        className="w-full md:w-auto bg-slate-900 hover:bg-emerald-600 text-white font-medium px-6 py-2 h-10 transition-colors"
+                    >
+                        Apply Now
+                    </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* 📧 CTA SECTION */}
+      <section className="py-24 bg-[#020617] text-white text-center mt-12 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+        
+        <div className="relative z-10 max-w-3xl mx-auto px-6">
+          <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 mb-6 px-3 py-1">General Application</Badge>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Don't see the right fit?</h2>
+          <p className="text-slate-400 mb-8 text-lg max-w-xl mx-auto">
+            We are always growing. Send us your portfolio and CV, and we'll keep you in mind for future roles.
           </p>
-          <Button
+          <Button 
             onClick={() => navigate("/contact")}
-            className="bg-white text-blue-700 font-semibold hover:bg-blue-100"
+            size="lg"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-8 shadow-lg shadow-emerald-900/50"
           >
-            Contact Us
+            Contact Recruitment Team <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-slate-900 text-white py-10 mt-auto">
-        <div className="max-w-7xl mx-auto px-6 text-center space-y-2">
-          <p className="text-lg font-semibold">InfinityX EdTech Platform</p>
-          <p className="text-blue-200">infnityx.site@gmail.com • +20 109 036 4947</p>
-          <p className="text-slate-400 text-sm">
-            &copy; {new Date().getFullYear()} InfinityX. All rights reserved.
+      <footer className="bg-slate-950 text-white py-12 border-t border-slate-900">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-4">
+          <div className="text-2xl font-bold tracking-tight">Infinity<span className="text-emerald-500">X</span></div>
+          <div className="flex gap-6 text-sm text-slate-400">
+             <Link href="/courses" className="hover:text-white transition">Courses</Link>
+             <Link href="/about" className="hover:text-white transition">About</Link>
+             <Link href="/blog" className="hover:text-white transition">Blog</Link>
+          </div>
+          <p className="text-slate-600 text-sm mt-4">
+            &copy; {new Date().getFullYear()} InfinityX EdTech. All rights reserved.
           </p>
         </div>
       </footer>
