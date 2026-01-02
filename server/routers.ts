@@ -265,23 +265,29 @@ export const appRouter = router({
     }),
 
     createApplication: publicProcedure
-      .input(
-        z.object({
-          fullName: z.string(),
-          email: z.string(),
-          phone: z.string().optional(),
-          message: z.string().optional(),
-          courseId: z.string().optional(), // Ensure this is captured
-        })
-      )
-      .mutation(async ({ input }) => {
-        // ✅ UPDATED: Insert directly to ensure course_id is saved
-        await db.query(
-          "INSERT INTO applications (full_name, email, phone, message, course_id, created_at, status) VALUES ($1, $2, $3, $4, $5, NOW(), 'pending')",
-          [input.fullName, input.email, input.phone, input.message, input.courseId]
-        );
-        return { success: true };
-      }),
+          .input(
+            z.object({
+              fullName: z.string(),
+              email: z.string(),
+              phone: z.string().optional(),
+              message: z.string().optional(),
+              courseId: z.string().optional(),
+            })
+          )
+          .mutation(async ({ input }) => {
+            // ✅ تصحيح البيانات قبل الإرسال لقاعدة البيانات
+            // إذا كان courseId نصاً فارغاً أو غير موجود، نجعله null
+            // إذا كان "5"، نجعله الرقم 5
+            const courseIdInt = (input.courseId && input.courseId !== "") 
+              ? parseInt(input.courseId) 
+              : null;
+
+            await db.query(
+              "INSERT INTO applications (full_name, email, phone, message, course_id, created_at, status) VALUES ($1, $2, $3, $4, $5, NOW(), 'pending')",
+              [input.fullName, input.email, input.phone, input.message, courseIdInt]
+            );
+            return { success: true };
+          }),
 
     deleteApplication: protectedProcedure
       .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
