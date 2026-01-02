@@ -13,6 +13,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge"; // ✅ تم إضافة Badge
 import {
   BookOpen,
   Briefcase,
@@ -27,6 +28,8 @@ import {
   Mail,
   MessageCircle,
   Trash2,
+  Calendar,
+  Sparkles
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -139,33 +142,33 @@ export default function AdminDashboard() {
       {/* MAIN CONTENT */}
       <main className="max-w-7xl mx-auto px-4 py-10">
         <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="grid grid-cols-9 w-full">
+          <TabsList className="grid grid-cols-9 w-full min-w-[800px]">
             <TabsTrigger value="overview">
-              <LayoutDashboard className="w-4 h-4" /> Overview
+              <LayoutDashboard className="w-4 h-4 mr-2" /> Overview
             </TabsTrigger>
             <TabsTrigger value="page-content">
-              <Settings className="w-4 h-4" /> Pages
+              <Settings className="w-4 h-4 mr-2" /> Pages
             </TabsTrigger>
             <TabsTrigger value="courses">
-              <BookOpen className="w-4 h-4" /> Courses
+              <BookOpen className="w-4 h-4 mr-2" /> Courses
             </TabsTrigger>
             <TabsTrigger value="programs">
-              <Users className="w-4 h-4" /> Programs
+              <Users className="w-4 h-4 mr-2" /> Programs
             </TabsTrigger>
             <TabsTrigger value="blog">
-              <FileText className="w-4 h-4" /> Blog
+              <FileText className="w-4 h-4 mr-2" /> Blog
             </TabsTrigger>
             <TabsTrigger value="careers">
-              <Briefcase className="w-4 h-4" /> Careers
+              <Briefcase className="w-4 h-4 mr-2" /> Careers
             </TabsTrigger>
             <TabsTrigger value="applications">
-              <ClipboardList className="w-4 h-4" /> Applications
+              <ClipboardList className="w-4 h-4 mr-2" /> Applications
             </TabsTrigger>
-            <TabsTrigger value="messages" className="flex items-center gap-2">
-              <Mail className="w-4 h-4" /> Messages
+            <TabsTrigger value="messages">
+              <Mail className="w-4 h-4 mr-2" /> Messages
             </TabsTrigger>
             <TabsTrigger value="site-settings">
-              <Globe className="w-4 h-4" /> Settings
+              <Globe className="w-4 h-4 mr-2" /> Settings
             </TabsTrigger>
           </TabsList>
 
@@ -207,7 +210,7 @@ export default function AdminDashboard() {
             <CareersManager />
           </TabsContent>
 
-          {/* APPLICATIONS TAB */}
+          {/* 🌟 APPLICATIONS TAB (UPDATED) */}
           <TabsContent value="applications">
             <Card>
               <CardHeader>
@@ -218,35 +221,72 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 {applications.length === 0 ? (
-                  <p className="text-slate-500 text-center">
-                    No applications yet.
-                  </p>
+                  <div className="text-center py-10 border-2 border-dashed border-slate-200 rounded-lg">
+                    <p className="text-slate-500">No applications received yet.</p>
+                  </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {applications.map((app: any) => (
                       <div
                         key={app.id}
-                        className="p-4 border border-slate-200 rounded-lg flex justify-between items-center hover:bg-slate-50"
+                        className="p-5 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 hover:shadow-sm transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                       >
-                        <div>
-                          <p className="font-semibold text-slate-900">
-                            {app.fullName}
-                          </p>
-                          <p className="text-sm text-slate-600">
-                            {app.email} • {app.phone}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {app.message || "No message provided"}
-                          </p>
+                        <div className="flex-1 space-y-2">
+                          {/* Header: Name + Course Badge */}
+                          <div className="flex flex-wrap items-center gap-3">
+                            <h3 className="text-lg font-bold text-slate-900">
+                                {/* Use full_name (DB field) or fallback to fullName */}
+                                {app.full_name || app.fullName}
+                            </h3>
+                            {app.course_title ? (
+                              <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-0 flex items-center gap-1">
+                                <BookOpen className="w-3 h-3" />
+                                {app.course_title}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-slate-500">
+                                General Inquiry
+                              </Badge>
+                            )}
+                          </div>
+
+                          {/* Contact Info */}
+                          <div className="text-sm text-slate-600 flex flex-wrap gap-x-4 gap-y-1">
+                            <span className="flex items-center gap-1">
+                                <Mail className="w-3.5 h-3.5 text-slate-400" /> {app.email}
+                            </span>
+                            <span className="flex items-center gap-1">
+                                <Phone className="w-3.5 h-3.5 text-slate-400" /> {app.phone}
+                            </span>
+                          </div>
+
+                          {/* Message */}
+                          {app.message && (
+                            <div className="mt-2 text-sm text-slate-600 bg-slate-100/50 p-3 rounded-md border-l-4 border-slate-300 italic">
+                              "{app.message}"
+                            </div>
+                          )}
+                          
+                          {/* Date */}
+                          <div className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                             <Calendar className="w-3 h-3" />
+                             Applied on {new Date(app.created_at || app.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                             })}
+                          </div>
                         </div>
+
+                        {/* Actions */}
                         <Button
-                          variant="destructive"
-                          size="sm"
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
                           onClick={() =>
                             deleteApplicationMutation.mutate({ id: app.id })
                           }
+                          title="Delete Application"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </Button>
                       </div>
                     ))}

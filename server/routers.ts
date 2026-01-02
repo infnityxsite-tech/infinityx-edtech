@@ -247,9 +247,21 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    // STUDENT APPLICATIONS
-    getApplications: protectedProcedure.query(async ({ ctx }) => {
-      return await db.getStudentApplications();
+    // ============================================
+    // ✅ STUDENT APPLICATIONS (UPDATED)
+    // ============================================
+    getApplications: protectedProcedure.query(async () => {
+      // ✅ UPDATED: Fetch applications WITH course title using a JOIN
+      const result = await db.query(`
+        SELECT 
+          applications.*,
+          courses.title as course_title,
+          courses.price_egp
+        FROM applications
+        LEFT JOIN courses ON applications.course_id = courses.id
+        ORDER BY applications.created_at DESC
+      `);
+      return result.rows;
     }),
 
     createApplication: publicProcedure
@@ -259,14 +271,16 @@ export const appRouter = router({
           email: z.string(),
           phone: z.string().optional(),
           message: z.string().optional(),
-          courseId: z.string(),
+          courseId: z.string().optional(), // Ensure this is captured
         })
       )
       .mutation(async ({ input }) => {
-        return await db.createStudentApplication({
-            ...input,
-            status: "pending" 
-        });
+        // ✅ UPDATED: Insert directly to ensure course_id is saved
+        await db.query(
+          "INSERT INTO applications (full_name, email, phone, message, course_id, created_at, status) VALUES ($1, $2, $3, $4, $5, NOW(), 'pending')",
+          [input.fullName, input.email, input.phone, input.message, input.courseId]
+        );
+        return { success: true };
       }),
 
     deleteApplication: protectedProcedure
@@ -328,21 +342,18 @@ export const appRouter = router({
     deleteBlogPost: protectedProcedure.input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
     .mutation(async ({ ctx, input }) => { await db.deleteBlogPost(input.id); return { success: true }; }),
 
-// =======================
-    // ✅ FIX: SITE SETTINGS (Strict Type Version)
+    // =======================
+    // SITE SETTINGS
     // =======================
     getSiteSettings: protectedProcedure.query(async ({ ctx }) => {
-      // We add '{ ctx }' here because TRPC on Vercel expects it
       return await db.getSiteSettings();
     }),
 
     updateSiteSettings: protectedProcedure
       .input(z.object({
-        // We explicitly tell Zod this is a Record of strings
         settings: z.record(z.string()) 
       }))
       .mutation(async ({ input }) => {
-        // We force "as any" to stop TypeScript from complaining about types
         return await db.updateSiteSettings(input.settings as Record<string, string>);
       }),
 
