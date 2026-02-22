@@ -2,7 +2,7 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createCanvas, loadImage, registerFont } from "canvas";
+import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas";
 import { getCertificateByCertId } from "../db";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -61,9 +61,9 @@ for (const p of possibleFontPaths) {
 
 if (fontDir) {
     try {
-        registerFont(path.join(fontDir, "PlayfairDisplay-Bold.ttf"), { family: "PlayfairDisplay Bold" });
-        registerFont(path.join(fontDir, "Inter-Bold.ttf"), { family: "Inter Bold" });
-        registerFont(path.join(fontDir, "Inter-Medium.ttf"), { family: "Inter Medium" });
+        GlobalFonts.registerFromPath(path.join(fontDir, "PlayfairDisplay-Bold.ttf"), "PlayfairDisplay Bold");
+        GlobalFonts.registerFromPath(path.join(fontDir, "Inter-Bold.ttf"), "Inter Bold");
+        GlobalFonts.registerFromPath(path.join(fontDir, "Inter-Medium.ttf"), "Inter Medium");
         console.log("✅ Custom fonts registered securely from:", fontDir);
     } catch (e: any) {
         console.log("Could not register fonts. Defaulting to system fonts. Error:", e.message);
@@ -156,7 +156,7 @@ router.get("/:certId/download", async (req, res) => {
         ctx.drawImage(qrImage, qrX, qrY, squareSize, squareSize);
 
         // Save strictly to local file system
-        const outBuffer = canvasArea.toBuffer("image/png");
+        const outBuffer = canvasArea.encodeSync("png");
         fs.writeFileSync(outputPath, outBuffer);
 
         // Return the buffer inline for download
