@@ -98,6 +98,7 @@ export default function BlogDetail() {
           )}
 
           <div className="prose prose-lg max-w-none">
+            {/* @ts-expect-error Streamdown JSX signature issue */}
             <Streamdown>{post.content}</Streamdown>
           </div>
         </div>

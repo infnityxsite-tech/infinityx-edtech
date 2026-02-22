@@ -1,34 +1,52 @@
-// server/database.ts - PostgreSQL Connection
 import { Pool } from 'pg';
 
-// Create PostgreSQL connection pool
+if (!process.env.DATABASE_URL) {
+  console.error("❌ DATABASE_URL environment variable is missing!");
+  process.exit(1);
+}
+
+// Create PostgreSQL connection pool optimized for Neon Serverless
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  max: 20, // Maximum number of clients in the pool
+  max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000,
+  maxUses: 7500,
 });
 
-// Test connection
 pool.on('connect', () => {
-  console.log('✅ Connected to PostgreSQL database');
+  // Silent connected log to avoid spamming unless explicitly debugging
 });
 
 pool.on('error', (err) => {
-  console.error('❌ Unexpected PostgreSQL error:', err);
+  console.error('❌ Unexpected PostgreSQL pool error. Connection dropped:', err);
+  // Do not exit process. The pg pool will automatically attempt to reconnect.
 });
 
-// Helper function to execute queries
-export async function query(text: string, params?: any[]) {
+/**
+ * Execute a query with automatic retry for transient connection errors (e.g., Neon waking up from scale-to-zero)
+ */
+export async function query(text: string, params?: any[], retries = 3): Promise<any> {
   const start = Date.now();
   try {
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
-    console.log('Executed query', { text, duration, rows: res.rowCount });
+    if (process.env.NODE_ENV !== 'production' && duration > 500) {
+      console.warn(`🐢 Slow Query (${duration}ms):`, text.substring(0, 100));
+    }
     return res;
-  } catch (error) {
-    console.error('Database query error:', error);
+  } catch (error: any) {
+    // Retry on specific transient network/connection codes
+    // 08000 (connection exception), 08003 (connection does not exist), 08006 (connection failure), 57P01 (admin shutdown - common in serverless sleep)
+    const isTransient = error.code && ['08000', '08003', '08006', '57P01'].includes(error.code) || error.message?.includes('ECONNRESET');
+
+    if (isTransient && retries > 0) {
+      console.warn(`🔄 Transient database error (${error.code || 'Network'}). Retrying query... (${retries} attempts left)`);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retrying
+      return query(text, params, retries - 1);
+    }
+    console.error('❌ Database query error:', { error: error.message, code: error.code, query: text.substring(0, 50) });
     throw error;
   }
 }

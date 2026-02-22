@@ -29,7 +29,9 @@ import {
   MessageCircle,
   Trash2,
   Calendar,
-  Sparkles
+  Sparkles,
+  Award,
+  Building
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -40,6 +42,9 @@ import ProgramsManager from "@/components/admin/ProgramsManager";
 import BlogManager from "@/components/admin/BlogManager";
 import CareersManager from "@/components/admin/CareersManager";
 import MessagesManager from "@/components/admin/MessagesManager";
+import CertificatesManager from "@/components/admin/CertificatesManager";
+import SponsorsManager from "@/components/admin/SponsorsManager";
+import StudentManager from "@/components/admin/StudentManager";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -74,7 +79,7 @@ export default function AdminDashboard() {
 
   const { data: messages = [] } = trpc.admin.getMessages.useQuery();
 
-  const updateSettingMutation = trpc.admin.updateSiteSetting.useMutation({
+  const updateSettingMutation = trpc.admin.updateSiteSettings.useMutation({
     onSuccess: () => {
       toast.success("Settings updated!");
       utils.admin.getSiteSettings.invalidate();
@@ -97,7 +102,7 @@ export default function AdminDashboard() {
   }
 
   const isLocalAdmin = localStorage.getItem("isAdminLoggedIn") === "true";
-  if ((!user || user.role !== "admin") && !isLocalAdmin) {
+  if (!user && !isLocalAdmin) {
     navigate("/admin/login");
     return null;
   }
@@ -105,14 +110,14 @@ export default function AdminDashboard() {
   const handleLogout = async () => {
     try {
       await logout?.();
-    } catch {}
+    } catch { }
     localStorage.removeItem("isAdminLoggedIn");
     navigate("/admin/login");
   };
 
   const handleSettingChange = (key: string, value: string) => {
     setSettings({ ...settings, [key]: value });
-    updateSettingMutation.mutate({ key, value });
+    updateSettingMutation.mutate({ settings: { [key]: value } });
   };
 
   return (
@@ -142,15 +147,24 @@ export default function AdminDashboard() {
       {/* MAIN CONTENT */}
       <main className="max-w-7xl mx-auto px-4 py-10">
         <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="grid grid-cols-9 w-full min-w-[800px]">
+          <TabsList className="grid grid-cols-11 w-full min-w-[1000px]">
             <TabsTrigger value="overview">
               <LayoutDashboard className="w-4 h-4 mr-2" /> Overview
+            </TabsTrigger>
+            <TabsTrigger value="certificates">
+              <Award className="w-4 h-4 mr-2" /> Certificates
+            </TabsTrigger>
+            <TabsTrigger value="sponsors">
+              <Building className="w-4 h-4 mr-2" /> Sponsors
             </TabsTrigger>
             <TabsTrigger value="page-content">
               <Settings className="w-4 h-4 mr-2" /> Pages
             </TabsTrigger>
             <TabsTrigger value="courses">
               <BookOpen className="w-4 h-4 mr-2" /> Courses
+            </TabsTrigger>
+            <TabsTrigger value="students">
+              <Users className="w-4 h-4 mr-2" /> Students
             </TabsTrigger>
             <TabsTrigger value="programs">
               <Users className="w-4 h-4 mr-2" /> Programs
@@ -185,6 +199,16 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
+          {/* CERTIFICATES TAB */}
+          <TabsContent value="certificates">
+            <CertificatesManager />
+          </TabsContent>
+
+          {/* SPONSORS TAB */}
+          <TabsContent value="sponsors">
+            <SponsorsManager />
+          </TabsContent>
+
           {/* PAGE CONTENT TAB */}
           <TabsContent value="page-content">
             <PageContentManager />
@@ -193,6 +217,11 @@ export default function AdminDashboard() {
           {/* COURSES TAB */}
           <TabsContent value="courses">
             <CoursesManager />
+          </TabsContent>
+
+          {/* STUDENTS TAB */}
+          <TabsContent value="students">
+            <StudentManager />
           </TabsContent>
 
           {/* PROGRAMS TAB */}
@@ -235,8 +264,8 @@ export default function AdminDashboard() {
                           {/* Header: Name + Course Badge */}
                           <div className="flex flex-wrap items-center gap-3">
                             <h3 className="text-lg font-bold text-slate-900">
-                                {/* Use full_name (DB field) or fallback to fullName */}
-                                {app.full_name || app.fullName}
+                              {/* Use full_name (DB field) or fallback to fullName */}
+                              {app.full_name || app.fullName}
                             </h3>
                             {app.course_title ? (
                               <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-0 flex items-center gap-1">
@@ -253,10 +282,10 @@ export default function AdminDashboard() {
                           {/* Contact Info */}
                           <div className="text-sm text-slate-600 flex flex-wrap gap-x-4 gap-y-1">
                             <span className="flex items-center gap-1">
-                                <Mail className="w-3.5 h-3.5 text-slate-400" /> {app.email}
+                              <Mail className="w-3.5 h-3.5 text-slate-400" /> {app.email}
                             </span>
                             <span className="flex items-center gap-1">
-                                <Phone className="w-3.5 h-3.5 text-slate-400" /> {app.phone}
+                              <Phone className="w-3.5 h-3.5 text-slate-400" /> {app.phone}
                             </span>
                           </div>
 
@@ -266,13 +295,13 @@ export default function AdminDashboard() {
                               "{app.message}"
                             </div>
                           )}
-                          
+
                           {/* Date */}
                           <div className="text-xs text-slate-400 flex items-center gap-1 mt-1">
-                             <Calendar className="w-3 h-3" />
-                             Applied on {new Date(app.created_at || app.createdAt).toLocaleDateString('en-US', {
-                                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                             })}
+                            <Calendar className="w-3 h-3" />
+                            Applied on {new Date(app.created_at || app.createdAt).toLocaleDateString('en-US', {
+                              year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                            })}
                           </div>
                         </div>
 

@@ -2,28 +2,43 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
+import { useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Courses from "./pages/Courses";
+import CoursesLive from "./pages/CoursesLive";
+import CoursesRecorded from "./pages/CoursesRecorded";
+import CoursePreview from "./pages/CoursePreview";
 import Programs from "./pages/Programs";
-import SchoolLanding from "./pages/SchoolLanding"; 
+import SchoolLanding from "./pages/SchoolLanding";
 import Blog from "./pages/Blog";
 import BlogDetail from "./pages/BlogDetail";
 import Careers from "./pages/Careers";
+import Verify from "./pages/Verify";
+import Certificate from "./pages/Certificate";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import Apply from "./pages/Apply";
 import Contact from "./pages/Contact";
+import StudentLogin from "./pages/StudentLogin";
+import StudentDashboard from "./pages/StudentDashboard";
+import LearningPortal from "./pages/LearningPortal";
 import { useAuth } from "./_core/hooks/useAuth";
+import FloatingContact from "./components/FloatingContact";
 
 // 🔒 Protected route for admin
 function ProtectedRoute({ component: Component }: { component: React.FC }) {
   const [, navigate] = useLocation();
   const { user, loading } = useAuth();
 
-  // Show loading state
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/admin-login");
+    }
+  }, [loading, user, navigate]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -35,10 +50,8 @@ function ProtectedRoute({ component: Component }: { component: React.FC }) {
     );
   }
 
-  // Redirect to login if not authenticated
   if (!user) {
-    navigate("/admin-login");
-    return null;
+    return null; // Will redirect via useEffect
   }
 
   return <Component />;
@@ -50,11 +63,14 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/about" component={About} />
       <Route path="/courses" component={Courses} />
-      
+      <Route path="/courses/live" component={CoursesLive} />
+      <Route path="/courses/recorded" component={CoursesRecorded} />
+      <Route path="/courses/recorded/:id/preview" component={CoursePreview} />
+
       {/* 🚀 FIXED: Added route for specific application IDs */}
       <Route path="/apply" component={Apply} />
       <Route path="/apply/:id" component={Apply} />
-      
+
       {/* ✅ EXISTING ROUTE (The list of all programs) */}
       <Route path="/programs" component={Programs} />
 
@@ -65,7 +81,14 @@ function Router() {
       <Route path="/blog/:id" component={BlogDetail} />
       <Route path="/careers" component={Careers} />
       <Route path="/contact" component={Contact} />
+      <Route path="/verify" component={Verify} />
+      <Route path="/certificates/:certId" component={Certificate} />
       <Route path="/admin-login" component={AdminLogin} />
+
+      {/* 🎓 Student Learning Portal */}
+      <Route path="/login" component={StudentLogin} />
+      <Route path="/dashboard" component={StudentDashboard} />
+      <Route path="/learn/:courseId" component={LearningPortal} />
 
       {/* ✅ Protected admin route */}
       <Route path="/admin" component={() => <ProtectedRoute component={AdminDashboard} />} />
@@ -83,6 +106,7 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
+          <FloatingContact />
           <Router />
         </TooltipProvider>
       </ThemeProvider>

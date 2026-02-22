@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import uploadRouter from "../routes/upload";
+import certificatesRouter from "../routes/certificates";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -39,7 +40,7 @@ async function startServer() {
 
   const app = express();
   const server = createServer(app);
-  
+
   // Configure CORS
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Credentials', 'true');
@@ -58,6 +59,7 @@ async function startServer() {
 
   // File upload route
   app.use("/api/upload", uploadRouter);
+  app.use("/api/certificates", certificatesRouter);
   app.use("/uploads", express.static("uploads"));
 
   // tRPC API

@@ -8,11 +8,11 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Loader2, 
-  Calendar, 
-  User, 
-  ArrowRight, 
+import {
+  Loader2,
+  Calendar,
+  User,
+  ArrowRight,
   BookOpen,
   Sparkles,
   Newspaper
@@ -37,13 +37,13 @@ export default function Blog() {
       {/* 🏛️ HERO SECTION (Matches Courses Page) */}
       <section className="relative bg-[#0b1120] text-white pt-36 pb-24 overflow-hidden">
         {/* Tech Grid Background Pattern */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none" 
-             style={{ 
-               backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', 
-               backgroundSize: '40px 40px' 
-             }}>
+        <div className="absolute inset-0 opacity-20 pointer-events-none"
+          style={{
+            backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)',
+            backgroundSize: '40px 40px'
+          }}>
         </div>
-        
+
         {/* Radial Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl bg-indigo-600/20 blur-[120px] rounded-full pointer-events-none"></div>
 
@@ -52,20 +52,20 @@ export default function Blog() {
             <Sparkles className="w-3.5 h-3.5" />
             <span>InfinityX Insights & News</span>
           </div>
-          
+
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6">
             The Future of Tech, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">Decoded.</span>
           </h1>
-          
+
           <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed font-light">
-            Deep dives into Artificial Intelligence, Space Tech, and Software Engineering. 
+            Deep dives into Artificial Intelligence, Space Tech, and Software Engineering.
             Written by experts, for innovators.
           </p>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-6 py-16 -mt-10 relative z-20">
-        
+
         {/* 🔄 LOADING STATE */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-sm border border-slate-200">
@@ -85,8 +85,8 @@ export default function Blog() {
             {/* 🌟 FEATURED POST (Hero Card) */}
             {featuredPost && (
               <div className="mb-16">
-                 <h2 className="text-xs font-bold tracking-widest text-slate-500 uppercase mb-4 ml-1">Featured Article</h2>
-                 <Link href={`/blog/${featuredPost.id}`}>
+                <h2 className="text-xs font-bold tracking-widest text-slate-500 uppercase mb-4 ml-1">Featured Article</h2>
+                <Link href={`/blog/${featuredPost.id}`}>
                   <div className="group relative bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer grid grid-cols-1 lg:grid-cols-2">
                     {/* Image Side */}
                     <div className="relative h-64 lg:h-auto overflow-hidden">
@@ -112,22 +112,22 @@ export default function Blog() {
                     <div className="p-8 lg:p-12 flex flex-col justify-center">
                       <div className="flex items-center gap-4 text-xs font-medium text-slate-500 mb-4">
                         <div className="flex items-center gap-1.5">
-                           <User className="w-3.5 h-3.5 text-indigo-500" />
-                           {featuredPost.author || "InfinityX Team"}
+                          <User className="w-3.5 h-3.5 text-indigo-500" />
+                          {featuredPost.author || "InfinityX Team"}
                         </div>
                         <div className="w-1 h-1 rounded-full bg-slate-300"></div>
                         <div className="flex items-center gap-1.5">
-                           <Calendar className="w-3.5 h-3.5 text-indigo-500" />
-                           {new Date(featuredPost.publishedAt).toLocaleDateString()}
+                          <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+                          {new Date(featuredPost.publishedAt).toLocaleDateString()}
                         </div>
                       </div>
 
                       <h2 className="text-2xl lg:text-4xl font-bold text-slate-900 mb-4 group-hover:text-indigo-600 transition-colors leading-tight">
                         {featuredPost.title}
                       </h2>
-                      
+
                       <p className="text-slate-600 text-lg leading-relaxed mb-6 line-clamp-3">
-                        {featuredPost.summary || featuredPost.content.substring(0, 200)}...
+                        {featuredPost.excerpt || featuredPost.content.substring(0, 200)}...
                       </p>
 
                       <div className="flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">
@@ -168,29 +168,29 @@ export default function Blog() {
 
                         {/* Card Content */}
                         <CardHeader className="p-6 pb-2">
-                           <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
-                              <span className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded">
-                                <Calendar className="w-3 h-3" />
-                                {new Date(post.publishedAt).toLocaleDateString()}
-                              </span>
-                           </div>
-                           <h3 className="text-xl font-bold text-slate-900 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">
+                          <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
+                            <span className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded">
+                              <Calendar className="w-3 h-3" />
+                              {new Date(post.publishedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <h3 className="text-xl font-bold text-slate-900 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">
                             {post.title}
                           </h3>
                         </CardHeader>
 
                         <CardContent className="px-6 py-2 flex-1">
                           <p className="text-slate-600 text-sm line-clamp-3 leading-relaxed">
-                            {post.summary || post.content.substring(0, 120)}...
+                            {post.excerpt || post.content.substring(0, 120)}...
                           </p>
                         </CardContent>
 
                         <CardFooter className="px-6 py-4 border-t border-slate-50 mt-auto">
                           <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-                             <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
-                                {(post.author || "A").charAt(0)}
-                             </div>
-                             <span>{post.author || "InfinityX Team"}</span>
+                            <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
+                              {(post.author || "A").charAt(0)}
+                            </div>
+                            <span>{post.author || "InfinityX Team"}</span>
                           </div>
                           <div className="ml-auto text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-[-10px] group-hover:translate-x-0 duration-300">
                             <ArrowRight className="w-4 h-4" />
@@ -210,7 +210,7 @@ export default function Blog() {
       <section className="bg-slate-900 text-white py-24 text-center mt-12 relative overflow-hidden">
         {/* Decorative BG */}
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
-        
+
         <div className="relative z-10 max-w-3xl mx-auto px-6">
           <Badge variant="outline" className="border-indigo-500/50 text-indigo-300 mb-4 px-3 py-1">Community</Badge>
           <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Have something to share?</h2>
@@ -220,7 +220,7 @@ export default function Blog() {
           </p>
           <Button asChild size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 rounded-full shadow-lg shadow-indigo-900/50">
             <a href="mailto:infnityx.site@gmail.com">
-               Become a Contributor
+              Become a Contributor
             </a>
           </Button>
         </div>
@@ -231,9 +231,9 @@ export default function Blog() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-4">
           <div className="text-2xl font-bold tracking-tight">Infinity<span className="text-indigo-500">X</span></div>
           <div className="flex gap-6 text-sm text-slate-400">
-             <Link href="/courses" className="hover:text-white transition">Courses</Link>
-             <Link href="/about" className="hover:text-white transition">About</Link>
-             <Link href="/careers" className="hover:text-white transition">Careers</Link>
+            <Link href="/courses" className="hover:text-white transition">Courses</Link>
+            <Link href="/about" className="hover:text-white transition">About</Link>
+            <Link href="/careers" className="hover:text-white transition">Careers</Link>
           </div>
           <p className="text-slate-600 text-sm mt-4">
             &copy; {new Date().getFullYear()} InfinityX EdTech. All rights reserved.

@@ -77,6 +77,9 @@ CREATE TABLE IF NOT EXISTS courses (
   price_egp DECIMAL(10, 2) DEFAULT 0,
   price_usd DECIMAL(10, 2) DEFAULT 0,
   course_link TEXT,
+  course_type VARCHAR(50) DEFAULT 'Recorded', -- Live or Recorded
+  syllabus TEXT,                              -- Used for Live sessions mainly
+  schedule_details TEXT,                      -- Used for Live sessions mainly
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -123,6 +126,28 @@ BEGIN
         ALTER TABLE courses ADD COLUMN title_ar VARCHAR(255), ADD COLUMN description_ar TEXT;
     END IF;
 
+    -- Add Course Type columns to courses
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'courses' AND column_name = 'course_type') THEN
+        ALTER TABLE courses 
+        ADD COLUMN course_type VARCHAR(50) DEFAULT 'Recorded',
+        ADD COLUMN syllabus TEXT,
+        ADD COLUMN schedule_details TEXT;
+    END IF;
+
+    -- Add syllabus and schedule_details independently (in case course_type already existed)
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'courses' AND column_name = 'syllabus') THEN
+        ALTER TABLE courses ADD COLUMN syllabus TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'courses' AND column_name = 'schedule_details') THEN
+        ALTER TABLE courses ADD COLUMN schedule_details TEXT;
+    END IF;
+
+    -- Add category column to courses if missing
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'courses' AND column_name = 'category') THEN
+        ALTER TABLE courses ADD COLUMN category VARCHAR(100);
+    END IF;
+
     -- 3. Add Arabic, Skills, and Category columns to programs
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'programs' AND column_name = 'title_ar') THEN
         ALTER TABLE programs ADD COLUMN title_ar VARCHAR(255), ADD COLUMN description_ar TEXT;
@@ -142,6 +167,23 @@ END $$;
 -- ============================================
 -- REST OF TABLES (Unchanged)
 -- ============================================
+
+-- ============================================
+-- CERTIFICATES TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS certificates (
+  id SERIAL PRIMARY KEY,
+  cert_id VARCHAR(50) UNIQUE NOT NULL,
+  student_name VARCHAR(255) NOT NULL,
+  course_name VARCHAR(255) NOT NULL,
+  duration VARCHAR(100),
+  issue_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_certificates_cert_id ON certificates(cert_id);
+
 
 CREATE TABLE IF NOT EXISTS blog_posts (
   id SERIAL PRIMARY KEY,
@@ -265,3 +307,125 @@ CREATE TRIGGER update_careers_updated_at BEFORE UPDATE ON careers FOR EACH ROW E
 CREATE TRIGGER update_applications_updated_at BEFORE UPDATE ON applications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_messages_updated_at BEFORE UPDATE ON messages FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_site_settings_updated_at BEFORE UPDATE ON site_settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_certificates_updated_at BEFORE UPDATE ON certificates FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==========================================
+-- SPONSORS TABLE
+-- ==========================================
+CREATE TABLE IF NOT EXISTS sponsors (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  logo_url VARCHAR(1000) NOT NULL,
+  url VARCHAR(1000),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER update_sponsors_updated_at BEFORE UPDATE ON sponsors FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==========================================
+-- USERS TABLE (Students)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  open_id VARCHAR(255) UNIQUE NOT NULL,
+  name VARCHAR(255),
+  email VARCHAR(255) UNIQUE,
+  password_hash VARCHAR(255),
+  login_method VARCHAR(50) DEFAULT 'email',
+  role VARCHAR(50) DEFAULT 'user',
+  last_signed_in TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==========================================
+-- COURSE PLATFORM TABLES
+-- ==========================================
+
+-- MODULES
+CREATE TABLE IF NOT EXISTS course_modules (
+  id SERIAL PRIMARY KEY,
+  course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  title_ar VARCHAR(255),
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER update_course_modules_updated_at BEFORE UPDATE ON course_modules FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- LESSONS
+CREATE TABLE IF NOT EXISTS course_lessons (
+  id SERIAL PRIMARY KEY,
+  module_id INTEGER REFERENCES course_modules(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  title_ar VARCHAR(255),
+  video_url TEXT,
+  duration VARCHAR(100),
+  material_link TEXT,           -- Downloadable materials link
+  order_index INTEGER DEFAULT 0,
+  is_free BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER update_course_lessons_updated_at BEFORE UPDATE ON course_lessons FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- QUIZZES (Per Lesson)
+CREATE TABLE IF NOT EXISTS course_quizzes (
+  id SERIAL PRIMARY KEY,
+  lesson_id INTEGER REFERENCES course_lessons(id) ON DELETE CASCADE,
+  question TEXT NOT NULL,
+  options JSONB NOT NULL, -- Array of strings e.g., ["A", "B", "C"]
+  correct_index INTEGER NOT NULL,
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER update_course_quizzes_updated_at BEFORE UPDATE ON course_quizzes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- QUIZ SUBMISSIONS
+CREATE TABLE IF NOT EXISTS quiz_submissions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  quiz_id INTEGER REFERENCES course_quizzes(id) ON DELETE CASCADE,
+  is_correct BOOLEAN NOT NULL,
+  submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, quiz_id)
+);
+
+-- LESSON PROGRESS (Tracking what user has completed)
+CREATE TABLE IF NOT EXISTS lesson_progress (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  lesson_id INTEGER REFERENCES course_lessons(id) ON DELETE CASCADE,
+  completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, lesson_id)
+);
+
+-- ENROLLMENTS
+CREATE TABLE IF NOT EXISTS enrollments (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+  enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status VARCHAR(50) DEFAULT 'active', -- active, completed, revoked
+  UNIQUE(user_id, course_id)
+);
+
+-- DEVICE SESSIONS (Max 2 devices)
+CREATE TABLE IF NOT EXISTS device_sessions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  device_id VARCHAR(255) NOT NULL,
+  device_name VARCHAR(255),
+  last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, device_id)
+);
