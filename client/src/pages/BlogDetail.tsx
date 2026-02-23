@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Calendar, User, ArrowLeft } from "lucide-react";
 import { Link, useRoute } from "wouter";
 import { Streamdown } from "streamdown";
-
+import { VideoEmbed } from "@/components/VideoEmbed";
+import { useMemo } from "react";
 export default function BlogDetail() {
   const [match, params] = useRoute("/blog/:id");
   const postId = params?.id || null;
@@ -55,6 +56,18 @@ export default function BlogDetail() {
     );
   }
 
+  const processedContent = useMemo(() => {
+    if (!post?.content) return "";
+    let content = post.content;
+    const divIframeRegex = /<div[^>]*>[\s\S]*?<iframe[^>]*src="(?:https?:)?\/\/www\.youtube\.com\/embed\/([^"?]+)"[^>]*>[\s\S]*?<\/iframe>[\s\S]*?<\/div>/gi;
+    content = content.replace(divIframeRegex, '\n\n[YOUTUBE_EMBED]($1)\n\n');
+    const standaloneIframeRegex = /<iframe[^>]*src="(?:https?:)?\/\/www\.youtube\.com\/embed\/([^"?]+)"[^>]*>[\s\S]*?<\/iframe>/gi;
+    content = content.replace(standaloneIframeRegex, '\n\n[YOUTUBE_EMBED]($1)\n\n');
+    const youtubeUrlRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/gim;
+    content = content.replace(youtubeUrlRegex, '\n\n[YOUTUBE_EMBED]($1)\n\n');
+    return content;
+  }, [post?.content]);
+
   return (
     <div className="min-h-screen bg-white">
       <Navigation />
@@ -98,8 +111,23 @@ export default function BlogDetail() {
           )}
 
           <div className="prose prose-lg max-w-none">
-            {/* @ts-expect-error Streamdown JSX signature issue */}
-            <Streamdown>{post.content}</Streamdown>
+            <Streamdown
+              components={{
+                a: ({ node, href, children, ...props }: any) => {
+                  const textChild = Array.isArray(children) ? children[0] : children;
+                  if (textChild === "YOUTUBE_EMBED" && href) {
+                    return <VideoEmbed videoId={href} />;
+                  }
+                  return (
+                    <a href={href} {...props}>
+                      {children}
+                    </a>
+                  );
+                },
+              }}
+            >
+              {processedContent}
+            </Streamdown>
           </div>
         </div>
       </section>
