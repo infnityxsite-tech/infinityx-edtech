@@ -30,21 +30,25 @@ export default function Verify() {
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col">
             <Navigation />
 
-            <main className="flex-1 flex flex-col items-center justify-center p-6 mt-20">
-                <div className="max-w-xl w-full text-center mb-10">
-                    <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-0 mb-4 tracking-wider uppercase text-xs font-bold px-3 py-1">
+            <main className="flex-1 flex flex-col items-center justify-center p-6 pt-32 pb-24 relative overflow-hidden">
+                {/* Subtle Background Elements */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-full h-[500px] max-w-3xl bg-indigo-600/5 blur-[120px] rounded-full pointer-events-none" />
+
+                <div className="max-w-2xl w-full text-center mb-12 relative z-10">
+                    <Badge className="bg-indigo-100/50 text-indigo-700 hover:bg-indigo-200/50 border border-indigo-200 mb-6 tracking-widest uppercase text-xs font-bold px-4 py-1.5 shadow-sm">
                         Certificate Verification
                     </Badge>
-                    <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight drop-shadow-sm">
                         Verify a Certificate
                     </h1>
-                    <p className="text-slate-600 text-lg font-light">
+                    <p className="text-slate-500 text-lg md:text-xl font-light leading-relaxed max-w-lg mx-auto">
                         Enter the unique InfinityX certificate ID below to verify its authenticity and details.
                     </p>
                 </div>
 
-                <Card className="w-full max-w-xl shadow-xl border-0 overflow-hidden rounded-2xl">
-                    <CardContent className="p-8 md:p-10">
+                <Card className="w-full max-w-2xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden rounded-3xl relative z-10 bg-white/90 backdrop-blur-xl">
+                    <CardContent className="p-8 md:p-12">
                         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
                             <div className="relative flex-1">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
@@ -53,10 +57,10 @@ export default function Verify() {
                                     placeholder="e.g. INF-2025-0001"
                                     value={certId}
                                     onChange={(e) => setCertId(e.target.value)}
-                                    className="pl-12 py-6 text-lg rounded-xl border-slate-200 shadow-sm focus-visible:ring-blue-500 focus-visible:border-blue-500 uppercase placeholder:normal-case"
+                                    className="pl-12 py-7 text-lg rounded-2xl border-slate-200 shadow-sm focus-visible:ring-indigo-500 focus-visible:border-indigo-500 uppercase placeholder:normal-case font-medium bg-slate-50"
                                 />
                             </div>
-                            <Button type="submit" size="lg" disabled={isLoading} className="py-6 px-8 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md transition-all">
+                            <Button type="submit" size="lg" disabled={isLoading} className="py-7 px-10 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-600/20 transition-all hover:-translate-y-1 text-lg">
                                 {isLoading ? "Verifying..." : "Verify"}
                             </Button>
                         </form>

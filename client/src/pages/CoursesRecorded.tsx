@@ -35,40 +35,43 @@ export default function CoursesRecorded() {
             <Navigation />
 
             {/* HEADER */}
-            <section className="bg-[#0b1120] text-white pt-28 pb-12 overflow-hidden border-b-4 border-indigo-500">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col items-center text-center z-10">
-                    <div className="w-16 h-16 bg-indigo-500/20 rounded-full flex items-center justify-center mb-4 text-indigo-400">
-                        <Video className="w-8 h-8" />
+            <section className="relative bg-[#0b1120] text-white pt-36 pb-20 overflow-hidden">
+                <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl bg-indigo-600/20 blur-[120px] rounded-full pointer-events-none" />
+
+                <div className="relative max-w-7xl mx-auto px-6 flex flex-col items-center text-center z-10">
+                    <div className="w-16 h-16 bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-6 text-indigo-400 shadow-inner border border-indigo-500/30">
+                        <Video className="w-8 h-8 drop-shadow-md" />
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
+                    <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 drop-shadow-sm">
                         Recorded Courses
                     </h1>
-                    <p className="text-slate-400 text-lg max-w-2xl mx-auto font-light mb-8">
+                    <p className="text-slate-300 text-lg md:text-xl max-w-2xl mx-auto font-light mb-10 leading-relaxed">
                         Self-paced, high-quality video lessons. Learn anytime, anywhere, at your own rhythm.
                     </p>
 
-                    <div className="w-full max-w-xl relative">
-                        <Search className="h-5 w-5 text-slate-400 absolute left-3 top-3.5 pointer-events-none" />
+                    <div className="w-full max-w-2xl relative group">
+                        <Search className="h-6 w-6 text-slate-400 absolute left-4 top-4 pointer-events-none group-focus-within:text-indigo-400 transition-colors" />
                         <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                            className="block w-full pl-10 pr-4 py-3 border border-slate-700/50 rounded-xl bg-white/10 text-slate-200 placeholder-slate-400 focus:outline-none focus:bg-white/20 focus:ring-1 focus:ring-indigo-500"
-                            placeholder="Search self-paced courses..." />
+                            className="block w-full pl-14 pr-6 py-4 border border-slate-700/50 rounded-2xl bg-white/5 text-slate-100 placeholder-slate-400 focus:outline-none focus:bg-white/10 focus:ring-2 focus:ring-indigo-500/60 backdrop-blur-md shadow-2xl transition-all text-lg"
+                            placeholder="Find your next course..." />
                     </div>
                 </div>
             </section>
 
             {/* FILTERS */}
-            <section className="sticky top-0 z-40 bg-white/95 backdrop-blur-lg border-b border-slate-200">
-                <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-3">
+            <section className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200/80 shadow-sm">
+                <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <select value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}
-                        className="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-400">
+                        className="w-full sm:w-auto text-sm font-medium border border-slate-200 rounded-xl px-4 py-2.5 bg-white text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 hover:border-indigo-300 transition-all cursor-pointer">
                         {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
 
-                    <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+                    <div className="flex bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/50 shadow-inner">
                         {(["EGP", "USD"] as const).map(cur => (
                             <button key={cur} onClick={() => setCurrency(cur)}
-                                className={`px-3 py-1 rounded-md text-xs font-bold transition-all
-                  ${currency === cur ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
+                                className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all
+                  ${currency === cur ? "bg-white text-indigo-700 shadow border border-slate-200/50" : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"}`}>
                                 {cur}
                             </button>
                         ))}

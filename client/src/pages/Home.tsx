@@ -65,45 +65,84 @@ export default function Home() {
 
       {/* === HERO SECTION === */}
       <section
-        className="relative text-white py-32 md:py-48 bg-cover bg-center"
+        className="relative text-white min-h-[85vh] lg:min-h-[90vh] flex items-center bg-cover bg-center pt-24 pb-20"
         style={{
           backgroundImage: `linear-gradient(rgba(5, 10, 25, 0.9), rgba(5, 10, 25, 0.8)), url(${heroImageUrl})`,
           backgroundAttachment: 'fixed'
         }}
       >
-        <div className="relative z-10 max-w-7xl mx-auto px-6">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
           <div className={`max-w-4xl ${isRTL ? 'text-right' : 'text-left'}`}>
-            <div className="inline-flex items-center gap-2 bg-blue-900/40 border border-blue-500/30 rounded-full px-4 py-1.5 mb-8 backdrop-blur-md">
+            {/* Logo */}
+            <div className="mb-6 md:mb-8">
+              <img
+                src="/uploads/logo.png"
+                alt="InfinityX EdTech Logo"
+                className="h-16 md:h-20 lg:h-24 w-auto object-contain filter drop-shadow-lg"
+              />
+            </div>
+
+            {/* Announcement Badge */}
+            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 mb-8 backdrop-blur-md shadow-sm">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
               </span>
-              <span className="text-blue-200 font-semibold text-xs tracking-wide uppercase">
-                {t("Accepting New Applications for 2025", "فتح باب التقديم لدفعة 2025", "Accepting New Applications for 2025")}
+              <span className="text-slate-200 font-medium text-xs tracking-wider uppercase">
+                {t("Accepting New Partners 2026", "نقبل شركاء جدد لعام 2026", "Accepting New Partners 2026")}
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
-              {t(pageContent?.headline || undefined, pageContent?.headlineAr || undefined, "Empowering the Next Generation of Tech Leaders")}
+            {/* Heading */}
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold mb-6 leading-[1.15] tracking-tight drop-shadow-sm">
+              {t("Infinity X EdTech", "إنفينيتي إكس إديوتك", "Infinity X EdTech")}
             </h1>
 
-            <p className="text-xl md:text-2xl mb-10 text-slate-300 leading-relaxed max-w-2xl">
-              {t(pageContent?.subHeadline || undefined, pageContent?.subHeadlineAr || undefined, "Master cutting-edge technologies through hands-on learning.")}
+            {/* Subtitle */}
+            <p className="text-lg md:text-xl lg:text-2xl mb-10 text-slate-300 leading-relaxed max-w-2xl font-light">
+              {t(pageContent?.subHeadline || undefined, pageContent?.subHeadlineAr || undefined, "Empowering the Next Generation of Tech Leaders through hands-on learning and global standards.")}
             </p>
 
-            <div className="flex flex-wrap gap-4">
-              <Link href="/programs">
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-105">
-                  {t("Explore Departments", "استكشف التخصصات", "Explore Departments")}
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-4">
+              <Link href="/courses">
+                <Button size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-white border border-indigo-500 text-base md:text-lg px-8 py-6 rounded-xl shadow-lg shadow-indigo-600/20 transition-all hover:-translate-y-1 font-semibold">
+                  {t("Explore Courses", "استكشف الكورسات", "Explore Courses")} <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-              <Link href="/about">
-                <Button size="lg" variant="outline" className="bg-white/5 border-white/20 text-white hover:bg-white/10 text-lg px-8 py-6 rounded-xl backdrop-blur-sm">
-                  {t("About InfinityX", "عن المنصة", "About InfinityX")}
+              <Link href="/programs">
+                <Button size="lg" variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 text-base md:text-lg px-8 py-6 rounded-xl backdrop-blur-sm transition-colors font-medium">
+                  {t("Browse Programs", "تصفح المسارات", "Browse Programs")}
                 </Button>
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* === QUICK CATEGORY PREVIEW === */}
+      <section className="relative z-20 -mt-10 md:-mt-16 w-full max-w-7xl mx-auto px-6 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {[
+            { title: t("AI & Data", "الذكاء الاصطناعي", "AI & Data"), icon: Brain, href: "/programs/ai", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+            { title: t("Software Engineering", "هندسة البرمجيات", "Software Eng"), icon: Code, href: "/programs/software", color: "text-purple-500", bg: "bg-purple-500/10" },
+            { title: t("Cybersecurity", "الأمن السيبراني", "Cybersecurity"), icon: Shield, href: "/programs/security", color: "text-red-500", bg: "bg-red-500/10" },
+            { title: t("Space & Robotics", "الفضاء والروبوتات", "Space Tech"), icon: Satellite, href: "/programs/space", color: "text-blue-500", bg: "bg-blue-500/10" }
+          ].map((cat, idx) => {
+            const Icon = cat.icon;
+            return (
+              <Link key={idx} href={cat.href}>
+                <div className="bg-white rounded-2xl p-5 shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-indigo-200 hover:shadow-2xl hover:shadow-indigo-100 transition-all flex flex-col items-center justify-center text-center cursor-pointer group hover:-translate-y-1">
+                  <div className={`w-12 h-12 rounded-full ${cat.bg} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                    <Icon className={`w-6 h-6 ${cat.color}`} />
+                  </div>
+                  <h3 className="font-semibold text-slate-800 text-sm md:text-base group-hover:text-indigo-600 transition-colors">
+                    {cat.title}
+                  </h3>
+                </div>
+              </Link>
+            )
+          })}
         </div>
       </section>
 
@@ -512,8 +551,8 @@ export default function Home() {
             {t("Join the fastest growing tech community in the MENA region.", "انضم إلى المجتمع التقني الأسرع نمواً في الشرق الأوسط.", "Join the fastest growing tech community.")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/programs">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-10 py-6 rounded-xl font-bold shadow-xl">
+            <Link href="/courses">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-10 py-6 rounded-xl font-bold shadow-xl transition-transform hover:-translate-y-1">
                 {t("Browse All Courses", "تصفح جميع الكورسات", "Browse All Courses")}
               </Button>
             </Link>
