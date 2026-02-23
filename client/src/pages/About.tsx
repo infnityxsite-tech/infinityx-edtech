@@ -195,12 +195,12 @@ export default function About() {
           <div className="grid md:grid-cols-3 gap-8 text-left">
             <div className="bg-white/5 border border-white/10 p-8 rounded-2xl hover:bg-white/10 transition-all">
               <Rocket className="w-10 h-10 text-pink-500 mb-6" />
-              <h3 className="text-xl font-bold mb-4">{t("Space Tech Research", "أبحاث تكنولوجيا الفضاء", "Space Tech Research")}</h3>
+              <h3 className="text-xl font-bold mb-4">{t("Aerospace Analytics", "تحليلات الفضاء والطيران", "Aerospace Analytics")}</h3>
               <p className="text-slate-400 leading-relaxed">
                 {t(
-                  "Active research in orbital mechanics and space debris mitigation using deep learning models.",
-                  "أبحاث نشطة في ميكانيكا المدارات والحد من الحطام الفضائي باستخدام نماذج التعلم العميق.",
-                  "Active research in orbital mechanics."
+                  "Active research in Earth observation data and autonomous systems using deep learning models.",
+                  "أبحاث نشطة في بيانات مراقبة الأرض والأنظمة المستقلة باستخدام نماذج التعلم العميق.",
+                  "Active research in Earth observation."
                 )}
               </p>
             </div>

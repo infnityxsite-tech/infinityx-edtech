@@ -312,12 +312,12 @@ export default function Home() {
                 </div>
                 <h3 className="text-2xl font-bold mb-4 text-white">{t("School of Space & AI", "مدرسة الفضاء والذكاء الاصطناعي", "School of Space & AI")}</h3>
                 <p className="text-blue-100/80 mb-6 leading-relaxed h-16">
-                  {t("Applying AI to Space challenges. Commercial space data analysis, Debris classification, and Orbital mechanics.", "تطبيق الذكاء الاصطناعي على تحديات الفضاء. تحليل البيانات التجارية، وتصنيف الحطام.", "Applying AI to Space challenges.")}
+                  {t("Applying AI to Space challenges. Commercial space data analysis, autonomous systems, and Earth observation.", "تطبيق الذكاء الاصطناعي على تحديات الفضاء. تحليل البيانات التجارية، والأنظمة المستقلة، ومراقبة الأرض.", "Applying AI to Space challenges.")}
                 </p>
                 <ul className="space-y-3 mb-8">
-                  <li className="flex items-center text-sm text-blue-200"><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Orbital Mechanics & AI</li>
+                  <li className="flex items-center text-sm text-blue-200"><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Autonomous Systems & AI</li>
                   <li className="flex items-center text-sm text-blue-200"><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Satellite Image Analysis</li>
-                  <li className="flex items-center text-sm text-blue-200"><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Debris Mitigation</li>
+                  <li className="flex items-center text-sm text-blue-200"><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Deep Learning for Sensing</li>
                 </ul>
                 <Link href="/programs/space">
                   <Button className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold">
@@ -345,11 +345,11 @@ export default function Home() {
               <div className="h-56 bg-slate-900 flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 group-hover:opacity-40 transition-opacity"></div>
                 <Satellite className="w-20 h-20 text-blue-400 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 relative z-10" />
-                <div className="absolute bottom-4 right-4 bg-blue-500/20 backdrop-blur-sm text-blue-200 text-xs px-2 py-1 rounded">Space / AI</div>
+                <div className="absolute bottom-4 right-4 bg-blue-500/20 backdrop-blur-sm text-blue-200 text-xs px-2 py-1 rounded">Data Science / AI</div>
               </div>
               <div className="p-8 relative z-10">
-                <h4 className="font-bold text-xl mb-3 text-slate-800 group-hover:text-blue-600 transition-colors">DebrisTracker AI</h4>
-                <p className="text-slate-600 text-sm mb-6 leading-relaxed">A Deep Learning model that identifies and classifies space debris from raw telescope imagery with 92% accuracy.</p>
+                <h4 className="font-bold text-xl mb-3 text-slate-800 group-hover:text-blue-600 transition-colors">VisionCore AI System</h4>
+                <p className="text-slate-600 text-sm mb-6 leading-relaxed">An enterprise-grade Deep Learning model that identifies and classifies complex objects from raw sensor imagery with 99% accuracy for industrial use.</p>
                 <div className="flex flex-wrap gap-2">
                   <span className="text-[10px] bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-bold border border-blue-100 shadow-sm">PYTHON</span>
                   <span className="text-[10px] bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-bold border border-blue-100 shadow-sm">TENSORFLOW</span>
