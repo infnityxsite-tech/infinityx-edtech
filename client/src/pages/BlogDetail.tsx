@@ -28,6 +28,18 @@ export default function BlogDetail() {
   // FIX 2: Convert both IDs to String to ensure they match (e.g. "5" matches 5)
   const post = posts.find((p: any) => String(p.id) === String(postId));
 
+  const processedContent = useMemo(() => {
+    if (!post?.content) return "";
+    let content = post.content;
+    const divIframeRegex = /<div[^>]*>[\s\S]*?<iframe[^>]*src="(?:https?:)?\/\/www\.youtube\.com\/embed\/([^"?]+)"[^>]*>[\s\S]*?<\/iframe>[\s\S]*?<\/div>/gi;
+    content = content.replace(divIframeRegex, '\n\n:::youtube $1\n\n');
+    const standaloneIframeRegex = /<iframe[^>]*src="(?:https?:)?\/\/www\.youtube\.com\/embed\/([^"?]+)"[^>]*>[\s\S]*?<\/iframe>/gi;
+    content = content.replace(standaloneIframeRegex, '\n\n:::youtube $1\n\n');
+    const youtubeUrlRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/gim;
+    content = content.replace(youtubeUrlRegex, '\n\n:::youtube $1\n\n');
+    return content;
+  }, [post?.content]);
+
   // 1. Check if ID exists in URL
   if (!postId) {
     return (
@@ -67,18 +79,6 @@ export default function BlogDetail() {
       </div>
     );
   }
-
-  const processedContent = useMemo(() => {
-    if (!post?.content) return "";
-    let content = post.content;
-    const divIframeRegex = /<div[^>]*>[\s\S]*?<iframe[^>]*src="(?:https?:)?\/\/www\.youtube\.com\/embed\/([^"?]+)"[^>]*>[\s\S]*?<\/iframe>[\s\S]*?<\/div>/gi;
-    content = content.replace(divIframeRegex, '\n\n:::youtube $1\n\n');
-    const standaloneIframeRegex = /<iframe[^>]*src="(?:https?:)?\/\/www\.youtube\.com\/embed\/([^"?]+)"[^>]*>[\s\S]*?<\/iframe>/gi;
-    content = content.replace(standaloneIframeRegex, '\n\n:::youtube $1\n\n');
-    const youtubeUrlRegex = /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/gim;
-    content = content.replace(youtubeUrlRegex, '\n\n:::youtube $1\n\n');
-    return content;
-  }, [post?.content]);
 
   return (
     <div className="min-h-screen bg-white">
