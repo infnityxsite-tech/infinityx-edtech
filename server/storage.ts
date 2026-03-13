@@ -3,6 +3,7 @@
 // Replaces the old local/Forge storage
 // ============================================
 
+// @ts-ignore
 import { v2 as cloudinary } from 'cloudinary';
 import { Readable } from 'stream';
 
@@ -19,7 +20,7 @@ cloudinary.config({
  */
 function bufferToStream(buffer: Buffer | Uint8Array) {
   const readable = new Readable();
-  readable._read = () => {}; // No-op
+  readable._read = () => { }; // No-op
   readable.push(buffer);
   readable.push(null);
   return readable;
@@ -36,10 +37,10 @@ export async function storagePut(
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream"
 ): Promise<{ key: string; url: string }> {
-  
+
   return new Promise((resolve, reject) => {
     // Generate a unique ID based on the filename (removing extension for Cloudinary public_id)
-    const publicId = relKey.replace(/\.[^/.]+$/, ""); 
+    const publicId = relKey.replace(/\.[^/.]+$/, "");
 
     // Prepare the upload options
     const uploadOptions = {
@@ -50,14 +51,14 @@ export async function storagePut(
 
     // If data is a simple string (URL or path), we can't upload it easily here without fetching it.
     // But usually, this function receives a Buffer from a file upload.
-    
+
     if (Buffer.isBuffer(data) || data instanceof Uint8Array) {
       const stream = cloudinary.uploader.upload_stream(
         uploadOptions,
-        (error, result) => {
+        (error: any, result: any) => {
           if (error) return reject(new Error(`Cloudinary upload failed: ${error.message}`));
           if (!result) return reject(new Error("Cloudinary upload failed: No result"));
-          
+
           // Success! Return the key (public_id) and the secure HTTPS URL
           resolve({
             key: result.public_id,
@@ -65,16 +66,16 @@ export async function storagePut(
           });
         }
       );
-      
+
       // Pipe the data into the upload stream
       bufferToStream(data instanceof Uint8Array ? Buffer.from(data) : data).pipe(stream);
-      
+
     } else if (typeof data === "string") {
       // If it's a base64 string or file path
-      cloudinary.uploader.upload(data, uploadOptions, (error, result) => {
+      cloudinary.uploader.upload(data, uploadOptions, (error: any, result: any) => {
         if (error) return reject(new Error(`Cloudinary upload failed: ${error.message}`));
         if (!result) return reject(new Error("Cloudinary upload failed: No result"));
-        
+
         resolve({
           key: result.public_id,
           url: result.secure_url,
@@ -94,7 +95,7 @@ export async function storageGet(relKey: string): Promise<{ key: string; url: st
   // Since we are not storing the mapping of Keys -> URLs in this file,
   // we assume the "relKey" passed here is actually the full Cloudinary URL
   // or the Public ID. 
-  
+
   // If it's already a URL, just return it.
   if (relKey.startsWith("http")) {
     return { key: relKey, url: relKey };

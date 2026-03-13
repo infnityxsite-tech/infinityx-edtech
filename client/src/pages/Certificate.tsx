@@ -51,7 +51,7 @@ export default function Certificate() {
         month: "long", day: "numeric", year: "numeric"
     });
 
-    const verifyUrl = `${window.location.origin}/certificates/${certificate.certId}`;
+    const verifyUrl = `https://infx.space/certificates/${certificate.certId}`;
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${encodeURIComponent(verifyUrl)}`;
 
     return (

@@ -127,7 +127,7 @@ export default function Blog() {
                       </h2>
 
                       <p className="text-slate-600 text-lg leading-relaxed mb-6 line-clamp-3">
-                        {featuredPost.excerpt || featuredPost.content.substring(0, 200)}...
+                        {featuredPost.excerpt || featuredPost.content?.substring(0, 200)}...
                       </p>
 
                       <div className="flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">

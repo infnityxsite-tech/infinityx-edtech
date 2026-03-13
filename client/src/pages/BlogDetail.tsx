@@ -3,21 +3,22 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Loader2, Calendar, User, ArrowLeft } from "lucide-react";
 import { Link, useRoute } from "wouter";
-import { Streamdown, Block } from "streamdown";
+import { Streamdown } from "streamdown";
 import { VideoEmbed } from "@/components/VideoEmbed";
 import React, { useMemo } from "react";
 
-const CustomBlock = React.memo((props: any) => {
-  const contentStr = props.content?.trim() || "";
-  if (contentStr.startsWith(":::youtube")) {
-    const match = contentStr.match(/^:::youtube\s+([^ \n]+)/);
-    if (match && match[1]) {
-      return <VideoEmbed videoId={match[1]} />;
+const customComponents = {
+  p: (props: any) => {
+    const firstChild = Array.isArray(props.children) ? props.children[0] : props.children;
+    if (typeof firstChild === 'string' && firstChild.trim().startsWith(':::youtube')) {
+      const match = firstChild.trim().match(/^:::youtube\s+([^ \n]+)/);
+      if (match && match[1]) {
+        return <VideoEmbed videoId={match[1]} />;
+      }
     }
+    return <p {...props} />;
   }
-  return <Block {...props} />;
-});
-CustomBlock.displayName = "CustomBlock";
+};
 export default function BlogDetail() {
   const [match, params] = useRoute("/blog/:id");
   const postId = params?.id || null;
@@ -123,7 +124,7 @@ export default function BlogDetail() {
           )}
 
           <div className="prose prose-lg max-w-none">
-            <Streamdown BlockComponent={CustomBlock}>
+            <Streamdown components={customComponents}>
               {processedContent}
             </Streamdown>
           </div>

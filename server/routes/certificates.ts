@@ -136,7 +136,7 @@ router.get("/:certId/download", async (req, res) => {
         });
 
         // 6. Fetch and Draw QR Code Bounds (X: 1117 to 1225, Y: 653 to 770)
-        const verifyUrl = `${req.protocol}://${req.get("host") || "localhost:3000"}/certificates/${certificate.certId}`;
+        const verifyUrl = `https://infx.space/certificates/${certificate.certId}`;
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`;
         const qrResponse = await fetch(qrUrl);
         if (!qrResponse.ok) throw new Error("Failed to fetch QR code");
