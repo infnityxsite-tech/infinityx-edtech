@@ -16,7 +16,8 @@ import {
   Video,
   Library,
   MessageCircle,
-  Zap
+  Zap,
+  Mail
 } from "lucide-react";
 
 export default function Home() {
@@ -502,9 +503,9 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold mb-10 text-slate-900">{t("Connect With Us", "تواصل معنا", "Connect With Us")}</h2>
           <div className="flex flex-wrap justify-center gap-6">
-            {/* Website */}
-            <a href="https://infx.space" target="_blank" rel="noreferrer" title="Website" className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-700 hover:text-white transition-all hover:scale-110 shadow-sm">
-              <svg viewBox="0 0 24 24" className="w-8 h-8 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            {/* Email */}
+            <a href="mailto:support@infx.space" title="Connect with our Email" className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-700 hover:text-white transition-all hover:scale-110 shadow-sm">
+              <Mail className="w-8 h-8" />
             </a>
 
             {/* LinkedIn Company */}
@@ -542,17 +543,19 @@ export default function Home() {
       </section>
 
       {/* === FOOTER CALL TO ACTION === */}
-      <section className="py-20 bg-gradient-to-r from-blue-700 to-indigo-700 text-white text-center">
-        <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-4xl font-bold mb-6">
+      <section className="py-24 bg-slate-900 text-white relative overflow-hidden text-center">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-4xl bg-blue-600/20 blur-[120px] rounded-full pointer-events-none"></div>
+
+        <div className="relative z-10 max-w-4xl mx-auto px-6 flex flex-col items-center justify-center">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight">
             {t("Ready to Transform Your Future?", "هل أنت مستعد لتغيير مستقبلك؟", "Ready to Transform Your Future?")}
           </h2>
-          <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
             {t("Join the fastest growing tech community in the MENA region.", "انضم إلى المجتمع التقني الأسرع نمواً في الشرق الأوسط.", "Join the fastest growing tech community.")}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/courses">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-10 py-6 rounded-xl font-bold shadow-xl transition-transform hover:-translate-y-1">
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
+            <Link href="/courses" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-lg px-10 py-6 rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all hover:-translate-y-1">
                 {t("Browse All Courses", "تصفح جميع الكورسات", "Browse All Courses")}
               </Button>
             </Link>

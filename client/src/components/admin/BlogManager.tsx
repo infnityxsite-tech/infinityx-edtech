@@ -16,7 +16,7 @@ export default function BlogManager() {
     title: "",
     author: "",
     content: "",
-    summary: "",
+    excerpt: "",
     imageUrl: "",
   });
 
@@ -63,7 +63,7 @@ export default function BlogManager() {
       title: "",
       author: "",
       content: "",
-      summary: "",
+      excerpt: "",
       imageUrl: "",
     });
     setEditingId(null);
@@ -83,7 +83,7 @@ export default function BlogManager() {
   };
 
   const handleEdit = (post: any) => {
-    setFormData(post);
+    setFormData({ ...post, excerpt: post.excerpt ?? "" });
     setEditingId(post.id);
     setOpen(true);
   };
@@ -128,11 +128,11 @@ export default function BlogManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="summary">Summary</Label>
+                <Label htmlFor="excerpt">Summary</Label>
                 <Textarea
-                  id="summary"
-                  value={formData.summary}
-                  onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
+                  id="excerpt"
+                  value={formData.excerpt}
+                  onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
                   placeholder="Brief summary of the post"
                   rows={2}
                 />

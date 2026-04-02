@@ -8,7 +8,6 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../lib/firebase';
 import { registerDevice } from '../lib/firestore';
 
-<<<<<<< HEAD
 export const isMockFirebase = () => {
     const key = import.meta.env.VITE_FIREBASE_API_KEY || "dummy_api_key";
     return key === "dummy_api_key" || key === "your_api_key_here";
@@ -27,12 +26,6 @@ export const signInWithGoogle = async () => {
         
         return { uid: mockUid, email: mockEmail, displayName: "Mock Local Student", emailVerified: true };
     }
-=======
-
-
-export const signInWithGoogle = async () => {
-
->>>>>>> 78fe380 (final chamge student sign in)
 
     try {
         const result = await signInWithPopup(auth, googleProvider);
@@ -71,14 +64,10 @@ export const signInWithGoogle = async () => {
 };
 
 export const registerUser = async (email: string, pass: string, name: string) => {
-<<<<<<< HEAD
     if (isMockFirebase()) {
         console.warn("Using Mock Firebase Auth for Local Development");
         throw new Error("auth/requires-verification");
     }
-=======
-
->>>>>>> 78fe380 (final chamge student sign in)
 
     const result = await createUserWithEmailAndPassword(auth, email, pass);
     const user = result.user;
@@ -100,7 +89,6 @@ export const registerUser = async (email: string, pass: string, name: string) =>
 };
 
 export const loginUser = async (email: string, pass: string) => {
-<<<<<<< HEAD
     if (isMockFirebase()) {
         console.warn("Using Mock Firebase Auth for Local Development");
         
@@ -111,9 +99,6 @@ export const loginUser = async (email: string, pass: string) => {
         
         return { uid: mockUid, email: email, displayName: "Mock Local Student", emailVerified: true };
     }
-=======
-
->>>>>>> 78fe380 (final chamge student sign in)
 
     const result = await signInWithEmailAndPassword(auth, email, pass);
     const user = result.user;

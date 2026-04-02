@@ -136,7 +136,7 @@ export const contentEndpoints = {
     createBlogPost: protectedProcedure
         .input(z.object({
             title: z.string(), author: z.string(), content: z.string(),
-            excerpt: z.string().optional(), imageUrl: z.string().optional(),
+            excerpt: z.string().nullable().optional().transform(e => e === null ? "" : e), imageUrl: z.string().optional(),
             publishedAt: z.date().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
@@ -145,7 +145,7 @@ export const contentEndpoints = {
     updateBlogPost: protectedProcedure.input(z.object({
         id: z.union([z.string(), z.number()]).transform(String),
         title: z.string().optional(), author: z.string().optional(),
-        content: z.string().optional(), excerpt: z.string().optional(),
+        content: z.string().optional(), excerpt: z.string().nullable().optional().transform(e => e === null ? "" : e),
         imageUrl: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
         const { id, ...data } = input; await db.updateBlogPost(id, data); return { success: true };

@@ -30,6 +30,11 @@ export default function Blog() {
   const featuredPost = sortedPosts[0];
   const remainingPosts = sortedPosts.slice(1);
 
+  const stripHtml = (html: string | undefined | null) => {
+    if (!html) return "";
+    return html.replace(/<[^>]*>?/gm, '');
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       <Navigation />
@@ -127,7 +132,7 @@ export default function Blog() {
                       </h2>
 
                       <p className="text-slate-600 text-lg leading-relaxed mb-6 line-clamp-3">
-                        {featuredPost.excerpt || featuredPost.content?.substring(0, 200)}...
+                        {featuredPost.excerpt ? stripHtml(featuredPost.excerpt) : stripHtml(featuredPost.content)?.substring(0, 200)}...
                       </p>
 
                       <div className="flex items-center text-indigo-600 font-semibold group-hover:translate-x-1 transition-transform">
@@ -181,7 +186,7 @@ export default function Blog() {
 
                         <CardContent className="px-6 py-2 flex-1">
                           <p className="text-slate-600 text-sm line-clamp-3 leading-relaxed">
-                            {post.excerpt || post.content.substring(0, 120)}...
+                            {post.excerpt ? stripHtml(post.excerpt) : stripHtml(post.content).substring(0, 120)}...
                           </p>
                         </CardContent>
 
