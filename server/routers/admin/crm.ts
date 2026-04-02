@@ -15,6 +15,20 @@ export const crmEndpoints = {
             return { success: true };
         }),
 
+    deleteStudent: protectedProcedure
+        .input(z.object({ userId: z.string() }))
+        .mutation(async ({ input }) => {
+            await db.deleteStudent(input.userId);
+            return { success: true };
+        }),
+
+    updateStudentCourses: protectedProcedure
+        .input(z.object({ userId: z.string(), courseIds: z.array(z.string()) }))
+        .mutation(async ({ input }) => {
+            await db.updateStudentCourses(input.userId, input.courseIds);
+            return { success: true };
+        }),
+
     getAllStudents: protectedProcedure
         .query(() => db.getAllStudents()),
 

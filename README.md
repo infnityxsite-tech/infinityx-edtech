@@ -96,4 +96,4 @@ For production, ensure you have an admin user in the database with `role = 'admi
 
 ## Support
 
-For questions or issues, please contact: infnityx.site@gmail.com
+For questions or issues, please contact: support@infx.space

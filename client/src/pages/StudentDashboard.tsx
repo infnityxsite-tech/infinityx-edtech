@@ -4,27 +4,35 @@ import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, BookOpen, GraduationCap, Trophy, ChevronRight, Sparkles } from "lucide-react";
+import { Loader2, BookOpen, GraduationCap, Trophy, ChevronRight, Sparkles, Award, Calendar, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { EnrolledCourseCard } from "@/components/Cards/EnrolledCourseCard";
 import { AvailableCourseCard } from "@/components/Cards/AvailableCourseCard";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function StudentDashboard() {
     const [, navigate] = useLocation();
     const [studentId, setStudentId] = useState<string | null>(null);
     const [studentName, setStudentName] = useState<string>("");
+    const [studentEmail, setStudentEmail] = useState<string | null>(null);
+    const [authLoading, setAuthLoading] = useState(true);
 
     useEffect(() => {
-        const id = localStorage.getItem("studentId");
-        const name = localStorage.getItem("studentName") || "Student";
-        if (!id) {
-            toast.error("Please sign in to access your dashboard");
-            navigate("/login");
-            return;
-        }
-        setStudentId(id);
-        setStudentName(name);
-    }, []);
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setStudentId(user.uid);
+                setStudentName(user.displayName || user.email?.split('@')[0] || "Student");
+                setStudentEmail(user.email);
+            } else {
+                toast.error("Please sign in to access your dashboard");
+                navigate("/login");
+            }
+            setAuthLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [navigate]);
 
     const { data: enrolledCourses = [], isLoading: isLoadingEnrolled } = trpc.admin.getEnrolledCourses.useQuery(
         { userId: studentId! },
@@ -42,12 +50,17 @@ export default function StudentDashboard() {
 
     const { data: allCourses = [], isLoading: isLoadingAll } = trpc.admin.getCourses.useQuery();
 
+    const { data: myCertificates = [], isLoading: isLoadingCerts } = trpc.admin.getStudentCertificates.useQuery(
+        { email: studentEmail! },
+        { enabled: !!studentEmail }
+    );
+
     // Available courses (not enrolled)
     const availableCourses = (allCourses as any[]).filter(
         (c: any) => !(enrolledCourses as any[]).some((e: any) => e.id === c.id)
     );
 
-    const isLoading = isLoadingEnrolled || isLoadingAll;
+    const isLoading = isLoadingEnrolled || isLoadingAll || authLoading || (!!studentEmail && isLoadingCerts);
 
     const hour = new Date().getHours();
     const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -131,6 +144,49 @@ export default function StudentDashboard() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {availableCourses.slice(0, 6).map((course: any) => (
                                         <AvailableCourseCard key={course.id} course={course} studentId={studentId!} />
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+                        
+                        {/* MY CERTIFICATES - شهاداتي */}
+                        {myCertificates && (myCertificates as any[]).length > 0 && (
+                            <section className="mt-16 border-t border-slate-200 pt-16">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                                        <Award className="w-6 h-6 text-indigo-600" />
+                                        شهاداتي (My Certificates)
+                                    </h2>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {(myCertificates as any[]).map((cert: any) => (
+                                        <Card key={cert.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                                            <CardContent className="p-6">
+                                                <div className="flex items-start gap-4">
+                                                    <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center flex-shrink-0">
+                                                        <Award className="w-6 h-6 text-indigo-600" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h3 className="font-bold text-lg text-slate-900 line-clamp-1">{cert.courseName}</h3>
+                                                        <p className="text-sm font-medium text-slate-500 mb-3">{cert.studentName}</p>
+                                                        <div className="flex flex-wrap gap-2 text-xs font-medium text-slate-500 mb-4">
+                                                            <span className="flex items-center gap-1 bg-slate-50 border border-slate-100 px-2 py-1 rounded-md">
+                                                                <Calendar className="w-3.5 h-3.5" />
+                                                                {new Date(cert.issueDate).toLocaleDateString()}
+                                                            </span>
+                                                            <span className="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-1 rounded-md font-mono">
+                                                                {cert.certId}
+                                                            </span>
+                                                        </div>
+                                                        <Button asChild variant="outline" className="w-full sm:w-auto text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+                                                            <a href={`/certificates/${cert.certId}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                                                                <LinkIcon className="w-4 h-4" /> View Certificate
+                                                            </a>
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
                                     ))}
                                 </div>
                             </section>

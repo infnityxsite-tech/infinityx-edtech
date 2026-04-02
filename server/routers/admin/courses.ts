@@ -173,6 +173,13 @@ export const coursesEndpoints = {
     // CERTIFICATES
     getCertificates: protectedProcedure.query(() => db.getCertificates()),
 
+    getStudentCertificates: publicProcedure
+        .input(z.object({ email: z.string() }))
+        .query(async ({ input }) => {
+            const allCerts = await db.getCertificates();
+            return allCerts.filter(c => c.studentEmail === input.email);
+        }),
+
     getCertificateByCertId: publicProcedure
         .input(z.object({ certId: z.string() }))
         .query(({ input }) => db.getCertificateByCertId(input.certId)),
@@ -181,6 +188,7 @@ export const coursesEndpoints = {
         .input(
             z.object({
                 studentName: z.string(),
+                studentEmail: z.string().optional(),
                 courseName: z.string(),
                 duration: z.string().optional(),
                 issueDate: z.union([z.string(), z.date()]).optional(),
@@ -192,6 +200,7 @@ export const coursesEndpoints = {
                 : new Date();
             return await db.createCertificate({
                 studentName: input.studentName,
+                studentEmail: input.studentEmail,
                 courseName: input.courseName,
                 duration: input.duration,
                 issueDate: issueDate

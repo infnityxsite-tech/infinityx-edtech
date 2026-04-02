@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import {
     Card,
@@ -19,11 +19,14 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function CertificatesManager() {
     const [isOpen, setIsOpen] = useState(false);
     const [formData, setFormData] = useState({
         studentName: "",
+        studentEmail: "",
         courseName: "",
         duration: "",
         issueDate: new Date().toISOString().split('T')[0],
@@ -31,6 +34,20 @@ export default function CertificatesManager() {
 
     const utils = trpc.useUtils();
     const { data: certificates = [], isLoading } = trpc.admin.getCertificates.useQuery();
+    const [allStudents, setAllStudents] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchStudents = async () => {
+            try {
+                const snapshot = await getDocs(collection(db, 'students'));
+                const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setAllStudents(data);
+            } catch (error) {
+                console.error("Failed to fetch students for certificates", error);
+            }
+        };
+        fetchStudents();
+    }, []);
 
     const createMutation = trpc.admin.createCertificate.useMutation({
         onSuccess: (data) => {
@@ -38,6 +55,7 @@ export default function CertificatesManager() {
             setIsOpen(false);
             setFormData({
                 studentName: "",
+                studentEmail: "",
                 courseName: "",
                 duration: "",
                 issueDate: new Date().toISOString().split('T')[0],
@@ -89,14 +107,29 @@ export default function CertificatesManager() {
                         </DialogHeader>
                         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                             <div className="space-y-2">
-                                <Label htmlFor="studentName">Student Full Name</Label>
-                                <Input
-                                    id="studentName"
-                                    value={formData.studentName}
-                                    onChange={(e) => setFormData({ ...formData, studentName: e.target.value })}
-                                    placeholder="e.g. John Doe"
+                                <Label htmlFor="studentSelect">Select Student *</Label>
+                                <select
+                                    id="studentSelect"
+                                    className="w-full h-10 px-3 py-2 border border-slate-200 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
+                                    value={formData.studentEmail}
+                                    onChange={(e) => {
+                                        const email = e.target.value;
+                                        const student = (allStudents as any[]).find((s) => s.email === email);
+                                        if (student) {
+                                            setFormData({ ...formData, studentEmail: student.email, studentName: student.name });
+                                        } else {
+                                            setFormData({ ...formData, studentEmail: "", studentName: "" });
+                                        }
+                                    }}
                                     required
-                                />
+                                >
+                                    <option value="">-- Choose a registered student --</option>
+                                    {(allStudents as any[]).map((s) => (
+                                        <option key={s.id} value={s.email}>
+                                            {s.name} ({s.email})
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="courseName">Course Name</Label>

@@ -59,7 +59,7 @@ export default function Contact() {
   };
 
   const siteInfo = {
-    email: "infnityx.site@gmail.com",
+    email: "support@infx.space",
     phone: "+20 110 013 5225",
     whatsapp: "https://wa.me/qr/DPIFTRQ4NI3VP1",
     location: "Cairo, Egypt",

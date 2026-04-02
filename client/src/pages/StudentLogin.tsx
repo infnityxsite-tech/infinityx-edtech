@@ -53,7 +53,11 @@ export default function StudentLogin() {
             await registerUser(email, password, name);
         } catch (error: any) {
             if (error.message === "auth/requires-verification" || error.message?.includes("requires-verification")) {
+<<<<<<< HEAD
                 toast.success("Registration successful! Please check your email to verify your account before logging in.");
+=======
+                toast.success("تم التسجيل بنجاح! أرسلنا رابط التفعيل لبريدك. يرجى فحص صندوق الوارد ومجلد الرسائل غير المرغوب فيها (Spam/Junk).");
+>>>>>>> 78fe380 (final chamge student sign in)
                 setIsLogin(true); // Automatically switch user to login view
                 setPassword(""); // Clear password field for security
             } else {
@@ -78,7 +82,11 @@ export default function StudentLogin() {
             navigate("/dashboard");
         } catch (error: any) {
             if (error.message === "Please verify your email before logging in." || error.message?.includes("email before logging")) {
+<<<<<<< HEAD
                 toast.error("Please verify your email inbox/spam folder before logging in.");
+=======
+                toast.error("حسابك غير مفعل بعد. يرجى مراجعة بريدك الإلكتروني (بما في ذلك مجلد Spam) والضغط على رابط التفعيل.");
+>>>>>>> 78fe380 (final chamge student sign in)
             }
             else if (error.message?.includes("device limit reached") || error.message?.includes("Maximum device limit")) {
                 toast.error("Security Error: Maximum device limit reached (2 devices).");

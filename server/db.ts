@@ -502,6 +502,30 @@ export async function clearUserDevices(userId: string) {
   await query(`DELETE FROM device_sessions WHERE student_id = $1`, [userId]);
 }
 
+export async function deleteStudent(userId: string) {
+  await query(`DELETE FROM users WHERE id = $1`, [userId]);
+}
+
+export async function updateStudentCourses(userId: string, courseIds: string[]) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(`DELETE FROM enrollments WHERE student_id = $1`, [userId]);
+    for (const courseId of courseIds) {
+      await client.query(
+        `INSERT INTO enrollments (student_id, course_id) VALUES ($1, $2)`,
+        [userId, courseId]
+      );
+    }
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 export async function getAllStudents() {
   return await queryMany<any>(
     `SELECT id, name, email, created_at as "createdAt"
@@ -842,6 +866,7 @@ export interface Certificate {
   id: string;
   certId: string;
   studentName: string;
+  studentEmail?: string | null;
   courseName: string;
   duration?: string | null;
   issueDate: Date;
@@ -853,7 +878,7 @@ export type InsertCertificate = Omit<Certificate, "id" | "certId" | "createdAt" 
 
 export async function getCertificates(): Promise<Certificate[]> {
   return await queryMany<any>(
-    `SELECT id, cert_id as "certId", student_name as "studentName", 
+    `SELECT id, cert_id as "certId", student_name as "studentName", student_email as "studentEmail",
             course_name as "courseName", duration, issue_date as "issueDate",
             created_at as "createdAt", updated_at as "updatedAt"
      FROM certificates ORDER BY issue_date DESC`
@@ -862,7 +887,7 @@ export async function getCertificates(): Promise<Certificate[]> {
 
 export async function getCertificateByCertId(certId: string): Promise<Certificate | undefined> {
   const result = await queryOne<any>(
-    `SELECT id, cert_id as "certId", student_name as "studentName", 
+    `SELECT id, cert_id as "certId", student_name as "studentName", student_email as "studentEmail",
             course_name as "courseName", duration, issue_date as "issueDate",
             created_at as "createdAt", updated_at as "updatedAt"
      FROM certificates WHERE cert_id = $1`,
@@ -887,12 +912,12 @@ export async function createCertificate(certificate: InsertCertificate): Promise
 
     try {
       const inserted = await queryOne<any>(
-        `INSERT INTO certificates (cert_id, student_name, course_name, duration, issue_date)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, cert_id as "certId", student_name as "studentName", 
+        `INSERT INTO certificates (cert_id, student_name, student_email, course_name, duration, issue_date)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING id, cert_id as "certId", student_name as "studentName", student_email as "studentEmail",
                    course_name as "courseName", duration, issue_date as "issueDate",
                    created_at as "createdAt", updated_at as "updatedAt"`,
-        [certId, certificate.studentName, certificate.courseName, certificate.duration, certificate.issueDate || new Date()]
+        [certId, certificate.studentName, certificate.studentEmail || null, certificate.courseName, certificate.duration, certificate.issueDate || new Date()]
       );
       return inserted!;
     } catch (error: any) {

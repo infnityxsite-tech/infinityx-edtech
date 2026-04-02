@@ -196,8 +196,8 @@ export default function Programs() {
             <p className="text-slate-400 text-sm">Empowering the Future.</p>
           </div>
           <div className="text-slate-400 text-sm">
-             <p>infnityx.site@gmail.com</p>
-             <p>+20 109 036 4947</p>
+             <p>support@infx.space</p>
+             <p>+20 110 013 5225</p>
           </div>
           <p className="text-slate-500 text-xs">
             &copy; {new Date().getFullYear()} InfinityX. All rights reserved.
