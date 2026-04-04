@@ -54,7 +54,7 @@ export const coursesEndpoints = {
         }),
 
     getCourseComplete: publicProcedure
-        .input(z.object({ id: z.string() }))
+        .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
         .query(({ input }) => db.getCourseComplete(input.id)),
 
     updateCourseComplete: protectedProcedure

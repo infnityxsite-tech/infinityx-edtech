@@ -99,8 +99,43 @@ CREATE TABLE IF NOT EXISTS programs (
   duration VARCHAR(100),
   skills TEXT,                 -- Comma-separated skills (e.g. "React, Node")
   category VARCHAR(50) DEFAULT 'other', -- e.g. "space", "ai", "software"
+  price_egp DECIMAL(10, 2) DEFAULT 0,
+  price_usd DECIMAL(10, 2) DEFAULT 0,
+  delivery_mode VARCHAR(50) DEFAULT 'Recorded', -- Live or Recorded
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- PROGRAM MODULES TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS program_modules (
+  id SERIAL PRIMARY KEY,
+  program_id INTEGER REFERENCES programs(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  duration VARCHAR(100),
+  image_url TEXT,
+  links TEXT,                  -- JSON or comma-separated resource links
+  order_index INTEGER DEFAULT 0,
+  delivery_mode VARCHAR(50) DEFAULT 'Recorded',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER update_program_modules_updated_at BEFORE UPDATE ON program_modules FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- PROGRAM MODULE ↔ COURSES JUNCTION TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS program_module_courses (
+  id SERIAL PRIMARY KEY,
+  program_module_id INTEGER REFERENCES program_modules(id) ON DELETE CASCADE,
+  course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+  override_price_egp DECIMAL(10, 2),
+  override_price_usd DECIMAL(10, 2),
+  order_index INTEGER DEFAULT 0,
+  UNIQUE(program_module_id, course_id)
 );
 
 -- ============================================
@@ -162,6 +197,43 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'programs' AND column_name = 'category') THEN
         ALTER TABLE programs ADD COLUMN category VARCHAR(50) DEFAULT 'other';
     END IF;
+
+    -- 4. Add pricing and delivery_mode to programs
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'programs' AND column_name = 'price_egp') THEN
+        ALTER TABLE programs ADD COLUMN price_egp DECIMAL(10, 2) DEFAULT 0;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'programs' AND column_name = 'price_usd') THEN
+        ALTER TABLE programs ADD COLUMN price_usd DECIMAL(10, 2) DEFAULT 0;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'programs' AND column_name = 'delivery_mode') THEN
+        ALTER TABLE programs ADD COLUMN delivery_mode VARCHAR(50) DEFAULT 'Recorded';
+    END IF;
+
+    -- 5. Create program_modules table if not exists
+    CREATE TABLE IF NOT EXISTS program_modules (
+      id SERIAL PRIMARY KEY,
+      program_id INTEGER REFERENCES programs(id) ON DELETE CASCADE,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      duration VARCHAR(100),
+      image_url TEXT,
+      links TEXT,
+      order_index INTEGER DEFAULT 0,
+      delivery_mode VARCHAR(50) DEFAULT 'Recorded',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- 6. Create program_module_courses junction table if not exists
+    CREATE TABLE IF NOT EXISTS program_module_courses (
+      id SERIAL PRIMARY KEY,
+      program_module_id INTEGER REFERENCES program_modules(id) ON DELETE CASCADE,
+      course_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+      override_price_egp DECIMAL(10, 2),
+      override_price_usd DECIMAL(10, 2),
+      order_index INTEGER DEFAULT 0,
+      UNIQUE(program_module_id, course_id)
+    );
 END $$;
 
 -- ============================================

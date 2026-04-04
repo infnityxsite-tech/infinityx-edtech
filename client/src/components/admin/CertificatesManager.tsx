@@ -132,6 +132,17 @@ export default function CertificatesManager() {
                                 </select>
                             </div>
                             <div className="space-y-2">
+                                <Label htmlFor="nameOnCert">Name on Certificate *</Label>
+                                <Input
+                                    id="nameOnCert"
+                                    value={formData.studentName}
+                                    onChange={(e) => setFormData({ ...formData, studentName: e.target.value })}
+                                    placeholder="Exact name to print on the certificate"
+                                    required
+                                />
+                                <p className="text-xs text-slate-400">Auto-filled from student profile. Edit to override.</p>
+                            </div>
+                            <div className="space-y-2">
                                 <Label htmlFor="courseName">Course Name</Label>
                                 <Input
                                     id="courseName"

@@ -39,6 +39,10 @@ export const contentEndpoints = {
     // PROGRAMS
     getPrograms: publicProcedure.query(() => db.getPrograms()),
 
+    getProgramComplete: publicProcedure
+        .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
+        .query(({ input }) => db.getProgramComplete(input.id)),
+
     createProgram: protectedProcedure
         .input(
             z.object({
@@ -50,11 +54,20 @@ export const contentEndpoints = {
                 duration: z.string().optional(),
                 skills: z.string().optional(),
                 category: z.string().default("space"),
+                priceEgp: z.number().default(0),
+                priceUsd: z.number().default(0),
+                deliveryMode: z.string().default("Recorded"),
             })
         )
         .mutation(async ({ ctx, input }) => {
             // @ts-ignore
             return await db.createProgram(input);
+        }),
+
+    createProgramComplete: protectedProcedure
+        .input(z.object({ info: z.any(), modules: z.array(z.any()) }))
+        .mutation(async ({ input }) => {
+            return await db.createProgramComplete(input.info, input.modules);
         }),
 
     updateProgram: protectedProcedure
@@ -69,12 +82,21 @@ export const contentEndpoints = {
                 duration: z.string().optional(),
                 skills: z.string().optional(),
                 category: z.string().optional(),
+                priceEgp: z.number().optional(),
+                priceUsd: z.number().optional(),
+                deliveryMode: z.string().optional(),
             })
         )
         .mutation(async ({ ctx, input }) => {
             const { id, ...data } = input;
             await db.updateProgram(id, data);
             return { success: true };
+        }),
+
+    updateProgramComplete: protectedProcedure
+        .input(z.object({ id: z.union([z.string(), z.number()]).transform(String), info: z.any(), modules: z.array(z.any()) }))
+        .mutation(async ({ input }) => {
+            return await db.updateProgramComplete(input.id, input.info, input.modules);
         }),
 
     deleteProgram: protectedProcedure

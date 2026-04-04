@@ -1,159 +1,218 @@
 import { useState } from "react";
-import { useRoute } from "wouter"; // Get the category from URL
+import { useRoute, Link } from "wouter";
 import Navigation from "@/components/Navigation";
+import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
 import {
-  Rocket, Brain, Code, Shield, CheckCircle,
-  ArrowRight, Globe, Database, Terminal, Satellite
+  Rocket, Brain, Code, Shield, ArrowRight, BookOpen, Clock, Wifi, Video,
+  ChevronDown, ChevronRight, Loader2, Layers
 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-// === DATA: THE CONTENT FOR EACH SCHOOL ===
-const schoolData: any = {
+// === SCHOOL META ===
+const schoolMeta: Record<string, { title: string; titleAr: string; description: string; color: string; icon: any; gradient: string }> = {
   space: {
     title: "School of Space Technology",
-    title_ar: "مدرسة تكنولوجيا الفضاء",
+    titleAr: "مدرسة تكنولوجيا الفضاء",
     description: "The region's premier program for Autonomous Systems, Satellite Data Analysis, and Earth Observation AI.",
-    heroImage: "/uploads/Gemini_Generated_Image_3p3go53p3go53p3g.png", // Use your specific space image
-    color: "blue",
-    icon: <Rocket className="w-16 h-16 text-blue-400" />,
-    tracks: [
-      "Autonomous Systems & Analytics",
-      "Satellite Image Processing (CNNs)",
-      "Deep Learning for Sensing",
-      "Python for Industrial Applications"
-    ]
+    color: "blue", icon: Rocket, gradient: "from-blue-600 to-cyan-500",
   },
   ai: {
     title: "School of AI & Data Science",
-    title_ar: "مدرسة الذكاء الاصطناعي وعلوم البيانات",
+    titleAr: "مدرسة الذكاء الاصطناعي وعلوم البيانات",
     description: "Master the algorithms shaping the future. From Computer Vision to Predictive Analytics and Large Language Models.",
-    heroImage: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=1200",
-    color: "green",
-    icon: <Brain className="w-16 h-16 text-green-400" />,
-    tracks: [
-      "Deep Learning with TensorFlow",
-      "Computer Vision & Object Detection",
-      "Natural Language Processing (NLP)",
-      "Generative AI & LLMs"
-    ]
+    color: "green", icon: Brain, gradient: "from-emerald-600 to-teal-500",
   },
   software: {
     title: "School of Software Engineering",
-    title_ar: "مدرسة هندسة البرمجيات",
+    titleAr: "مدرسة هندسة البرمجيات",
     description: "Build scalable, robust systems. Full-stack development with a focus on cloud architecture and microservices.",
-    heroImage: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200",
-    color: "purple",
-    icon: <Code className="w-16 h-16 text-purple-400" />,
-    tracks: [
-      "Advanced React & Next.js",
-      "Backend Microservices (Node/Go)",
-      "Cloud Infrastructure (AWS/Docker)",
-      "System Design & Architecture"
-    ]
+    color: "purple", icon: Code, gradient: "from-purple-600 to-indigo-500",
   },
   security: {
     title: "School of Cybersecurity",
-    title_ar: "مدرسة الأمن السيبراني",
+    titleAr: "مدرسة الأمن السيبراني",
     description: "Defend against the threats of tomorrow. Ethical hacking, penetration testing, and SOC analysis.",
-    heroImage: "https://images.unsplash.com/photo-1563206767-5b1d97289374?auto=format&fit=crop&q=80&w=1200",
-    color: "red",
-    icon: <Shield className="w-16 h-16 text-red-400" />,
-    tracks: [
-      "Ethical Hacking & Penetration Testing",
-      "SOC Analysis & Incident Response",
-      "Network Security Defense",
-      "Cryptography Fundamentals"
-    ]
-  }
+    color: "red", icon: Shield, gradient: "from-red-600 to-rose-500",
+  },
 };
 
 export default function SchoolLanding() {
-  // 1. Get the "category" from the URL (e.g., "space", "ai")
-  const [match, params] = useRoute("/programs/:category");
+  const [, params] = useRoute("/programs/:category");
   const category = params?.category || "space";
-  const data = schoolData[category] || schoolData.space; // Fallback to space if not found
+  const meta = schoolMeta[category] || schoolMeta.space;
+  const IconComponent = meta.icon;
 
-  const [lang, setLang] = useState<'en' | 'ar'>('en');
-  const isRTL = lang === 'ar';
+  const { lang, isRTL, t: _t } = useLanguage();
+  const t = (en: string, ar: string) => _t(en, ar, en);
 
-  const t = (en: string, ar: string) => (lang === 'ar' ? ar : en);
+  const { data: allPrograms = [], isLoading } = trpc.admin.getPrograms.useQuery();
+  const programs = (allPrograms as any[]).filter((p: any) => p.category === category);
+
+  const [expandedProgram, setExpandedProgram] = useState<string | null>(null);
 
   return (
-    <div className={`min-h-screen bg-slate-50 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`min-h-screen bg-[#0a0e1a] text-white ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <Navigation />
 
-      {/* LANGUAGE TOGGLE */}
-      <div className={`fixed top-24 ${isRTL ? 'left-6' : 'right-6'} z-50`}>
-        <Button
-          onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-          className="shadow-xl bg-white text-slate-800 hover:bg-slate-100 border border-slate-200 rounded-full px-4 py-2 flex items-center gap-2"
-        >
-          <Globe className="w-4 h-4" />
-          {lang === 'en' ? 'العربية' : 'English'}
-        </Button>
-      </div>
+      {/* === HERO === */}
+      <section className="relative pt-32 pb-20 overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none"
+          style={{ backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br ${meta.gradient} opacity-[0.08] blur-[120px] rounded-full pointer-events-none`} />
 
-      {/* === HERO SECTION === */}
-      <section className="relative bg-slate-900 text-white py-32 overflow-hidden">
-        {/* Dynamic Background Image */}
-        <div
-          className="absolute inset-0 opacity-20 bg-cover bg-center"
-          style={{ backgroundImage: `url(${data.heroImage})` }}
-        ></div>
-        <div className={`absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/90 to-slate-900`}></div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
-          <div className="flex justify-center mb-6 animate-pulse-slow">
-            {data.icon}
+        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+          <div className={`w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br ${meta.gradient} flex items-center justify-center shadow-lg`}>
+            <IconComponent className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
-            {t(data.title, data.title_ar || data.title)}
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4">
+            {t(meta.title, meta.titleAr)}
           </h1>
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-            {data.description}
+          <p className="text-slate-400 text-sm md:text-lg max-w-3xl mx-auto leading-relaxed">
+            {meta.description}
           </p>
         </div>
       </section>
 
-      {/* === CURRICULUM TRACKS === */}
-      <section className="py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-slate-900">
-              {t("Core Curriculum", "المنهج الدراسي الأساسي")}
-            </h2>
-            <p className="text-slate-500 mt-2">{t("What you will master in this school", "ما ستتقنه في هذه المدرسة")}</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {data.tracks.map((track: string, idx: number) => (
-              <div key={idx} className="flex items-start p-6 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
-                <CheckCircle className={`w-6 h-6 mr-4 mt-1 text-${data.color}-500`} />
-                <div>
-                  <h3 className="font-bold text-lg text-slate-900">{track}</h3>
-                  <p className="text-sm text-slate-500 mt-1">
-                    {t("Comprehensive module with hands-on projects and labs.", "وحدة شاملة مع مشاريع عملية ومختبرات.")}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* === CTA SECTION === */}
-      <section className="py-20 bg-slate-900 text-white text-center">
+      {/* === PROGRAMS ROADMAP === */}
+      <section className="pb-24">
         <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-6">
-            {t("Ready to Join?", "هل أنت مستعد للانضمام؟")}
-          </h2>
-          <p className="text-slate-400 mb-8">
-            {t("Applications are open. Secure your spot in the next cohort.", "باب التقديم مفتوح. احجز مقعدك في الدفعة القادمة.")}
-          </p>
+          <div className="text-center mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">
+              {t("Learning Paths", "مسارات التعلم")}
+            </h2>
+            <p className="text-slate-500 text-sm">{t("Structured programs designed to take you from beginner to expert.", "برامج منظمة لأخذك من المبتدئ إلى الخبير.")}</p>
+          </div>
+
+          {isLoading ? (
+            <div className="text-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-slate-500 mx-auto mb-3" />
+              <p className="text-slate-500">Loading programs...</p>
+            </div>
+          ) : programs.length === 0 ? (
+            <div className="text-center py-20 border border-dashed border-slate-700 rounded-2xl bg-slate-900/50">
+              <Layers className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-slate-400 mb-1">{t("No Programs Yet", "لا يوجد برامج بعد")}</h3>
+              <p className="text-sm text-slate-600">{t("Programs for this school are coming soon.", "برامج هذه المدرسة قادمة قريباً.")}</p>
+            </div>
+          ) : (
+            <div className="relative">
+              {/* Timeline line */}
+              <div className="absolute left-6 md:left-8 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-slate-700 to-transparent" />
+
+              <div className="space-y-6">
+                {programs.map((program: any, idx: number) => {
+                  const isExpanded = expandedProgram === String(program.id);
+                  const priceEgp = Number(program.priceEgp);
+                  const priceUsd = Number(program.priceUsd);
+                  const skills = program.skills ? program.skills.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+
+                  return (
+                    <div key={program.id} className="relative pl-16 md:pl-20">
+                      {/* Timeline node */}
+                      <div className={`absolute left-4 md:left-6 w-4 h-4 rounded-full border-2 border-slate-600 bg-slate-900 top-6 z-10 
+                        ${isExpanded ? `bg-gradient-to-br ${meta.gradient} border-transparent shadow-lg` : ""}`} />
+                      {/* Step number */}
+                      <span className="absolute left-0 md:left-1 top-5 text-[10px] font-bold text-slate-600">{String(idx + 1).padStart(2, '0')}</span>
+
+                      <div className={`bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden transition-all duration-300 backdrop-blur-sm
+                        ${isExpanded ? "border-slate-600/80 shadow-lg" : "hover:border-slate-600/50"}`}>
+
+                        {/* Header */}
+                        <button
+                          onClick={() => setExpandedProgram(isExpanded ? null : String(program.id))}
+                          className="w-full text-left p-5 md:p-6 flex items-start gap-4"
+                        >
+                          {program.imageUrl ? (
+                            <img src={program.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-slate-700" />
+                          ) : (
+                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${meta.gradient} flex items-center justify-center flex-shrink-0 opacity-60`}>
+                              <BookOpen className="w-5 h-5 text-white" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base md:text-lg font-bold text-white mb-1 group-hover:text-white/90">{program.title}</h3>
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                              {program.duration && <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {program.duration}</span>}
+                              {program.deliveryMode && <span className="flex items-center gap-1">
+                                {program.deliveryMode === 'Live' ? <Wifi className="w-3 h-3" /> : <Video className="w-3 h-3" />}
+                                {program.deliveryMode}
+                              </span>}
+                              {priceEgp > 0 && <span className="text-emerald-400 font-semibold">{priceEgp.toLocaleString()} EGP</span>}
+                              {priceUsd > 0 && <span className="text-emerald-400 font-semibold">${priceUsd.toLocaleString()}</span>}
+                              {priceEgp === 0 && priceUsd === 0 && <span className="text-emerald-400 font-semibold">Free</span>}
+                            </div>
+                            {program.description && (
+                              <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed">{program.description}</p>
+                            )}
+                          </div>
+                          <div className="flex-shrink-0 mt-1">
+                            {isExpanded ? <ChevronDown className="w-5 h-5 text-slate-500" /> : <ChevronRight className="w-5 h-5 text-slate-500" />}
+                          </div>
+                        </button>
+
+                        {/* Expanded Details */}
+                        {isExpanded && (
+                          <div className="border-t border-slate-700/50 px-5 md:px-6 pb-5 md:pb-6 pt-4">
+                            {/* Skills */}
+                            {skills.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 mb-4">
+                                {skills.map((skill: string, i: number) => (
+                                  <span key={i} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300 border border-slate-600/50">
+                                    {skill}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Pricing breakdown */}
+                            <div className="bg-slate-900/60 rounded-xl p-4 mb-4 border border-slate-700/30">
+                              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Pricing</h4>
+                              <div className="flex items-baseline gap-4">
+                                {priceEgp > 0 && (
+                                  <div>
+                                    <span className="text-2xl font-extrabold text-white">{priceEgp.toLocaleString()}</span>
+                                    <span className="text-xs text-slate-500 ml-1">EGP</span>
+                                  </div>
+                                )}
+                                {priceUsd > 0 && (
+                                  <div>
+                                    <span className="text-2xl font-extrabold text-white">${priceUsd.toLocaleString()}</span>
+                                    <span className="text-xs text-slate-500 ml-1">USD</span>
+                                  </div>
+                                )}
+                                {priceEgp === 0 && priceUsd === 0 && (
+                                  <span className="text-2xl font-extrabold text-emerald-400">Free</span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* CTA */}
+                            <Link href={`/apply?programName=${encodeURIComponent(program.title)}`}>
+                              <Button className={`w-full bg-gradient-to-r ${meta.gradient} text-white h-10 font-semibold text-sm rounded-xl shadow-sm`}>
+                                {t("Apply Now", "قدّم الآن")} <ArrowRight className="ml-2 w-4 h-4" />
+                              </Button>
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* === CTA === */}
+      <section className="py-16 border-t border-slate-800">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3">{t("Ready to Begin?", "مستعد للبدء؟")}</h2>
+          <p className="text-slate-500 text-sm mb-6">{t("Applications are open. Secure your spot in the next cohort.", "باب التقديم مفتوح. احجز مقعدك.")}</p>
           <Link href="/programs">
-            <Button size="lg" className={`bg-${data.color}-600 hover:bg-${data.color}-700 text-white px-10 py-6 text-lg`}>
-              {t("View Available Batches", "عرض الدفعات المتاحة")} <ArrowRight className="ml-2" />
+            <Button className={`bg-gradient-to-r ${meta.gradient} text-white px-8 py-5 text-sm font-semibold rounded-xl`}>
+              {t("View All Programs", "عرض كل البرامج")} <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </Link>
         </div>

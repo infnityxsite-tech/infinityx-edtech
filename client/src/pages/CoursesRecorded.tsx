@@ -5,12 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Search, Globe, Video } from "lucide-react";
 import { useStudentAuth } from "@/hooks/useStudentAuth";
 import { CourseCard } from "@/components/Cards/CourseCard";
+import Footer from "@/components/Footer";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function CoursesRecorded() {
     const { data: allCourses = [], isLoading } = trpc.admin.getCourses.useQuery();
     const [currency, setCurrency] = useState<"EGP" | "USD">("EGP");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All");
+    const { t, isRTL } = useLanguage();
+    const { theme } = useTheme();
+    const isLight = theme === 'light';
 
     const recordedOnly = (allCourses as any[]).filter((c: any) => c.courseType !== "Live");
 
@@ -31,47 +37,47 @@ export default function CoursesRecorded() {
     const enrolledIds = new Set((enrolledCourses as any[]).map(c => c.id));
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+        <div className={`min-h-screen font-sans ${isLight ? 'bg-[#f0f4f8] text-slate-900' : 'bg-[#0a0e1a] text-white'}`} dir={isRTL ? 'rtl' : 'ltr'}>
             <Navigation />
 
             {/* HEADER */}
-            <section className="relative bg-[#0b1120] text-white pt-36 pb-20 overflow-hidden">
-                <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            <section className={`relative pt-36 pb-20 overflow-hidden ${isLight ? '' : 'bg-[#0b1120] text-white'}`}>
+                <div className={`absolute inset-0 pointer-events-none ${isLight ? 'opacity-10' : 'opacity-20'}`} style={{ backgroundImage: `linear-gradient(${isLight ? '#94a3b8' : '#334155'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#94a3b8' : '#334155'} 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl bg-indigo-600/20 blur-[120px] rounded-full pointer-events-none" />
 
                 <div className="relative max-w-7xl mx-auto px-6 flex flex-col items-center text-center z-10">
                     <div className="w-16 h-16 bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-6 text-indigo-400 shadow-inner border border-indigo-500/30">
                         <Video className="w-8 h-8 drop-shadow-md" />
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 drop-shadow-sm">
-                        Recorded Courses
+                    <h1 className={`text-4xl md:text-6xl font-extrabold tracking-tight mb-6 drop-shadow-sm ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                        {t("Recorded Courses", "الدورات المسجلة", "Recorded Courses")}
                     </h1>
-                    <p className="text-slate-300 text-lg md:text-xl max-w-2xl mx-auto font-light mb-10 leading-relaxed">
-                        Self-paced, high-quality video lessons. Learn anytime, anywhere, at your own rhythm.
+                    <p className={`text-lg md:text-xl max-w-2xl mx-auto font-light mb-10 leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                        {t("Self-paced, high-quality video lessons. Learn anytime, anywhere, at your own rhythm.", "دروس فيديو عالية الجودة بالسرعة التي تناسبك. تعلم في أي وقت ومكان.", "Self-paced video lessons.")}
                     </p>
 
                     <div className="w-full max-w-2xl relative group">
                         <Search className="h-6 w-6 text-slate-400 absolute left-4 top-4 pointer-events-none group-focus-within:text-indigo-400 transition-colors" />
                         <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                            className="block w-full pl-14 pr-6 py-4 border border-slate-700/50 rounded-2xl bg-white/5 text-slate-100 placeholder-slate-400 focus:outline-none focus:bg-white/10 focus:ring-2 focus:ring-indigo-500/60 backdrop-blur-md shadow-2xl transition-all text-lg"
-                            placeholder="Find your next course..." />
+                            className={`block w-full pl-14 pr-6 py-4 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/60 backdrop-blur-md shadow-2xl transition-all text-lg ${isLight ? 'bg-white/80 border-slate-200 text-slate-900 placeholder-slate-500 focus:bg-white' : 'border-slate-700/50 bg-white/5 text-slate-100 placeholder-slate-400 focus:bg-white/10'}`}
+                            placeholder={t("Find your next course...", "ابحث عن دورتك القادمة...", "Search...")} />
                     </div>
                 </div>
             </section>
 
             {/* FILTERS */}
-            <section className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200/80 shadow-sm">
-                <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <section className={`sticky top-0 z-40 backdrop-blur-xl border-b ${isLight ? 'bg-white/80 border-slate-200' : 'bg-[#0d1225]/90 border-slate-700/40'}`}>
+                <div className="max-w-7xl mx-auto px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <select value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}
-                        className="w-full sm:w-auto text-sm font-medium border border-slate-200 rounded-xl px-4 py-2.5 bg-white text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 hover:border-indigo-300 transition-all cursor-pointer">
+                        className={`w-full sm:w-auto text-sm font-medium border rounded-xl px-4 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 hover:border-indigo-500/40 transition-all cursor-pointer ${isLight ? 'bg-white border-slate-200 text-slate-700' : 'border-slate-700/50 bg-slate-800/80 text-slate-300'}`}>
                         {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
 
-                    <div className="flex bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/50 shadow-inner">
+                    <div className={`flex p-1 rounded-xl border ${isLight ? 'bg-slate-100/80 border-slate-200' : 'bg-slate-800/60 border-slate-700/40'}`}>
                         {(["EGP", "USD"] as const).map(cur => (
                             <button key={cur} onClick={() => setCurrency(cur)}
                                 className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all
-                  ${currency === cur ? "bg-white text-indigo-700 shadow border border-slate-200/50" : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"}`}>
+                  ${currency === cur ? "bg-indigo-500/20 text-indigo-500 dark:text-indigo-400 border border-indigo-500/30" : isLight ? "text-slate-500 hover:text-slate-700 hover:bg-slate-200" : "text-slate-500 hover:text-slate-300 hover:bg-slate-700/40"}`}>
                                 {cur}
                             </button>
                         ))}
@@ -84,15 +90,15 @@ export default function CoursesRecorded() {
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-32">
                         <Loader2 className="w-10 h-10 animate-spin text-indigo-500 mb-4" />
-                        <p className="text-slate-500 font-medium">Loading curriculum...</p>
+                        <p className="text-slate-500 font-medium">{t("Loading curriculum...", "جاري تحميل المنهج...", "Loading...")}</p>
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className="text-center py-24 bg-white rounded-2xl border border-dashed border-slate-300">
-                        <Globe className="w-12 h-12 mx-auto text-slate-300 mb-4" />
-                        <h3 className="text-xl font-semibold text-slate-700">No courses found</h3>
-                        <p className="text-slate-400 mt-2 text-sm">Update your search filters to find what you're looking for.</p>
-                        <Button variant="outline" className="mt-4 border-indigo-200 text-indigo-600 hover:bg-indigo-50" onClick={() => { setSearchQuery(""); setSelectedCategory("All"); }}>
-                            Reset Filters
+                    <div className="text-center py-24 bg-slate-800/40 rounded-2xl border border-dashed border-slate-700">
+                        <Globe className="w-12 h-12 mx-auto text-slate-600 mb-4" />
+                        <h3 className={`text-xl font-semibold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>{t("No courses found", "لم يتم العثور على دورات", "No courses found")}</h3>
+                        <p className="text-slate-500 mt-2 text-sm">{t("Update your search filters to find what you're looking for.", "حدّث فلاتر البحث للعثور على ما تبحث عنه.", "Update your filters.")}</p>
+                        <Button variant="outline" className="mt-4 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10" onClick={() => { setSearchQuery(""); setSelectedCategory("All"); }}>
+                            {t("Reset Filters", "إعادة تعيين الفلاتر", "Reset Filters")}
                         </Button>
                     </div>
                 ) : (
@@ -103,6 +109,7 @@ export default function CoursesRecorded() {
                     </div>
                 )}
             </main>
+            <Footer />
         </div>
     );
 }

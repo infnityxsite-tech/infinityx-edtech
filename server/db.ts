@@ -547,6 +547,9 @@ export interface Program {
   duration?: string | null;
   skills?: string | null;
   category?: string | null;
+  priceEgp?: number;
+  priceUsd?: number;
+  deliveryMode?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -557,24 +560,28 @@ export async function getPrograms(): Promise<Program[]> {
   return await queryMany<any>(
     `SELECT id, title, title_ar as "titleAr", description, description_ar as "descriptionAr", 
             image_url as "imageUrl", duration, skills, category,
+            price_egp as "priceEgp", price_usd as "priceUsd", delivery_mode as "deliveryMode",
             created_at as "createdAt", updated_at as "updatedAt"
      FROM programs ORDER BY created_at DESC`
   );
 }
 
 export async function createProgram(program: InsertProgram) {
-  await query(
-    `INSERT INTO programs (title, title_ar, description, description_ar, image_url, duration, skills, category)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+  const result = await queryOne<{ id: string }>(
+    `INSERT INTO programs (title, title_ar, description, description_ar, image_url, duration, skills, category, price_egp, price_usd, delivery_mode)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
     [program.title, program.titleAr, program.description, program.descriptionAr,
-    program.imageUrl, program.duration, program.skills, program.category || 'other']
+    program.imageUrl, program.duration, program.skills, program.category || 'other',
+    program.priceEgp || 0, program.priceUsd || 0, program.deliveryMode || 'Recorded']
   );
+  return result;
 }
 
 export async function updateProgram(id: string, updates: Partial<InsertProgram>) {
   const allowedKeys: (keyof InsertProgram)[] = [
     'title', 'titleAr', 'description', 'descriptionAr',
-    'imageUrl', 'duration', 'skills', 'category'
+    'imageUrl', 'duration', 'skills', 'category',
+    'priceEgp', 'priceUsd', 'deliveryMode'
   ];
 
   const queryData = buildUpdateQuery('programs', allowedKeys, updates, 'id', id);
@@ -585,6 +592,126 @@ export async function updateProgram(id: string, updates: Partial<InsertProgram>)
 
 export async function deleteProgram(id: string) {
   await query(`DELETE FROM programs WHERE id = $1`, [id]);
+}
+
+// --- Program Complete (with Modules + Courses) ---
+
+export async function getProgramComplete(id: string) {
+  const program = await queryOne<any>(
+    `SELECT id, title, title_ar as "titleAr", description, description_ar as "descriptionAr",
+            image_url as "imageUrl", duration, skills, category,
+            price_egp as "priceEgp", price_usd as "priceUsd", delivery_mode as "deliveryMode",
+            created_at as "createdAt"
+     FROM programs WHERE id = $1`, [id]
+  );
+  if (!program) return null;
+
+  const modulesRaw = await queryMany<any>(
+    `SELECT id, title, description, duration, image_url as "imageUrl", links, order_index as "orderIndex", delivery_mode as "deliveryMode"
+     FROM program_modules WHERE program_id = $1 ORDER BY order_index ASC`, [id]
+  );
+
+  const modules = await Promise.all(modulesRaw.map(async (mod: any) => {
+    const coursesRaw = await queryMany<any>(
+      `SELECT pmc.id as "junctionId", pmc.course_id as "courseId", pmc.override_price_egp as "overridePriceEgp",
+              pmc.override_price_usd as "overridePriceUsd", pmc.order_index as "orderIndex",
+              c.title, c.description, c.cover_image as "imageUrl", c.duration, c.level, c.type as "courseType"
+       FROM program_module_courses pmc
+       JOIN courses c ON pmc.course_id = c.id
+       WHERE pmc.program_module_id = $1
+       ORDER BY pmc.order_index ASC`, [mod.id]
+    );
+    return { ...mod, courses: coursesRaw };
+  }));
+
+  return { info: program, modules };
+}
+
+export async function createProgramComplete(programData: any, modulesData: any[]): Promise<{ id: string }> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const progRes = await client.query(
+      `INSERT INTO programs (title, title_ar, description, description_ar, image_url, duration, skills, category, price_egp, price_usd, delivery_mode)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
+      [programData.title, programData.titleAr, programData.description, programData.descriptionAr,
+       programData.imageUrl, programData.duration, programData.skills, programData.category || 'other',
+       programData.priceEgp || 0, programData.priceUsd || 0, programData.deliveryMode || 'Recorded']
+    );
+    const programId = progRes.rows[0].id;
+
+    for (const mod of modulesData) {
+      const modRes = await client.query(
+        `INSERT INTO program_modules (program_id, title, description, duration, image_url, links, order_index, delivery_mode)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+        [programId, mod.title, mod.description || null, mod.duration || null, mod.imageUrl || null,
+         mod.links || null, mod.orderIndex || 0, mod.deliveryMode || 'Recorded']
+      );
+      const moduleId = modRes.rows[0].id;
+
+      for (const course of mod.courses || []) {
+        await client.query(
+          `INSERT INTO program_module_courses (program_module_id, course_id, override_price_egp, override_price_usd, order_index)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [moduleId, course.courseId, course.overridePriceEgp || null, course.overridePriceUsd || null, course.orderIndex || 0]
+        );
+      }
+    }
+
+    await client.query('COMMIT');
+    return { id: programId };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function updateProgramComplete(programId: string, programData: any, modulesData: any[]): Promise<{ id: string }> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    await client.query(
+      `UPDATE programs SET title=$1, title_ar=$2, description=$3, description_ar=$4, image_url=$5,
+       duration=$6, skills=$7, category=$8, price_egp=$9, price_usd=$10, delivery_mode=$11, updated_at=CURRENT_TIMESTAMP
+       WHERE id = $12`,
+      [programData.title, programData.titleAr, programData.description, programData.descriptionAr,
+       programData.imageUrl, programData.duration, programData.skills, programData.category,
+       programData.priceEgp || 0, programData.priceUsd || 0, programData.deliveryMode || 'Recorded', programId]
+    );
+
+    // Delete old modules (cascade deletes junction entries)
+    await client.query(`DELETE FROM program_modules WHERE program_id = $1`, [programId]);
+
+    for (const mod of modulesData) {
+      const modRes = await client.query(
+        `INSERT INTO program_modules (program_id, title, description, duration, image_url, links, order_index, delivery_mode)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+        [programId, mod.title, mod.description || null, mod.duration || null, mod.imageUrl || null,
+         mod.links || null, mod.orderIndex || 0, mod.deliveryMode || 'Recorded']
+      );
+      const moduleId = modRes.rows[0].id;
+
+      for (const course of mod.courses || []) {
+        await client.query(
+          `INSERT INTO program_module_courses (program_module_id, course_id, override_price_egp, override_price_usd, order_index)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [moduleId, course.courseId, course.overridePriceEgp || null, course.overridePriceUsd || null, course.orderIndex || 0]
+        );
+      }
+    }
+
+    await client.query('COMMIT');
+    return { id: programId };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 // ==============================

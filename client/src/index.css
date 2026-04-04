@@ -174,3 +174,224 @@
     }
   }
 }
+
+/* ========================================
+   LIGHT MODE — Professional Design
+   Uses [data-theme="light"] on <html>
+   ======================================== */
+
+[data-theme="light"] {
+  /* Design tokens */
+  --lm-bg: #f0f4f8;
+  --lm-bg-elevated: #ffffff;
+  --lm-bg-card: rgba(255,255,255,0.85);
+  --lm-bg-card-hover: rgba(255,255,255,0.95);
+  --lm-border: rgba(15,23,42,0.08);
+  --lm-border-accent: rgba(6,182,212,0.2);
+  --lm-text-primary: #0f172a;
+  --lm-text-secondary: #334155;
+  --lm-text-muted: #64748b;
+  --lm-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+  --lm-shadow-lg: 0 4px 16px rgba(15,23,42,0.08);
+  --lm-accent: #0891b2;
+  --lm-accent-bg: rgba(6,182,212,0.06);
+}
+
+/* ── Page backgrounds ──────────────────── */
+[data-theme="light"] body {
+  background-color: var(--lm-bg) !important;
+}
+
+/* Main container override */
+[data-theme="light"] .min-h-screen {
+  background-color: var(--lm-bg) !important;
+  color: var(--lm-text-primary) !important;
+}
+
+/* ── Navigation ────────────────────────── */
+[data-theme="light"] nav {
+  background: rgba(255,255,255,0.88) !important;
+  border-color: var(--lm-border) !important;
+  box-shadow: 0 1px 4px rgba(15,23,42,0.05) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+[data-theme="light"] nav .text-slate-400,
+[data-theme="light"] nav .text-slate-500 {
+  color: var(--lm-text-secondary) !important;
+}
+
+[data-theme="light"] nav .text-cyan-400 {
+  color: var(--lm-accent) !important;
+}
+
+[data-theme="light"] nav .bg-cyan-400\/10 {
+  background: var(--lm-accent-bg) !important;
+}
+
+/* Logo gradient text → solid dark */
+[data-theme="light"] nav .bg-clip-text {
+  -webkit-text-fill-color: var(--lm-text-primary) !important;
+  background-image: none !important;
+}
+
+/* Mobile menu */
+[data-theme="light"] nav .backdrop-blur-xl {
+  background: rgba(255,255,255,0.96) !important;
+}
+
+/* ── Text overrides ────────────────────── */
+[data-theme="light"] .text-white {
+  color: var(--lm-text-primary) !important;
+}
+
+[data-theme="light"] .text-slate-300 {
+  color: var(--lm-text-secondary) !important;
+}
+
+[data-theme="light"] .text-slate-400 {
+  color: var(--lm-text-secondary) !important;
+}
+
+[data-theme="light"] .text-slate-500 {
+  color: var(--lm-text-muted) !important;
+}
+
+/* Preserve white text on gradient buttons and badges */
+[data-theme="light"] .bg-gradient-to-r .text-white,
+[data-theme="light"] [class*="bg-gradient"] .text-white,
+[data-theme="light"] button[class*="bg-gradient"] {
+  color: white !important;
+}
+
+/* ── Card & glassmorphism overrides ───── */
+[data-theme="light"] .backdrop-blur-xl,
+[data-theme="light"] .backdrop-blur-md {
+  background: var(--lm-bg-card) !important;
+  border-color: var(--lm-border) !important;
+  box-shadow: var(--lm-shadow) !important;
+}
+
+/* ── Border overrides ──────────────────── */
+[data-theme="light"] .border-white\/\[0\.06\],
+[data-theme="light"] .border-white\/\[0\.04\],
+[data-theme="light"] .border-white\/10,
+[data-theme="light"] .border-white\/20 {
+  border-color: var(--lm-border) !important;
+}
+
+/* ── Hero sections — keep light text for drama ─ */
+[data-theme="light"] section[class*="bg-cover"],
+[data-theme="light"] section[style*="background"] .text-white,
+[data-theme="light"] .bg-cover .text-white {
+  color: white !important;
+}
+
+[data-theme="light"] section[class*="bg-cover"] .text-slate-300,
+[data-theme="light"] section[class*="bg-cover"] .text-slate-400 {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="light"] section[class*="bg-cover"] .text-slate-200 {
+  color: #e2e8f0 !important;
+}
+
+/* Hero overlays → soften */
+[data-theme="light"] section .blur-3xl,
+[data-theme="light"] section .blur-\[200px\],
+[data-theme="light"] section .blur-\[120px\],
+[data-theme="light"] section .blur-\[150px\] {
+  opacity: 0.08 !important;
+}
+
+/* ── Inputs ────────────────────────────── */
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  background: white !important;
+  border-color: #e2e8f0 !important;
+  color: var(--lm-text-primary) !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus {
+  border-color: var(--lm-accent) !important;
+  box-shadow: 0 0 0 2px rgba(6,182,212,0.15) !important;
+}
+
+/* ── Footer stays dark ─────────────────── */
+[data-theme="light"] footer {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme="light"] footer .text-white {
+  color: #e2e8f0 !important;
+}
+
+[data-theme="light"] footer .text-slate-400,
+[data-theme="light"] footer .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+/* ── Floating controls — adapt ─────────── */
+[data-theme="light"] .light-toggle,
+[data-theme="light"] .lang-toggle {
+  background: rgba(255,255,255,0.92) !important;
+  border-color: var(--lm-border) !important;
+  box-shadow: var(--lm-shadow-lg) !important;
+  color: var(--lm-text-secondary) !important;
+}
+
+[data-theme="light"] .light-toggle:hover {
+  border-color: rgba(234,179,8,0.3) !important;
+  color: #d97706 !important;
+}
+
+[data-theme="light"] .lang-toggle:hover {
+  border-color: rgba(6,182,212,0.3) !important;
+  color: var(--lm-accent) !important;
+}
+
+/* ── Glow orbs — soften for light ──────── */
+[data-theme="light"] .bg-cyan-500\/10,
+[data-theme="light"] .bg-indigo-600\/10,
+[data-theme="light"] .bg-indigo-600\/20,
+[data-theme="light"] .bg-emerald-600\/20,
+[data-theme="light"] .bg-blue-600\/15,
+[data-theme="light"] .bg-amber-500\/15,
+[data-theme="light"] .bg-blue-600\/20,
+[data-theme="light"] .bg-purple-600\/20 {
+  opacity: 0.15 !important;
+}
+
+/* ── Grid pattern → hide in light mode ── */
+[data-theme="light"] [style*="linear-gradient(#334155"] {
+  opacity: 0.015 !important;
+}
+
+/* ── Prose (blog detail) ───────────────── */
+[data-theme="light"] .prose-invert {
+  --tw-prose-body: var(--lm-text-secondary) !important;
+  --tw-prose-headings: var(--lm-text-primary) !important;
+  --tw-prose-links: var(--lm-accent) !important;
+  color: var(--lm-text-secondary) !important;
+}
+
+/* ── Badges / pills ────────────────────── */
+[data-theme="light"] .bg-cyan-500\/10 {
+  background: rgba(6,182,212,0.08) !important;
+}
+
+[data-theme="light"] .text-cyan-400 {
+  color: #0891b2 !important;
+}
+
+[data-theme="light"] .text-cyan-300 {
+  color: #0e7490 !important;
+}

@@ -55,6 +55,21 @@ async function runMigrations(): Promise<void> {
   }
 
   try {
+    // Migration 3b: Ensure updated_at column exists on courses table
+    await query(`
+      ALTER TABLE courses 
+      ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    `);
+    console.log('✅ Migration: Ensured updated_at column on courses table');
+  } catch (error: any) {
+    if (error.code === '42701' || error.message?.includes('already exists')) {
+      console.log('ℹ️  Migration: courses.updated_at already exists');
+    } else {
+      console.error('❌ Migration error:', error);
+    }
+  }
+
+  try {
     // Migration 4: Add certificates table
     await query(`
       CREATE TABLE IF NOT EXISTS certificates (

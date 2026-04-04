@@ -57,6 +57,16 @@ function ProtectedRoute({ component: Component }: { component: React.FC }) {
   return <Component />;
 }
 
+function ScrollToTop() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+
+  return null;
+}
+
 function Router() {
   return (
     <Switch>
@@ -99,16 +109,23 @@ function Router() {
   );
 }
 
+import { LanguageProvider } from "./contexts/LanguageContext";
+import FloatingControls from "./components/FloatingControls";
+
 // ✅ App entry point
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="light">
-        <TooltipProvider>
-          <Toaster />
-          <FloatingContact />
-          <Router />
-        </TooltipProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <TooltipProvider>
+            <Toaster />
+            <FloatingContact />
+            <FloatingControls />
+            <ScrollToTop />
+            <Router />
+          </TooltipProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

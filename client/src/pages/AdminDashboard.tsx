@@ -7,13 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge"; // ✅ تم إضافة Badge
+import { Badge } from "@/components/ui/badge";
 import {
   BookOpen,
   Briefcase,
@@ -31,7 +25,12 @@ import {
   Calendar,
   Sparkles,
   Award,
-  Building
+  Building,
+  ArrowLeft,
+  Save,
+  Loader2,
+  Menu,
+  X
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -48,10 +47,30 @@ import StudentManager from "@/components/admin/StudentManager";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+// Menu items config (with generic English labels that will be translated in render)
+const MENU_ITEMS = [
+  { key: "overview", label: "Overview", label_ar: "نظرة عامة", icon: LayoutDashboard, color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20" },
+  { key: "courses", label: "Courses", label_ar: "الدورات", icon: BookOpen, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+  { key: "students", label: "Students", label_ar: "الطلاب", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
+  { key: "programs", label: "Programs", label_ar: "البرامج", icon: Users, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
+  { key: "certificates", label: "Certificates", label_ar: "الشهادات", icon: Award, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
+  { key: "sponsors", label: "Sponsors", label_ar: "الرعاة", icon: Building, color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20" },
+  { key: "page-content", label: "Pages", label_ar: "الصفحات", icon: FileText, color: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-500/20" },
+  { key: "blog", label: "Blog", label_ar: "المدونة", icon: FileText, color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/20" },
+  { key: "careers", label: "Careers", label_ar: "الوظائف", icon: Briefcase, color: "text-teal-400", bg: "bg-teal-500/10", border: "border-teal-500/20" },
+  { key: "applications", label: "Applications", label_ar: "الطلبات", icon: ClipboardList, color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20" },
+  { key: "messages", label: "Messages", label_ar: "الرسائل", icon: Mail, color: "text-sky-400", bg: "bg-sky-500/10", border: "border-sky-500/20" },
+  { key: "site-settings", label: "Settings", label_ar: "الإعدادات", icon: Settings, color: "text-slate-400", bg: "bg-slate-500/10", border: "border-slate-500/20" },
+];
 
 export default function AdminDashboard() {
   const { user, logout, loading } = useAuth();
   const [location, navigate] = useLocation();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t, isRTL } = useLanguage();
 
   const [settings, setSettings] = useState({
     email: "",
@@ -60,12 +79,13 @@ export default function AdminDashboard() {
     footerText: "",
   });
 
+  const [settingsDirty, setSettingsDirty] = useState(false);
+
   const utils = trpc.useUtils();
 
   const { data: applications = [] } = trpc.admin.getApplications.useQuery();
   const { data: siteSettings = {} } = trpc.admin.getSiteSettings.useQuery();
 
-  // Update settings when data changes
   useEffect(() => {
     if (siteSettings) {
       setSettings({
@@ -81,9 +101,11 @@ export default function AdminDashboard() {
 
   const updateSettingMutation = trpc.admin.updateSiteSettings.useMutation({
     onSuccess: () => {
-      toast.success("Settings updated!");
+      toast.success("✅ Settings saved successfully!");
       utils.admin.getSiteSettings.invalidate();
+      setSettingsDirty(false);
     },
+    onError: () => toast.error("Failed to save settings"),
   });
 
   const deleteApplicationMutation = trpc.admin.deleteApplication.useMutation({
@@ -95,8 +117,8 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-[#0a0e1a]">
+        <Loader2 className="w-10 h-10 animate-spin text-cyan-400" />
       </div>
     );
   }
@@ -115,252 +137,306 @@ export default function AdminDashboard() {
     navigate("/admin/login");
   };
 
-  const handleSettingChange = (key: string, value: string) => {
+  const handleSettingFieldChange = (key: string, value: string) => {
     setSettings({ ...settings, [key]: value });
-    updateSettingMutation.mutate({ settings: { [key]: value } });
+    setSettingsDirty(true);
   };
 
+  const handleSaveSettings = () => {
+    updateSettingMutation.mutate({ settings });
+  };
+
+  const activeMenuItem = MENU_ITEMS.find(m => m.key === activeTab);
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#0a0e1a] text-white" dir={isRTL ? "rtl" : "ltr"}>
       {/* HEADER */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <header className="bg-[#0d1225]/90 backdrop-blur-xl border-b border-white/[0.06] sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">
-              InfinityX Admin Dashboard
-            </h1>
-            <p className="text-sm text-slate-600">
-              Welcome, {user?.name || "Local Admin"}
-            </p>
+          <div className="flex items-center gap-4">
+            {activeTab !== "overview" && (
+              <button
+                onClick={() => setActiveTab("overview")}
+                className="p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-slate-400" />
+              </button>
+            )}
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 text-transparent bg-clip-text">
+                {t("InfinityX Admin", "لوحة تحكم InfinityX", "InfinityX Admin")}
+              </h1>
+              <p className="text-xs text-slate-500">
+                {t("Welcome, ", "أهلاً، ", "Welcome, ")}{user?.name || t("Administrator", "المدير", "Administrator")}
+              </p>
+            </div>
           </div>
-          <Button
-            variant="outline"
-            onClick={handleLogout}
-            className="flex items-center gap-2"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* Mobile menu toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06]"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="bg-white/[0.04] text-slate-400 hover:text-white hover:bg-red-500/10 border-white/[0.06] hover:border-red-500/20 flex items-center gap-2 text-sm"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </Button>
+          </div>
         </div>
       </header>
 
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-[#0a0e1a]/95 backdrop-blur-xl md:hidden pt-20 px-4 overflow-y-auto">
+          <div className="grid grid-cols-2 gap-3">
+            {MENU_ITEMS.map(item => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => { setActiveTab(item.key); setMobileMenuOpen(false); }}
+                  className={`p-4 rounded-xl border transition-all text-left ${
+                    activeTab === item.key
+                      ? `${item.bg} ${item.border} border`
+                      : 'bg-[#0d1225]/80 border-white/[0.06] hover:border-white/[0.12]'
+                  }`}
+                >
+                  <Icon className={`w-6 h-6 ${item.color} mb-2`} />
+                  <span className="text-sm font-medium text-white">{t(item.label, item.label_ar, item.label)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* MAIN CONTENT */}
-      <main className="max-w-7xl mx-auto px-4 py-10">
-        <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="grid grid-cols-11 w-full min-w-[1000px]">
-            <TabsTrigger value="overview">
-              <LayoutDashboard className="w-4 h-4 mr-2" /> Overview
-            </TabsTrigger>
-            <TabsTrigger value="certificates">
-              <Award className="w-4 h-4 mr-2" /> Certificates
-            </TabsTrigger>
-            <TabsTrigger value="sponsors">
-              <Building className="w-4 h-4 mr-2" /> Sponsors
-            </TabsTrigger>
-            <TabsTrigger value="page-content">
-              <Settings className="w-4 h-4 mr-2" /> Pages
-            </TabsTrigger>
-            <TabsTrigger value="courses">
-              <BookOpen className="w-4 h-4 mr-2" /> Courses
-            </TabsTrigger>
-            <TabsTrigger value="students">
-              <Users className="w-4 h-4 mr-2" /> Students
-            </TabsTrigger>
-            <TabsTrigger value="programs">
-              <Users className="w-4 h-4 mr-2" /> Programs
-            </TabsTrigger>
-            <TabsTrigger value="blog">
-              <FileText className="w-4 h-4 mr-2" /> Blog
-            </TabsTrigger>
-            <TabsTrigger value="careers">
-              <Briefcase className="w-4 h-4 mr-2" /> Careers
-            </TabsTrigger>
-            <TabsTrigger value="applications">
-              <ClipboardList className="w-4 h-4 mr-2" /> Applications
-            </TabsTrigger>
-            <TabsTrigger value="messages">
-              <Mail className="w-4 h-4 mr-2" /> Messages
-            </TabsTrigger>
-            <TabsTrigger value="site-settings">
-              <Globe className="w-4 h-4 mr-2" /> Settings
-            </TabsTrigger>
-          </TabsList>
+      <main className="max-w-7xl mx-auto px-4 py-8">
 
-          {/* OVERVIEW TAB */}
-          <TabsContent value="overview">
-            <Card>
-              <CardHeader>
-                <CardTitle>Dashboard Overview</CardTitle>
-                <CardDescription>General site metrics summary</CardDescription>
-              </CardHeader>
-              <CardContent className="text-slate-600">
-                Manage your InfinityX platform effectively with the tools above.
-              </CardContent>
-            </Card>
-          </TabsContent>
+        {/* OVERVIEW — Card Grid Navigation */}
+        {activeTab === "overview" && (
+          <div className="space-y-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{t("Dashboard", "لوحة التحكم", "Dashboard")}</h2>
+              <p className="text-slate-500">{t("Select a section to manage your platform", "حدد قسمًا لإدارة منصتك", "Select a section to manage your platform")}</p>
+            </div>
 
-          {/* CERTIFICATES TAB */}
-          <TabsContent value="certificates">
-            <CertificatesManager />
-          </TabsContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {MENU_ITEMS.filter(m => m.key !== "overview").map(item => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => setActiveTab(item.key)}
+                    className={`group ${item.bg} ${item.border} border rounded-2xl p-5 md:p-6 text-center transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]`}
+                  >
+                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl ${item.bg} border ${item.border} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}>
+                      <Icon className={`w-6 h-6 md:w-7 md:h-7 ${item.color}`} />
+                    </div>
+                    <h3 className="text-sm md:text-base font-semibold text-white">{t(item.label, item.label_ar, item.label)}</h3>
+                  </button>
+                );
+              })}
+            </div>
 
-          {/* SPONSORS TAB */}
-          <TabsContent value="sponsors">
-            <SponsorsManager />
-          </TabsContent>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-[#0d1225]/80 border border-white/[0.06] rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-cyan-400">{applications.length}</p>
+                <p className="text-xs text-slate-500 mt-1">Applications</p>
+              </div>
+              <div className="bg-[#0d1225]/80 border border-white/[0.06] rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-blue-400">{(messages as any[]).length}</p>
+                <p className="text-xs text-slate-500 mt-1">Messages</p>
+              </div>
+              <div className="bg-[#0d1225]/80 border border-white/[0.06] rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-emerald-400">—</p>
+                <p className="text-xs text-slate-500 mt-1">Active Students</p>
+              </div>
+              <div className="bg-[#0d1225]/80 border border-white/[0.06] rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-purple-400">—</p>
+                <p className="text-xs text-slate-500 mt-1">Courses</p>
+              </div>
+            </div>
+          </div>
+        )}
 
-          {/* PAGE CONTENT TAB */}
-          <TabsContent value="page-content">
-            <PageContentManager />
-          </TabsContent>
+        {/* Sub-page header */}
+        {activeTab !== "overview" && (
+          <div className="mb-6 flex items-center gap-3">
+            {activeMenuItem && (
+              <>
+                <div className={`w-10 h-10 rounded-lg ${activeMenuItem.bg} border ${activeMenuItem.border} flex items-center justify-center`}>
+                  <activeMenuItem.icon className={`w-5 h-5 ${activeMenuItem.color}`} />
+                </div>
+                <h2 className="text-xl font-bold text-white">{t(activeMenuItem.label, activeMenuItem.label_ar, activeMenuItem.label)}</h2>
+              </>
+            )}
+          </div>
+        )}
 
-          {/* COURSES TAB */}
-          <TabsContent value="courses">
-            <CoursesManager />
-          </TabsContent>
+        {/* CERTIFICATES */}
+        {activeTab === "certificates" && <CertificatesManager />}
 
-          {/* STUDENTS TAB */}
-          <TabsContent value="students">
-            <StudentManager />
-          </TabsContent>
+        {/* SPONSORS */}
+        {activeTab === "sponsors" && <SponsorsManager />}
 
-          {/* PROGRAMS TAB */}
-          <TabsContent value="programs">
-            <ProgramsManager />
-          </TabsContent>
+        {/* PAGE CONTENT */}
+        {activeTab === "page-content" && <PageContentManager />}
 
-          {/* BLOG TAB */}
-          <TabsContent value="blog">
-            <BlogManager />
-          </TabsContent>
+        {/* COURSES */}
+        {activeTab === "courses" && <CoursesManager />}
 
-          {/* CAREERS TAB */}
-          <TabsContent value="careers">
-            <CareersManager />
-          </TabsContent>
+        {/* STUDENTS */}
+        {activeTab === "students" && <StudentManager />}
 
-          {/* 🌟 APPLICATIONS TAB (UPDATED) */}
-          <TabsContent value="applications">
-            <Card>
-              <CardHeader>
-                <CardTitle>Student Applications</CardTitle>
-                <CardDescription>
-                  View all student submissions from the Apply page.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {applications.length === 0 ? (
-                  <div className="text-center py-10 border-2 border-dashed border-slate-200 rounded-lg">
-                    <p className="text-slate-500">No applications received yet.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {applications.map((app: any) => (
-                      <div
-                        key={app.id}
-                        className="p-5 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 hover:shadow-sm transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-                      >
-                        <div className="flex-1 space-y-2">
-                          {/* Header: Name + Course Badge */}
-                          <div className="flex flex-wrap items-center gap-3">
-                            <h3 className="text-lg font-bold text-slate-900">
-                              {/* Use full_name (DB field) or fallback to fullName */}
-                              {app.full_name || app.fullName}
-                            </h3>
-                            {app.course_title ? (
-                              <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-0 flex items-center gap-1">
-                                <BookOpen className="w-3 h-3" />
-                                {app.course_title}
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-slate-500">
-                                General Inquiry
-                              </Badge>
-                            )}
-                          </div>
+        {/* PROGRAMS */}
+        {activeTab === "programs" && <ProgramsManager />}
 
-                          {/* Contact Info */}
-                          <div className="text-sm text-slate-600 flex flex-wrap gap-x-4 gap-y-1">
-                            <span className="flex items-center gap-1">
-                              <Mail className="w-3.5 h-3.5 text-slate-400" /> {app.email}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Phone className="w-3.5 h-3.5 text-slate-400" /> {app.phone}
-                            </span>
-                          </div>
+        {/* BLOG */}
+        {activeTab === "blog" && <BlogManager />}
 
-                          {/* Message */}
-                          {app.message && (
-                            <div className="mt-2 text-sm text-slate-600 bg-slate-100/50 p-3 rounded-md border-l-4 border-slate-300 italic">
-                              "{app.message}"
-                            </div>
+        {/* CAREERS */}
+        {activeTab === "careers" && <CareersManager />}
+
+        {/* APPLICATIONS */}
+        {activeTab === "applications" && (
+          <Card className="bg-[#0d1225]/80 border-white/[0.06] text-white">
+            <CardHeader>
+              <CardTitle>Student Applications</CardTitle>
+              <CardDescription className="text-slate-500">
+                View all student submissions from the Apply page.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {applications.length === 0 ? (
+                <div className="text-center py-10 border-2 border-dashed border-white/[0.06] rounded-lg">
+                  <p className="text-slate-500">No applications received yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {applications.map((app: any) => (
+                    <div
+                      key={app.id}
+                      className="p-5 border border-white/[0.06] rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                    >
+                      <div className="flex-1 space-y-2">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h3 className="text-lg font-bold text-white">
+                            {app.full_name || app.fullName}
+                          </h3>
+                          {app.course_title ? (
+                            <Badge className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
+                              <BookOpen className="w-3 h-3" />
+                              {app.course_title}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-slate-500 border-white/[0.06]">
+                              General Inquiry
+                            </Badge>
                           )}
-
-                          {/* Date */}
-                          <div className="text-xs text-slate-400 flex items-center gap-1 mt-1">
-                            <Calendar className="w-3 h-3" />
-                            Applied on {new Date(app.created_at || app.createdAt).toLocaleDateString('en-US', {
-                              year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                            })}
-                          </div>
                         </div>
 
-                        {/* Actions */}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() =>
-                            deleteApplicationMutation.mutate({ id: app.id })
-                          }
-                          title="Delete Application"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </Button>
+                        <div className="text-sm text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
+                          <span className="flex items-center gap-1">
+                            <Mail className="w-3.5 h-3.5 text-slate-500" /> {app.email}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Phone className="w-3.5 h-3.5 text-slate-500" /> {app.phone}
+                          </span>
+                        </div>
+
+                        {app.message && (
+                          <div className="mt-2 text-sm text-slate-400 bg-white/[0.02] p-3 rounded-md border-l-4 border-cyan-500/30 italic">
+                            "{app.message}"
+                          </div>
+                        )}
+
+                        <div className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                          <Calendar className="w-3 h-3" />
+                          Applied on {new Date(app.created_at || app.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                          })}
+                        </div>
                       </div>
-                    ))}
-                  </div>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        onClick={() =>
+                          deleteApplicationMutation.mutate({ id: app.id })
+                        }
+                        title="Delete Application"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* MESSAGES */}
+        {activeTab === "messages" && <MessagesManager />}
+
+        {/* SITE SETTINGS — with Save Button */}
+        {activeTab === "site-settings" && (
+          <Card className="bg-[#0d1225]/80 border-white/[0.06] text-white">
+            <CardHeader>
+              <CardTitle>Site Settings</CardTitle>
+              <CardDescription className="text-slate-500">
+                Manage contact info and footer details for the website.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {[
+                { key: "email", label: "Email", icon: Mail, placeholder: "support@infx.space" },
+                { key: "phone", label: "Phone", icon: Phone, placeholder: "+201100135225" },
+                { key: "whatsapp", label: "WhatsApp Link", icon: MessageCircle, placeholder: "https://api.whatsapp.com/..." },
+                { key: "footerText", label: "Footer Text", icon: Globe, placeholder: "Enter Footer Text" },
+              ].map(({ key, label, icon: Icon, placeholder }) => (
+                <div key={key} className="space-y-2">
+                  <Label className="flex items-center gap-2 text-sm font-semibold text-slate-400">
+                    <Icon className="w-4 h-4 text-cyan-400" /> {label}
+                  </Label>
+                  <Input
+                    value={settings[key as keyof typeof settings]}
+                    onChange={(e) => handleSettingFieldChange(key, e.target.value)}
+                    placeholder={placeholder}
+                    className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600 focus:ring-cyan-500/30 focus:border-cyan-500/40 rounded-xl h-11"
+                  />
+                </div>
+              ))}
+
+              {/* Save Button */}
+              <div className="pt-4 border-t border-white/[0.06]">
+                <Button
+                  onClick={handleSaveSettings}
+                  disabled={!settingsDirty || updateSettingMutation.isPending}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-8 py-3 rounded-xl shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {updateSettingMutation.isPending ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
+                  ) : (
+                    <><Save className="w-4 h-4 mr-2" /> Save Settings</>
+                  )}
+                </Button>
+                {settingsDirty && (
+                  <p className="text-xs text-amber-400 mt-2">You have unsaved changes.</p>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* MESSAGES TAB */}
-          <TabsContent value="messages">
-            <MessagesManager />
-          </TabsContent>
-
-          {/* SITE SETTINGS TAB */}
-          <TabsContent value="site-settings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Site Settings</CardTitle>
-                <CardDescription>
-                  Manage contact info and footer details for the website.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {[
-                  { key: "email", label: "Email", icon: Mail },
-                  { key: "phone", label: "Phone", icon: Phone },
-                  { key: "whatsapp", label: "WhatsApp Link", icon: MessageCircle },
-                  { key: "footerText", label: "Footer Text", icon: Globe },
-                ].map(({ key, label, icon: Icon }) => (
-                  <div key={key} className="space-y-2">
-                    <Label className="flex items-center gap-2 text-sm font-semibold">
-                      <Icon className="w-4 h-4 text-blue-600" /> {label}
-                    </Label>
-                    <Input
-                      value={settings[key as keyof typeof settings]}
-                      onChange={(e) => handleSettingChange(key, e.target.value)}
-                      placeholder={`Enter ${label}`}
-                    />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );
