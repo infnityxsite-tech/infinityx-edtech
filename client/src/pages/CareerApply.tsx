@@ -18,6 +18,8 @@ export default function CareerApply() {
   const { theme } = useTheme();
   const isLight = theme === "light";
 
+  const { data: jobs = [], isLoading: jobsLoading } = trpc.admin.getJobListings.useQuery();
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -126,14 +128,24 @@ export default function CareerApply() {
                 <Label htmlFor="position" className={isLight ? "text-slate-700" : "text-slate-300"}>
                   {t("Position Applied For", "المسمى الوظيفي المتقدم إليه", "Position Applied For")} <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="position"
-                  required
-                  value={formData.position}
-                  onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                  placeholder={t("e.g. Frontend Developer", "مثال: مطور واجهات أمامية", "e.g. Frontend Developer")}
-                  className={isLight ? "bg-slate-50 border-slate-200" : "bg-[#0a0e1a] border-white/10"}
-                />
+                <div className="relative">
+                  <select
+                    id="position"
+                    required
+                    value={formData.position}
+                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                    className={`flex h-10 w-full rounded-md border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none ${isLight ? "bg-slate-50 border-slate-200 text-slate-900" : "bg-[#0a0e1a] border-white/10 text-white"}`}
+                  >
+                    <option value="" disabled>{t("Select a position...", "اختر مسمى وظيفي...", "Select a position")}</option>
+                    {jobs.map((job: any) => (
+                      <option key={job.id} value={job.title}>{job.title}</option>
+                    ))}
+                    <option value="General Application">{t("General Application / Other", "تقديم عام / أخرى", "General Application / Other")}</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                    <svg className={`h-4 w-4 ${isLight ? "text-slate-500" : "text-slate-400"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
+                </div>
               </div>
             </div>
 

@@ -180,7 +180,7 @@ export default function Careers() {
 
                 <div className="shrink-0">
                     <Button 
-                        onClick={() => navigate(`/apply/${job.id}?type=job`)}
+                        onClick={() => navigate(`/careers/apply`)}
                         className="w-full md:w-auto bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-medium px-6 py-2 h-10 transition-colors rounded-xl shadow-lg shadow-emerald-500/20"
                     >
                         {t("Apply Now", "قدّم الآن", "Apply Now")}
