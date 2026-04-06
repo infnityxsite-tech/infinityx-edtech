@@ -16,6 +16,7 @@ import SchoolLanding from "./pages/SchoolLanding";
 import Blog from "./pages/Blog";
 import BlogDetail from "./pages/BlogDetail";
 import Careers from "./pages/Careers";
+import CareerApply from "./pages/CareerApply";
 import Verify from "./pages/Verify";
 import Certificate from "./pages/Certificate";
 import AdminLogin from "./pages/AdminLogin";
@@ -90,6 +91,7 @@ function Router() {
       <Route path="/blog" component={Blog} />
       <Route path="/blog/:id" component={BlogDetail} />
       <Route path="/careers" component={Careers} />
+      <Route path="/careers/apply" component={CareerApply} />
       <Route path="/contact" component={Contact} />
       <Route path="/verify" component={Verify} />
       <Route path="/certificates/:certId" component={Certificate} />

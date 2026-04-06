@@ -52,9 +52,9 @@ export default function Home() {
 
       {/* === HERO SECTION === */}
       <section
-        className={`relative min-h-[85vh] lg:min-h-[90vh] flex items-center bg-cover bg-center pt-36 pb-24 ${isLight ? 'text-slate-900' : 'text-white'}`}
+        className={`relative min-h-[85vh] lg:min-h-[90vh] flex items-center bg-cover bg-center pt-28 pb-16 md:pt-36 md:pb-24 ${isLight ? 'text-slate-900' : 'text-white'}`}
         style={{
-          backgroundImage: `linear-gradient(${isLight ? 'rgba(255, 255, 255, 0.7)' : 'rgba(5, 10, 25, 0.9)'}, ${isLight ? 'rgba(255, 255, 255, 0.5)' : 'rgba(5, 10, 25, 0.8)'}), url(${heroImageUrl})`,
+          backgroundImage: `linear-gradient(${isLight ? 'rgba(255, 255, 255, 0.85)' : 'rgba(5, 10, 25, 0.9)'}, ${isLight ? 'rgba(255, 255, 255, 0.7)' : 'rgba(5, 10, 25, 0.8)'}), url(${heroImageUrl})`,
           backgroundAttachment: 'fixed'
         }}
       >
@@ -86,7 +86,7 @@ export default function Home() {
             </h1>
 
             {/* Subtitle */}
-            <p className={`text-lg md:text-xl max-w-2xl font-light leading-relaxed mb-10 ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+            <p className={`text-base md:text-xl max-w-2xl font-medium leading-relaxed mb-10 ${isLight ? 'text-slate-800' : 'text-slate-300'}`}>
               {t(pageContent?.subHeadline || undefined, pageContent?.subHeadlineAr || undefined, "Empowering the Next Generation of Tech Leaders through hands-on learning and global standards.")}
             </p>
 
@@ -134,14 +134,14 @@ export default function Home() {
       </section>
 
       {/* === TECH STACK TICKER === */}
-      <div className="bg-[#0d1225]/60 border-b border-white/[0.04] py-6 overflow-hidden">
+      <div className={`border-b py-6 overflow-hidden ${isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0d1225]/60 border-white/[0.04]'}`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center gap-8">
-          <p className="whitespace-nowrap text-slate-500 text-xs font-bold uppercase tracking-widest">
+          <p className={`whitespace-nowrap text-xs font-bold uppercase tracking-widest ${isLight ? 'text-slate-600' : 'text-slate-500'}`}>
             {t("We Teach Industry Standards:", "نحن ندرّس معايير الصناعة:", "We Teach Industry Standards:")}
           </p>
-          <div className="flex flex-1 justify-between items-center opacity-40 hover:opacity-70 transition-all duration-500 gap-8 overflow-x-auto no-scrollbar">
+          <div className="flex flex-1 justify-between items-center opacity-70 hover:opacity-100 transition-all duration-500 gap-8 overflow-x-auto no-scrollbar">
             {["Python", "TensorFlow", "React", "Node.js", "Docker", "AWS", "Kubernetes", "Linux", "STK", "OpenCV"].map(tool => (
-              <span key={tool} className="font-bold text-lg text-slate-400 whitespace-nowrap">{tool}</span>
+              <span key={tool} className={`font-bold text-lg whitespace-nowrap ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>{tool}</span>
             ))}
           </div>
         </div>
@@ -194,16 +194,16 @@ export default function Home() {
       </section>
 
       {/* === SCHOOLS (BALANCED LAYOUT) === */}
-      <section className="py-24 bg-slate-900 text-white">
+      <section className={`py-16 md:py-24 ${isLight ? 'bg-slate-100' : 'bg-slate-900'} text-white`}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <div className="inline-block bg-white/10 text-white/90 text-sm font-bold px-4 py-1 rounded-full mb-4">
+            <div className={`inline-block text-sm font-bold px-4 py-1 rounded-full mb-4 ${isLight ? 'bg-slate-200 text-slate-700' : 'bg-white/10 text-white/90'}`}>
               {t("CHOOSE YOUR PATH", "اختر مسارك", "CHOOSE YOUR PATH")}
             </div>
-            <h2 className="text-4xl font-bold mb-4">
+            <h2 className={`text-3xl md:text-4xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>
               {t("Our Specialized Schools", "كلياتنا المتخصصة", "Our Specialized Schools")}
             </h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">
+            <p className={`max-w-2xl mx-auto ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
               {t("Four pillars of excellence. Each designed to take you from beginner to professional.", "أربعة ركائز للتميز. كل منها مصمم ليأخذك من مبتدئ إلى محترف.", "Four pillars of excellence.")}
             </p>
           </div>
@@ -211,22 +211,22 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-8">
 
             {/* 1. SCHOOL OF AI */}
-            <div className="bg-gradient-to-br from-emerald-900 to-slate-900 rounded-3xl p-10 relative overflow-hidden group border border-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all">
+            <div className={`rounded-3xl p-8 md:p-10 relative overflow-hidden group border transition-all ${isLight ? 'bg-gradient-to-br from-emerald-50 to-white border-emerald-200 hover:shadow-emerald-900/10' : 'bg-gradient-to-br from-emerald-900 to-slate-900 border-emerald-500/30 hover:shadow-emerald-500/10'} hover:shadow-2xl`}>
               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                 <Brain className="w-48 h-48 text-emerald-400" />
               </div>
               <div className="relative z-10">
-                <div className="bg-emerald-500/20 w-fit p-3 rounded-xl mb-6 backdrop-blur-sm border border-emerald-500/30">
-                  <Brain className="w-8 h-8 text-emerald-300" />
+                <div className={`w-fit p-3 rounded-xl mb-6 backdrop-blur-sm border ${isLight ? 'bg-emerald-100/50 border-emerald-200' : 'bg-emerald-500/20 border-emerald-500/30'}`}>
+                  <Brain className="w-8 h-8 text-emerald-500" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-white">{t("School of AI & Data", "مدرسة الذكاء الاصطناعي", "School of AI")}</h3>
-                <p className="text-emerald-100/80 mb-6 leading-relaxed h-16">
+                <h3 className={`text-2xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t("School of AI & Data", "مدرسة الذكاء الاصطناعي", "School of AI")}</h3>
+                <p className={`mb-6 leading-relaxed h-16 ${isLight ? 'text-slate-600' : 'text-emerald-100/80'}`}>
                   {t("Build smart systems that see, hear, and predict. From Computer Vision to Predictive Maintenance.", "بناء أنظمة ذكية ترى وتسمع وتتنبأ. من الرؤية الحاسوبية إلى الصيانة التنبؤية.", "Build smart systems.")}
                 </p>
                 <ul className="space-y-3 mb-8">
-                  <li className="flex items-center text-sm text-emerald-200"><CheckCircle className="w-4 h-4 mr-2 text-emerald-500" /> TensorFlow & Deep Learning</li>
-                  <li className="flex items-center text-sm text-emerald-200"><CheckCircle className="w-4 h-4 mr-2 text-emerald-500" /> Computer Vision (YOLO/CNN)</li>
-                  <li className="flex items-center text-sm text-emerald-200"><CheckCircle className="w-4 h-4 mr-2 text-emerald-500" /> Predictive Maintenance Models</li>
+                  <li className={`flex items-center text-sm ${isLight ? 'text-slate-700' : 'text-emerald-200'}`}><CheckCircle className="w-4 h-4 mr-2 text-emerald-500" /> TensorFlow & Deep Learning</li>
+                  <li className={`flex items-center text-sm ${isLight ? 'text-slate-700' : 'text-emerald-200'}`}><CheckCircle className="w-4 h-4 mr-2 text-emerald-500" /> Computer Vision (YOLO/CNN)</li>
+                  <li className={`flex items-center text-sm ${isLight ? 'text-slate-700' : 'text-emerald-200'}`}><CheckCircle className="w-4 h-4 mr-2 text-emerald-500" /> Predictive Maintenance Models</li>
                 </ul>
                 <Link href="/programs/ai">
                   <Button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold">
@@ -237,22 +237,22 @@ export default function Home() {
             </div>
 
             {/* 2. SCHOOL OF SOFTWARE */}
-            <div className="bg-gradient-to-br from-purple-900 to-slate-900 rounded-3xl p-10 relative overflow-hidden group border border-purple-500/30 hover:shadow-2xl hover:shadow-purple-500/10 transition-all">
+            <div className={`rounded-3xl p-8 md:p-10 relative overflow-hidden group border transition-all ${isLight ? 'bg-gradient-to-br from-purple-50 to-white border-purple-200 hover:shadow-purple-900/10' : 'bg-gradient-to-br from-purple-900 to-slate-900 border-purple-500/30 hover:shadow-purple-500/10'} hover:shadow-2xl`}>
               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                 <Code className="w-48 h-48 text-purple-400" />
               </div>
               <div className="relative z-10">
-                <div className="bg-purple-500/20 w-fit p-3 rounded-xl mb-6 backdrop-blur-sm border border-purple-500/30">
-                  <Code className="w-8 h-8 text-purple-300" />
+                <div className={`w-fit p-3 rounded-xl mb-6 backdrop-blur-sm border ${isLight ? 'bg-purple-100/50 border-purple-200' : 'bg-purple-500/20 border-purple-500/30'}`}>
+                  <Code className="w-8 h-8 text-purple-500" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-white">{t("School of Software Engineering", "مدرسة هندسة البرمجيات", "Software Engineering")}</h3>
-                <p className="text-purple-100/80 mb-6 leading-relaxed h-16">
+                <h3 className={`text-2xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t("School of Software Engineering", "مدرسة هندسة البرمجيات", "Software Engineering")}</h3>
+                <p className={`mb-6 leading-relaxed h-16 ${isLight ? 'text-slate-600' : 'text-purple-100/80'}`}>
                   {t("Architect scalable web solutions. Master the MERN stack, Cloud deployment, and System Design.", "هندسة حلول ويب قابلة للتوسع. أتقن MERN Stack، والنشر السحابي، وتصميم الأنظمة.", "Architect scalable web solutions.")}
                 </p>
                 <ul className="space-y-3 mb-8">
-                  <li className="flex items-center text-sm text-purple-200"><CheckCircle className="w-4 h-4 mr-2 text-purple-500" /> Full-Stack MERN</li>
-                  <li className="flex items-center text-sm text-purple-200"><CheckCircle className="w-4 h-4 mr-2 text-purple-500" /> Microservices & APIs</li>
-                  <li className="flex items-center text-sm text-purple-200"><CheckCircle className="w-4 h-4 mr-2 text-purple-500" /> Cloud Architecture (AWS)</li>
+                  <li className={`flex items-center text-sm ${isLight ? 'text-slate-700' : 'text-purple-200'}`}><CheckCircle className="w-4 h-4 mr-2 text-purple-500" /> Full-Stack MERN</li>
+                  <li className={`flex items-center text-sm ${isLight ? 'text-slate-700' : 'text-purple-200'}`}><CheckCircle className="w-4 h-4 mr-2 text-purple-500" /> Microservices & APIs</li>
+                  <li className={`flex items-center text-sm ${isLight ? 'text-slate-700' : 'text-purple-200'}`}><CheckCircle className="w-4 h-4 mr-2 text-purple-500" /> Cloud Architecture (AWS)</li>
                 </ul>
                 <Link href="/programs/software">
                   <Button className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold">
@@ -263,22 +263,22 @@ export default function Home() {
             </div>
 
             {/* 3. SCHOOL OF CYBERSECURITY */}
-            <div className="bg-gradient-to-br from-red-900 to-slate-900 rounded-3xl p-10 relative overflow-hidden group border border-red-500/30 hover:shadow-2xl hover:shadow-red-500/10 transition-all">
+            <div className={`rounded-3xl p-8 md:p-10 relative overflow-hidden group border transition-all ${isLight ? 'bg-gradient-to-br from-red-50 to-white border-red-200 hover:shadow-red-900/10' : 'bg-gradient-to-br from-red-900 to-slate-900 border-red-500/30 hover:shadow-red-500/10'} hover:shadow-2xl`}>
               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                 <Shield className="w-48 h-48 text-red-400" />
               </div>
               <div className="relative z-10">
-                <div className="bg-red-500/20 w-fit p-3 rounded-xl mb-6 backdrop-blur-sm border border-red-500/30">
-                  <Shield className="w-8 h-8 text-red-300" />
+                <div className={`w-fit p-3 rounded-xl mb-6 backdrop-blur-sm border ${isLight ? 'bg-red-100/50 border-red-200' : 'bg-red-500/20 border-red-500/30'}`}>
+                  <Shield className="w-8 h-8 text-red-500" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-white">{t("School of Cybersecurity", "مدرسة الأمن السيبراني", "School of Cybersecurity")}</h3>
-                <p className="text-red-100/80 mb-6 leading-relaxed h-16">
+                <h3 className={`text-2xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t("School of Cybersecurity", "مدرسة الأمن السيبراني", "School of Cybersecurity")}</h3>
+                <p className={`mb-6 leading-relaxed h-16 ${isLight ? 'text-slate-600' : 'text-red-100/80'}`}>
                   {t("Defend the digital world. Learn Offensive Security, Penetration Testing, and SOC Analysis.", "الدفاع عن العالم الرقمي. تعلم الأمن الهجومي، واختبار الاختراق، وتحليل SOC.", "Defend the digital world.")}
                 </p>
                 <ul className="space-y-3 mb-8">
-                  <li className="flex items-center text-sm text-red-200"><CheckCircle className="w-4 h-4 mr-2 text-red-500" /> Ethical Hacking</li>
-                  <li className="flex items-center text-sm text-red-200"><CheckCircle className="w-4 h-4 mr-2 text-red-500" /> Penetration Testing</li>
-                  <li className="flex items-center text-sm text-red-200"><CheckCircle className="w-4 h-4 mr-2 text-red-500" /> SOC Analysis</li>
+                  <li className={`flex items-center text-sm ${isLight ? 'text-slate-700' : 'text-red-200'}`}><CheckCircle className="w-4 h-4 mr-2 text-red-500" /> Ethical Hacking</li>
+                  <li className={`flex items-center text-sm ${isLight ? 'text-slate-700' : 'text-red-200'}`}><CheckCircle className="w-4 h-4 mr-2 text-red-500" /> Penetration Testing</li>
+                  <li className={`flex items-center text-sm ${isLight ? 'text-slate-700' : 'text-red-200'}`}><CheckCircle className="w-4 h-4 mr-2 text-red-500" /> SOC Analysis</li>
                 </ul>
                 <Link href="/programs/security">
                   <Button className="w-full bg-red-600 hover:bg-red-500 text-white font-semibold">
@@ -289,22 +289,22 @@ export default function Home() {
             </div>
 
             {/* 4. SCHOOL OF SPACE TECH (Balanced with others) */}
-            <div className="bg-gradient-to-br from-blue-900 to-slate-900 rounded-3xl p-10 relative overflow-hidden group border border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10 transition-all">
+            <div className={`rounded-3xl p-8 md:p-10 relative overflow-hidden group border transition-all ${isLight ? 'bg-gradient-to-br from-blue-50 to-white border-blue-200 hover:shadow-blue-900/10' : 'bg-gradient-to-br from-blue-900 to-slate-900 border-blue-500/30 hover:shadow-blue-500/10'} hover:shadow-2xl`}>
               <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                 <Satellite className="w-48 h-48 text-blue-400" />
               </div>
               <div className="relative z-10">
-                <div className="bg-blue-500/20 w-fit p-3 rounded-xl mb-6 backdrop-blur-sm border border-blue-500/30">
-                  <Rocket className="w-8 h-8 text-blue-300" />
+                <div className={`w-fit p-3 rounded-xl mb-6 backdrop-blur-sm border ${isLight ? 'bg-blue-100/50 border-blue-200' : 'bg-blue-500/20 border-blue-500/30'}`}>
+                  <Rocket className="w-8 h-8 text-blue-500" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-white">{t("School of Space & AI", "مدرسة الفضاء والذكاء الاصطناعي", "School of Space & AI")}</h3>
-                <p className="text-blue-100/80 mb-6 leading-relaxed h-16">
+                <h3 className={`text-2xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t("School of Space & AI", "مدرسة الفضاء والذكاء الاصطناعي", "School of Space & AI")}</h3>
+                <p className={`mb-6 leading-relaxed h-16 ${isLight ? 'text-slate-600' : 'text-blue-100/80'}`}>
                   {t("Applying AI to Space challenges. Commercial space data analysis, autonomous systems, and Earth observation.", "تطبيق الذكاء الاصطناعي على تحديات الفضاء. تحليل البيانات التجارية، والأنظمة المستقلة، ومراقبة الأرض.", "Applying AI to Space challenges.")}
                 </p>
                 <ul className="space-y-3 mb-8">
-                  <li className="flex items-center text-sm text-blue-200"><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Autonomous Systems & AI</li>
-                  <li className="flex items-center text-sm text-blue-200"><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Satellite Image Analysis</li>
-                  <li className="flex items-center text-sm text-blue-200"><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Deep Learning for Sensing</li>
+                  <li className={`flex items-center text-sm ${isLight ? 'text-slate-700' : 'text-blue-200'}`}><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Autonomous Systems & AI</li>
+                  <li className={`flex items-center text-sm ${isLight ? 'text-slate-700' : 'text-blue-200'}`}><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Satellite Image Analysis</li>
+                  <li className={`flex items-center text-sm ${isLight ? 'text-slate-700' : 'text-blue-200'}`}><CheckCircle className="w-4 h-4 mr-2 text-blue-500" /> Deep Learning for Sensing</li>
                 </ul>
                 <Link href="/programs/space">
                   <Button className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold">
@@ -448,7 +448,7 @@ export default function Home() {
       </section>
 
       {/* === FAQ SECTION === */}
-      <section className="py-24 bg-slate-900 text-white">
+      <section className={`py-24 ${isLight ? 'bg-[#f0f4f8] text-slate-900 border-t border-slate-200' : 'bg-slate-900 text-white'}`}>
         <div className="max-w-3xl mx-auto px-6">
           <h2 className="text-3xl font-bold mb-10 text-center">{t("Common Questions", "أسئلة شائعة", "FAQ")}</h2>
           <div className="space-y-6">
@@ -470,11 +470,11 @@ export default function Home() {
                 a: t("Yes, our platform is fully responsive. You can watch recordings and read materials from any device.", "نعم، منصتنا متجاوبة بالكامل. يمكنك مشاهدة التسجيلات وقراءة المواد من أي جهاز.", "Yes, fully responsive.")
               }
             ].map((item, idx) => (
-              <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all">
-                <h4 className="font-bold text-lg mb-2 text-blue-200 flex items-center">
+              <div key={idx} className={`border rounded-xl p-6 transition-all ${isLight ? 'bg-white border-slate-200 hover:bg-slate-50' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
+                <h4 className={`font-bold text-lg mb-2 flex items-center ${isLight ? 'text-blue-600' : 'text-blue-200'}`}>
                   <Zap className="w-4 h-4 mr-2" /> {item.q}
                 </h4>
-                <p className="text-slate-400 text-sm leading-relaxed pl-6">{item.a}</p>
+                <p className={`text-sm leading-relaxed pl-6 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{item.a}</p>
               </div>
             ))}
           </div>

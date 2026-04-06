@@ -48,6 +48,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // Menu items config (with generic English labels that will be translated in render)
 const MENU_ITEMS = [
@@ -69,8 +70,11 @@ export default function AdminDashboard() {
   const { user, logout, loading } = useAuth();
   const [location, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("overview");
+  const [appTab, setAppTab] = useState("course");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { t, isRTL } = useLanguage();
+  const { theme } = useTheme();
+  const isLight = theme === "light";
 
   const [settings, setSettings] = useState({
     email: "",
@@ -149,9 +153,9 @@ export default function AdminDashboard() {
   const activeMenuItem = MENU_ITEMS.find(m => m.key === activeTab);
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] text-white" dir={isRTL ? "rtl" : "ltr"}>
+    <div className={`min-h-screen ${isLight ? "bg-slate-50 text-slate-900" : "bg-[#0a0e1a] text-white"}`} dir={isRTL ? "rtl" : "ltr"}>
       {/* HEADER */}
-      <header className="bg-[#0d1225]/90 backdrop-blur-xl border-b border-white/[0.06] sticky top-0 z-50">
+      <header className={`${isLight ? "bg-white/90 border-slate-200" : "bg-[#0d1225]/90 border-white/[0.06]"} backdrop-blur-xl border-b sticky top-0 z-50`}>
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             {activeTab !== "overview" && (
@@ -166,7 +170,7 @@ export default function AdminDashboard() {
               <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 text-transparent bg-clip-text">
                 {t("InfinityX Admin", "لوحة تحكم InfinityX", "InfinityX Admin")}
               </h1>
-              <p className="text-xs text-slate-500">
+              <p className={`text-xs ${isLight ? "text-slate-500" : "text-slate-500"}`}>
                 {t("Welcome, ", "أهلاً، ", "Welcome, ")}{user?.name || t("Administrator", "المدير", "Administrator")}
               </p>
             </div>
@@ -175,14 +179,14 @@ export default function AdminDashboard() {
             {/* Mobile menu toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06]"
+              className={`md:hidden p-2 rounded-lg ${isLight ? "bg-slate-100 border-slate-200" : "bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06]"}`}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             <Button
               variant="outline"
               onClick={handleLogout}
-              className="bg-white/[0.04] text-slate-400 hover:text-white hover:bg-red-500/10 border-white/[0.06] hover:border-red-500/20 flex items-center gap-2 text-sm"
+              className={`${isLight ? "bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-600 border-slate-200 hover:border-red-200" : "bg-white/[0.04] text-slate-400 hover:text-white hover:bg-red-500/10 border-white/[0.06] hover:border-red-500/20"} flex items-center gap-2 text-sm`}
             >
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">Logout</span>
@@ -193,7 +197,7 @@ export default function AdminDashboard() {
 
       {/* Mobile menu overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-[#0a0e1a]/95 backdrop-blur-xl md:hidden pt-20 px-4 overflow-y-auto">
+        <div className={`fixed inset-0 z-40 ${isLight ? "bg-white/95" : "bg-[#0a0e1a]/95"} backdrop-blur-xl md:hidden pt-20 px-4 overflow-y-auto`}>
           <div className="grid grid-cols-2 gap-3">
             {MENU_ITEMS.map(item => {
               const Icon = item.icon;
@@ -204,11 +208,11 @@ export default function AdminDashboard() {
                   className={`p-4 rounded-xl border transition-all text-left ${
                     activeTab === item.key
                       ? `${item.bg} ${item.border} border`
-                      : 'bg-[#0d1225]/80 border-white/[0.06] hover:border-white/[0.12]'
+                      : `${isLight ? "bg-white border-slate-200 shadow-sm" : "bg-[#0d1225]/80 border-white/[0.06] hover:border-white/[0.12]"}`
                   }`}
                 >
                   <Icon className={`w-6 h-6 ${item.color} mb-2`} />
-                  <span className="text-sm font-medium text-white">{t(item.label, item.label_ar, item.label)}</span>
+                  <span className={`text-sm font-medium ${isLight ? "text-slate-800" : "text-white"}`}>{t(item.label, item.label_ar, item.label)}</span>
                 </button>
               );
             })}
@@ -223,7 +227,7 @@ export default function AdminDashboard() {
         {activeTab === "overview" && (
           <div className="space-y-8">
             <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{t("Dashboard", "لوحة التحكم", "Dashboard")}</h2>
+              <h2 className={`text-2xl md:text-3xl font-bold mb-2 ${isLight ? "text-slate-900" : "text-white"}`}>{t("Dashboard", "لوحة التحكم", "Dashboard")}</h2>
               <p className="text-slate-500">{t("Select a section to manage your platform", "حدد قسمًا لإدارة منصتك", "Select a section to manage your platform")}</p>
             </div>
 
@@ -236,10 +240,10 @@ export default function AdminDashboard() {
                     onClick={() => setActiveTab(item.key)}
                     className={`group ${item.bg} ${item.border} border rounded-2xl p-5 md:p-6 text-center transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]`}
                   >
-                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl ${item.bg} border ${item.border} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}>
+                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl ${item.bg} border ${item.border} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform ${isLight ? "bg-white" : ""}`}>
                       <Icon className={`w-6 h-6 md:w-7 md:h-7 ${item.color}`} />
                     </div>
-                    <h3 className="text-sm md:text-base font-semibold text-white">{t(item.label, item.label_ar, item.label)}</h3>
+                    <h3 className={`text-sm md:text-base font-semibold ${isLight ? "text-slate-800" : "text-white"}`}>{t(item.label, item.label_ar, item.label)}</h3>
                   </button>
                 );
               })}
@@ -247,19 +251,19 @@ export default function AdminDashboard() {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-[#0d1225]/80 border border-white/[0.06] rounded-xl p-4 text-center">
+              <div className={`${isLight ? "bg-white border-slate-200 shadow-sm" : "bg-[#0d1225]/80 border-white/[0.06]"} border rounded-xl p-4 text-center`}>
                 <p className="text-2xl font-bold text-cyan-400">{applications.length}</p>
                 <p className="text-xs text-slate-500 mt-1">Applications</p>
               </div>
-              <div className="bg-[#0d1225]/80 border border-white/[0.06] rounded-xl p-4 text-center">
+              <div className={`${isLight ? "bg-white border-slate-200 shadow-sm" : "bg-[#0d1225]/80 border-white/[0.06]"} border rounded-xl p-4 text-center`}>
                 <p className="text-2xl font-bold text-blue-400">{(messages as any[]).length}</p>
                 <p className="text-xs text-slate-500 mt-1">Messages</p>
               </div>
-              <div className="bg-[#0d1225]/80 border border-white/[0.06] rounded-xl p-4 text-center">
+              <div className={`${isLight ? "bg-white border-slate-200 shadow-sm" : "bg-[#0d1225]/80 border-white/[0.06]"} border rounded-xl p-4 text-center`}>
                 <p className="text-2xl font-bold text-emerald-400">—</p>
                 <p className="text-xs text-slate-500 mt-1">Active Students</p>
               </div>
-              <div className="bg-[#0d1225]/80 border border-white/[0.06] rounded-xl p-4 text-center">
+              <div className={`${isLight ? "bg-white border-slate-200 shadow-sm" : "bg-[#0d1225]/80 border-white/[0.06]"} border rounded-xl p-4 text-center`}>
                 <p className="text-2xl font-bold text-purple-400">—</p>
                 <p className="text-xs text-slate-500 mt-1">Courses</p>
               </div>
@@ -275,7 +279,7 @@ export default function AdminDashboard() {
                 <div className={`w-10 h-10 rounded-lg ${activeMenuItem.bg} border ${activeMenuItem.border} flex items-center justify-center`}>
                   <activeMenuItem.icon className={`w-5 h-5 ${activeMenuItem.color}`} />
                 </div>
-                <h2 className="text-xl font-bold text-white">{t(activeMenuItem.label, activeMenuItem.label_ar, activeMenuItem.label)}</h2>
+                <h2 className={`text-xl font-bold ${isLight ? "text-slate-900" : "text-white"}`}>{t(activeMenuItem.label, activeMenuItem.label_ar, activeMenuItem.label)}</h2>
               </>
             )}
           </div>
@@ -307,31 +311,56 @@ export default function AdminDashboard() {
 
         {/* APPLICATIONS */}
         {activeTab === "applications" && (
-          <Card className="bg-[#0d1225]/80 border-white/[0.06] text-white">
+          <Card className={`${isLight ? "bg-white border-slate-200 text-slate-900 shadow-sm" : "bg-[#0d1225]/80 border-white/[0.06] text-white"}`}>
             <CardHeader>
-              <CardTitle>Student Applications</CardTitle>
-              <CardDescription className="text-slate-500">
-                View all student submissions from the Apply page.
-              </CardDescription>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <CardTitle>Applications CRM</CardTitle>
+                  <CardDescription className="text-slate-500">
+                    Manage and review all incoming applications.
+                  </CardDescription>
+                </div>
+                <div className={`flex gap-2 p-1 rounded-xl border ${isLight ? "bg-slate-50 border-slate-200" : "bg-white/[0.04] border-white/[0.06]"}`}>
+                  <button
+                    onClick={() => setAppTab("course")}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${appTab === "course" ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" : "text-slate-400 hover:text-white"}`}
+                  >
+                    Course Applications
+                  </button>
+                  <button
+                    onClick={() => setAppTab("career")}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${appTab === "career" ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" : "text-slate-400 hover:text-white"}`}
+                  >
+                    Career Applications
+                  </button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              {applications.length === 0 ? (
+              {applications.filter((a: any) => appTab === "career" ? a.type === "career" : (a.type === "course" || !a.type)).length === 0 ? (
                 <div className="text-center py-10 border-2 border-dashed border-white/[0.06] rounded-lg">
-                  <p className="text-slate-500">No applications received yet.</p>
+                  <p className="text-slate-500">No {appTab} applications received yet.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {applications.map((app: any) => (
+                  {applications
+                    .filter((a: any) => appTab === "career" ? a.type === "career" : (a.type === "course" || !a.type))
+                    .map((app: any) => (
                     <div
                       key={app.id}
-                      className="p-5 border border-white/[0.06] rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                      className={`p-5 rounded-xl transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border ${isLight ? "border-slate-200 bg-white hover:bg-slate-50 shadow-sm" : "border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]"}`}
                     >
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-3">
-                          <h3 className="text-lg font-bold text-white">
+                          <h3 className={`text-lg font-bold ${isLight ? "text-slate-900" : "text-white"}`}>
                             {app.full_name || app.fullName}
                           </h3>
-                          {app.course_title ? (
+                          {appTab === "career" ? (
+                            <Badge className="bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center gap-1">
+                              <Briefcase className="w-3 h-3" />
+                              {app.course_interest || "General Application"}
+                            </Badge>
+                          ) : app.course_title ? (
                             <Badge className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
                               <BookOpen className="w-3 h-3" />
                               {app.course_title}
@@ -350,10 +379,20 @@ export default function AdminDashboard() {
                           <span className="flex items-center gap-1">
                             <Phone className="w-3.5 h-3.5 text-slate-500" /> {app.phone}
                           </span>
+                          {appTab === "career" && app.cv_link && (
+                            <a
+                              href={app.cv_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-blue-400 hover:text-blue-300 underline"
+                            >
+                              <Briefcase className="w-3.5 h-3.5" /> View CV/Resume
+                            </a>
+                          )}
                         </div>
 
                         {app.message && (
-                          <div className="mt-2 text-sm text-slate-400 bg-white/[0.02] p-3 rounded-md border-l-4 border-cyan-500/30 italic">
+                          <div className={`mt-2 text-sm p-3 rounded-md border-l-4 italic ${isLight ? "text-slate-600 bg-slate-50 border-cyan-400" : "text-slate-400 bg-white/[0.02] border-cyan-500/30"}`}>
                             "{app.message}"
                           </div>
                         )}
@@ -390,7 +429,7 @@ export default function AdminDashboard() {
 
         {/* SITE SETTINGS — with Save Button */}
         {activeTab === "site-settings" && (
-          <Card className="bg-[#0d1225]/80 border-white/[0.06] text-white">
+          <Card className={`${isLight ? "bg-white border-slate-200 text-slate-900 shadow-sm" : "bg-[#0d1225]/80 border-white/[0.06] text-white"}`}>
             <CardHeader>
               <CardTitle>Site Settings</CardTitle>
               <CardDescription className="text-slate-500">
@@ -412,13 +451,13 @@ export default function AdminDashboard() {
                     value={settings[key as keyof typeof settings]}
                     onChange={(e) => handleSettingFieldChange(key, e.target.value)}
                     placeholder={placeholder}
-                    className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600 focus:ring-cyan-500/30 focus:border-cyan-500/40 rounded-xl h-11"
+                    className={`${isLight ? "bg-white border-slate-200 text-slate-900" : "bg-white/[0.04] border-white/[0.08] text-white"} placeholder:text-slate-600 focus:ring-cyan-500/30 focus:border-cyan-500/40 rounded-xl h-11`}
                   />
                 </div>
               ))}
 
               {/* Save Button */}
-              <div className="pt-4 border-t border-white/[0.06]">
+              <div className={`pt-4 border-t ${isLight ? "border-slate-200" : "border-white/[0.06]"}`}>
                 <Button
                   onClick={handleSaveSettings}
                   disabled={!settingsDirty || updateSettingMutation.isPending}

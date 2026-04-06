@@ -45,7 +45,7 @@ export default function Contact() {
   const siteInfo = {
     email: "support@infx.space",
     phone: "+20 110 013 5225",
-    whatsapp: "https://wa.me/qr/DPIFTRQ4NI3VP1",
+    whatsapp: "https://wa.me/201100135225",
     location: t("Cairo, Egypt", "القاهرة، مصر", "Cairo, Egypt"),
   };
 

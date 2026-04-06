@@ -234,6 +234,14 @@ BEGIN
       order_index INTEGER DEFAULT 0,
       UNIQUE(program_module_id, course_id)
     );
+
+    -- 7. Add Career Application fields to applications
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'applications' AND column_name = 'type') THEN
+        ALTER TABLE applications ADD COLUMN type VARCHAR(50) DEFAULT 'course';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'applications' AND column_name = 'cv_link') THEN
+        ALTER TABLE applications ADD COLUMN cv_link TEXT;
+    END IF;
 END $$;
 
 -- ============================================
@@ -289,6 +297,8 @@ CREATE TABLE IF NOT EXISTS applications (
   course_interest VARCHAR(255),
   message TEXT,
   status VARCHAR(50) DEFAULT 'pending',
+  type VARCHAR(50) DEFAULT 'course',
+  cv_link TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

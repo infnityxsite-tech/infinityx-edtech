@@ -1,24 +1,30 @@
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Globe } from "lucide-react";
 
 /**
- * Floating language toggle — always visible, top-right below navbar.
- * Only contains the language (EN/AR) toggle. Theme toggle is in the nav.
+ * Floating language toggle — pinned beautifully to the top right.
  */
 export default function FloatingControls() {
   const { lang, toggleLang } = useLanguage();
+  const { theme } = useTheme();
+  const isLight = theme === "light";
 
   return (
-    <div className="fixed top-20 right-4 z-[55]">
-      {/* Language Toggle */}
+    <div className="fixed top-24 right-5 z-[55] animate-fade-in group">
       <button
         onClick={toggleLang}
-        className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 backdrop-blur-xl border
-          bg-[#0d1225]/90 border-white/10 text-cyan-400 hover:bg-[#0d1225] hover:border-cyan-400/30 hover:shadow-cyan-500/20"
+        className={`flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-xl border ${
+          isLight
+            ? "bg-white/80 border-slate-200 shadow-cyan-500/10 text-slate-700 hover:bg-cyan-50 hover:text-cyan-600 hover:border-cyan-200 hover:shadow-cyan-500/20"
+            : "bg-[#0d1225]/80 border-white/10 shadow-black/50 text-slate-300 hover:bg-[#121935] hover:text-cyan-400 hover:border-cyan-500/30 hover:shadow-cyan-500/20"
+        }`}
         title={lang === "en" ? "التبديل إلى العربية" : "Switch to English"}
         aria-label="Toggle language"
       >
-        <span className="text-xs font-bold leading-none">
-          {lang === "en" ? "ع" : "EN"}
+        <Globe className={`w-4 h-4 transition-transform duration-500 group-hover:rotate-180 ${isLight ? 'text-cyan-500' : 'text-cyan-400'}`} />
+        <span className="text-xs font-bold uppercase tracking-wider">
+          {lang === "en" ? "العربية" : "ENG"}
         </span>
       </button>
     </div>

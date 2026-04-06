@@ -136,14 +136,26 @@ export default function Navigation() {
           </div>
         </div>
 
-        {/* MOBILE TOGGLE */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden p-2 text-slate-400 hover:text-white hover:bg-white/[0.08] rounded-lg transition"
-          aria-label="Toggle menu"
-        >
-          {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        {/* MOBILE ACTIONS */}
+        <div className="md:hidden flex items-center gap-2">
+          {/* Theme Toggle Mobile */}
+          <button
+            onClick={toggleTheme}
+            className={`p-1.5 rounded-full transition-all duration-200 ${isLight ? "text-slate-500 hover:bg-slate-100 hover:text-slate-900" : "text-slate-400 hover:bg-white/[0.1] hover:text-yellow-400"}`}
+            title={isLight ? "Switch to Dark Mode" : "Switch to Light Mode"}
+            aria-label="Toggle theme"
+          >
+            {isLight ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+          </button>
+          
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className={`p-2 rounded-lg transition ${isLight ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100" : "text-slate-400 hover:text-white hover:bg-white/[0.08]"}`}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {/* MOBILE MENU */}

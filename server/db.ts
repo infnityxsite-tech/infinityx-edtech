@@ -832,6 +832,8 @@ export interface Application {
   courseInterest?: string | null;
   message?: string | null;
   status: string;
+  type: string;
+  cvLink?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -841,17 +843,18 @@ export type InsertApplication = Omit<Application, "id" | "createdAt" | "updatedA
 export async function getApplications(): Promise<Application[]> {
   return await queryMany<any>(
     `SELECT id, full_name as "fullName", email, phone, course_interest as "courseInterest",
-            message, status, created_at as "createdAt", updated_at as "updatedAt"
+            message, status, type, cv_link as "cvLink", created_at as "createdAt", updated_at as "updatedAt"
      FROM applications ORDER BY created_at DESC`
   );
 }
 
 export async function createApplication(application: InsertApplication) {
   await query(
-    `INSERT INTO applications (full_name, email, phone, course_interest, message, status)
-     VALUES ($1, $2, $3, $4, $5, $6)`,
+    `INSERT INTO applications (full_name, email, phone, course_interest, message, status, type, cv_link)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
     [application.fullName, application.email, application.phone,
-    application.courseInterest, application.message, application.status || 'pending']
+    application.courseInterest, application.message, application.status || 'pending',
+    (application as any).type || 'course', (application as any).cvLink || null]
   );
 }
 

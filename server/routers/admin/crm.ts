@@ -54,16 +54,23 @@ export const crmEndpoints = {
                 phone: z.string().optional(),
                 message: z.string().optional(),
                 courseId: z.string().optional(),
+                type: z.string().optional().default("course"),
+                cvLink: z.string().optional(),
+                courseInterest: z.string().optional()
             })
         )
         .mutation(async ({ input }) => {
-            const courseIdInt = (input.courseId && input.courseId !== "")
-                ? parseInt(input.courseId)
-                : null;
+            let courseIdInt = null;
+            if (input.courseId && input.courseId !== "" && !isNaN(parseInt(input.courseId))) {
+               courseIdInt = parseInt(input.courseId);
+            }
+
+            // Using courseInterest field for position applied for or actual course name
+            const interest = input.courseInterest || input.courseId;
 
             await db.query(
-                "INSERT INTO applications (full_name, email, phone, message, course_id, created_at, status) VALUES ($1, $2, $3, $4, $5, NOW(), 'pending')",
-                [input.fullName, input.email, input.phone, input.message, courseIdInt]
+                "INSERT INTO applications (full_name, email, phone, message, course_interest, type, cv_link, created_at, status) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), 'pending')",
+                [input.fullName, input.email, input.phone, input.message, interest, input.type, input.cvLink]
             );
             return { success: true };
         }),
