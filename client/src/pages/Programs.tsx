@@ -157,16 +157,23 @@ export default function Programs() {
                       </div>
                     )}
 
-                    <Button
-                      onClick={() =>
-                        navigate(
-                          `/apply/${program.id}?courseName=${encodeURIComponent(program.title)}`
-                        )
-                      }
-                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl shadow-lg shadow-cyan-500/20"
-                    >
-                      {t("Apply Now", "سجل الآن", "Apply Now")} <ArrowRight className={`w-4 h-4 ${isRTL ? 'mr-2 rotate-180' : 'ml-2'}`} />
-                    </Button>
+                    <div className="flex gap-3 pt-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => navigate(`/program/${program.id}`)}
+                        className={`flex-1 rounded-xl shadow-sm border ${isLight ? 'border-cyan-500/30 text-cyan-700 hover:bg-cyan-50' : 'border-cyan-500/30 text-cyan-400 hover:bg-cyan-950/30'}`}
+                      >
+                        {t("View Details", "التفاصيل", "View Details")}
+                      </Button>
+                      <Button
+                        onClick={() =>
+                          navigate(`/apply?programId=${program.id}&programName=${encodeURIComponent(program.title)}`)
+                        }
+                        className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl shadow-lg shadow-cyan-500/20"
+                      >
+                        {t("Apply", "سجل", "Apply")} <ArrowRight className={`w-4 h-4 ${isRTL ? 'mr-1 rotate-180' : 'ml-1'}`} />
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}

@@ -188,11 +188,18 @@ export default function SchoolLanding() {
                             </div>
 
                             {/* CTA */}
-                            <Link href={`/apply?programName=${encodeURIComponent(program.title)}`}>
-                              <Button className={`w-full bg-gradient-to-r ${meta.gradient} text-white h-10 font-semibold text-sm rounded-xl shadow-sm`}>
-                                {t("Apply Now", "قدّم الآن")} <ArrowRight className="ml-2 w-4 h-4" />
-                              </Button>
-                            </Link>
+                            <div className="flex gap-4">
+                              <Link href={`/program/${program.id}`} className="flex-1">
+                                <Button variant="outline" className={`w-full border-slate-600/50 text-slate-300 hover:bg-slate-700/50 hover:text-white h-10 font-medium text-sm rounded-xl`}>
+                                  {t("View Details", "عرض التفاصيل")}
+                                </Button>
+                              </Link>
+                              <Link href={`/apply?programId=${program.id}&programName=${encodeURIComponent(program.title)}`} className="flex-1">
+                                <Button className={`w-full bg-gradient-to-r ${meta.gradient} text-white h-10 font-semibold text-sm rounded-xl shadow-sm`}>
+                                  {t("Apply Now", "قدّم الآن")} <ArrowRight className="ml-2 w-4 h-4" />
+                                </Button>
+                              </Link>
+                            </div>
                           </div>
                         )}
                       </div>

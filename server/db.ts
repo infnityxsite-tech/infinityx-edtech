@@ -615,7 +615,8 @@ export async function getProgramComplete(id: string) {
     const coursesRaw = await queryMany<any>(
       `SELECT pmc.id as "junctionId", pmc.course_id as "courseId", pmc.override_price_egp as "overridePriceEgp",
               pmc.override_price_usd as "overridePriceUsd", pmc.order_index as "orderIndex",
-              c.title, c.description, c.cover_image as "imageUrl", c.duration, c.level, c.type as "courseType"
+              c.title, c.description, c.cover_image as "imageUrl", c.duration, c.level, c.type as "courseType",
+              c.external_link as "courseLink"
        FROM program_module_courses pmc
        JOIN courses c ON pmc.course_id = c.id
        WHERE pmc.program_module_id = $1

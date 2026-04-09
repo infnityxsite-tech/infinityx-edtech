@@ -17,6 +17,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
+  SelectSeparator,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { 
@@ -38,8 +41,11 @@ export default function Apply() {
   const { theme } = useTheme();
   const isLight = theme === 'light';
   
-  // 1️⃣ جلب قائمة الكورسات من قاعدة البيانات (لعمل الـ Dropdown)
+  // 1️⃣ جلب قائمة الكورسات والبرامج من قاعدة البيانات (لعمل الـ Dropdown)
   const { data: courses = [], isLoading: isLoadingCourses } = trpc.admin.getCourses.useQuery();
+  const { data: programs = [], isLoading: isLoadingPrograms } = trpc.admin.getPrograms.useQuery();
+
+  const isLoadingData = isLoadingCourses || isLoadingPrograms;
 
   // 2️⃣ دالة لاستخراج رقم الكورس من الرابط (URL)
   const getUrlParameter = (name: string) => {
@@ -47,7 +53,7 @@ export default function Apply() {
     return params.get(name);
   };
 
-  const preSelectedId = getUrlParameter("courseId");
+  const preSelectedId = getUrlParameter("courseId") || getUrlParameter("programId");
 
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -195,7 +201,7 @@ export default function Apply() {
               <div className="space-y-2">
                 <Label htmlFor="course" className={isLight ? 'text-slate-700' : 'text-slate-400'}>{t("Select Program / Course *", "اختر البرنامج / الدورة *", "Select Program / Course *")}</Label>
                 
-                {isLoadingCourses ? (
+                {isLoadingData ? (
                   // شكل تحميل (Loading Skeleton)
                   <div className={`h-11 w-full animate-pulse rounded-xl border ${isLight ? 'bg-slate-100 border-slate-200' : 'bg-white/[0.04] border-white/[0.08]'}`}></div>
                 ) : (
@@ -204,20 +210,40 @@ export default function Apply() {
                     onValueChange={(val) => setForm({ ...form, courseId: val })}
                   >
                     <SelectTrigger className={`h-11 rounded-xl ${isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-white/[0.04] border-white/[0.08] text-white'}`}>
-                      <SelectValue placeholder={t("-- Choose a Course --", "-- اختر دورة --", "-- Choose a Course --")} />
+                      <SelectValue placeholder={t("-- Choose a Program or Course --", "-- اختر برنامج أو دورة --", "-- Choose a Program or Course --")} />
                     </SelectTrigger>
                     <SelectContent className={isLight ? 'bg-white' : ''}>
-                      {courses.map((course: any) => (
-                        <SelectItem key={course.id} value={course.id}>
-                          {course.title} {course.priceEgp ? `(${Number(course.priceEgp).toLocaleString()} EGP)` : ""}
-                        </SelectItem>
-                      ))}
+                      {/* Master Programs Group */}
+                      <SelectGroup>
+                        <SelectLabel className="font-bold text-indigo-500 uppercase tracking-wider text-xs">
+                           {t("Master Programs", "برامج الماجستير", "Master Programs")}
+                        </SelectLabel>
+                        {programs.map((program: any) => (
+                          <SelectItem key={program.id} value={program.id} className="font-semibold cursor-pointer">
+                            {program.title} {program.priceEgp ? `(${Number(program.priceEgp).toLocaleString()} EGP)` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                      
+                      <SelectSeparator />
+                      
+                      {/* Individual Courses Group */}
+                      <SelectGroup>
+                        <SelectLabel className="font-bold text-cyan-500 uppercase tracking-wider text-xs">
+                           {t("Individual Courses", "دورات فردية", "Individual Courses")}
+                        </SelectLabel>
+                        {courses.map((course: any) => (
+                          <SelectItem key={course.id} value={course.id} className="cursor-pointer text-slate-500">
+                            {course.title} {course.priceEgp ? `(${Number(course.priceEgp).toLocaleString()} EGP)` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     </SelectContent>
                   </Select>
                 )}
 
                 {/* رسالة تأكيد إذا تم الاختيار تلقائياً */}
-                {preSelectedId && !isLoadingCourses && form.courseId === preSelectedId && (
+                {preSelectedId && !isLoadingData && form.courseId === preSelectedId && (
                    <p className="text-xs text-emerald-500 flex items-center mt-1 font-medium">
                       <CheckCircle2 className="w-3 h-3 mr-1" />
                       {t("Course automatically selected based on your choice.", "تم تحديد الدورة تلقائيًا بناءً على اختيارك.", "Course automatically selected.")}

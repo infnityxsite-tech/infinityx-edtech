@@ -11,6 +11,7 @@ import Courses from "./pages/Courses";
 import CoursesLive from "./pages/CoursesLive";
 import CoursesRecorded from "./pages/CoursesRecorded";
 import CoursePreview from "./pages/CoursePreview";
+import ProgramDetails from "./pages/ProgramDetails";
 import Programs from "./pages/Programs";
 import SchoolLanding from "./pages/SchoolLanding";
 import Blog from "./pages/Blog";
@@ -85,7 +86,10 @@ function Router() {
       {/* ✅ EXISTING ROUTE (The list of all programs) */}
       <Route path="/programs" component={Programs} />
 
-      {/* 🚀 School Landing Pages */}
+      {/* ✅ Specific Program Details */}
+      <Route path="/program/:id" component={ProgramDetails} />
+
+      {/* 🚀 School Landing Pages (Category based) */}
       <Route path="/programs/:category" component={SchoolLanding} />
 
       <Route path="/blog" component={Blog} />
