@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mastery Program — Interactive Career Roadmap</title>
+    <meta name="description" content="Interactive career roadmap for the Infinity X EdTech AI Mastery 120-Hour Program. Explore 5 specialization paths after graduation.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ==================== DESIGN TOKENS ==================== */
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.7);
+            --bg-glass: rgba(255, 255, 255, 0.04);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --accent-pink: #ec4899;
+            --glow-blue: rgba(59, 130, 246, 0.3);
+            --glow-purple: rgba(139, 92, 246, 0.3);
+            --glow-cyan: rgba(6, 182, 212, 0.3);
+            --glow-emerald: rgba(16, 185, 129, 0.3);
+            --glow-amber: rgba(245, 158, 11, 0.3);
+            --glow-rose: rgba(244, 63, 94, 0.3);
+            --glow-pink: rgba(236, 72, 153, 0.3);
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --shadow-lg: 0 25px 50px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 40px rgba(59, 130, 246, 0.15);
+            --font-main: 'Inter', sans-serif;
+            --font-arabic: 'Cairo', sans-serif;
+            --timeline-width: 4px;
+            --node-size: 20px;
+        }
+
+        /* ==================== RESET & BASE ==================== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ==================== ANIMATED BACKGROUND ==================== */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .bg-grid::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* ==================== HEADER ==================== */
+        .header {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+
+        .header__badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 100px;
+            padding: 8px 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header__badge .dot {
+            width: 8px; height: 8px;
+            background: var(--accent-emerald);
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        .header__title {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #f1f5f9, #3b82f6, #8b5cf6);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 6s ease infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header__subtitle {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            font-weight: 400;
+        }
+
+        .header__subtitle strong {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        /* ==================== MAIN CONTAINER ==================== */
+        .roadmap-container {
+            position: relative;
+            z-index: 5;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px 100px;
+        }
+
+        /* ==================== SECTION LABEL ==================== */
+        .section-label {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .section-label__text {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .section-label__text::before,
+        .section-label__text::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-glass));
+        }
+
+        .section-label__text::before { right: 100%; }
+        .section-label__text::after { left: 100%; }
+
+        /* ==================== VERTICAL TIMELINE ==================== */
+        .timeline {
+            position: relative;
+            max-width: 700px;
+            margin: 0 auto 60px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: var(--timeline-width);
+            background: linear-gradient(180deg,
+                var(--accent-blue),
+                var(--accent-purple),
+                var(--accent-cyan),
+                var(--accent-emerald),
+                var(--accent-amber),
+                var(--accent-rose));
+            transform: translateX(-50%);
+            border-radius: 4px;
+            opacity: 0.6;
+        }
+
+        /* ==================== TIMELINE NODE ==================== */
+        .timeline-node {
+            position: relative;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fade-in-up 0.6s ease forwards;
+        }
+
+        .timeline-node:nth-child(1) { animation-delay: 0.1s; }
+        .timeline-node:nth-child(2) { animation-delay: 0.25s; }
+        .timeline-node:nth-child(3) { animation-delay: 0.4s; }
+        .timeline-node:nth-child(4) { animation-delay: 0.55s; }
+        .timeline-node:nth-child(5) { animation-delay: 0.7s; }
+        .timeline-node:nth-child(6) { animation-delay: 0.85s; }
+
+        @keyframes fade-in-up {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Dot on the timeline */
+        .timeline-node__dot {
+            position: absolute;
+            left: 50%;
+            top: 20px;
+            width: var(--node-size);
+            height: var(--node-size);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            border: 3px solid;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .timeline-node:hover .timeline-node__dot {
+            transform: translateX(-50%) scale(1.3);
+        }
+
+        /* Alternating layout */
+        .timeline-node:nth-child(odd) .timeline-node__card {
+            margin-right: calc(50% + 30px);
+            text-align: right;
+        }
+
+        .timeline-node:nth-child(even) .timeline-node__card {
+            margin-left: calc(50% + 30px);
+            text-align: left;
+        }
+
+        /* Card */
+        .timeline-node__card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 24px 28px;
+            backdrop-filter: blur(16px);
+            transition: all 0.35s ease;
+            flex: 1;
+        }
+
+        .timeline-node:hover .timeline-node__card {
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .timeline-node__hours {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 100px;
+            margin-bottom: 10px;
+        }
+
+        .timeline-node__title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .timeline-node__desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        /* Topic pills (hidden initially, shown on click) */
+        .timeline-node__topics {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, margin-top 0.3s ease;
+            margin-top: 0;
+        }
+
+        .timeline-node__topics.open {
+            max-height: 600px;
+            margin-top: 14px;
+        }
+
+        .timeline-node__topics ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .timeline-node:nth-child(odd) .timeline-node__topics ul {
+            justify-content: flex-end;
+        }
+
+        .timeline-node__topics li {
+            font-size: 0.72rem;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            transition: background 0.2s;
+        }
+
+        .timeline-node__topics li:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .timeline-node__expand-hint {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .timeline-node:hover .timeline-node__expand-hint {
+            opacity: 1;
+        }
+
+        /* Color variants */
+        .node-blue .timeline-node__dot { border-color: var(--accent-blue); background: var(--bg-primary); box-shadow: 0 0 15px var(--glow-blue); }
+        .node-blue .timeline-node__hours { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+        .node-purple .timeline-node__dot { border-color: var(--accent-purple); background: var(--bg-primary); box-shadow: 0 0 15px var(--glow-purple); }
+        .node-purple .timeline-node__hours { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+        .node-cyan .timeline-node__dot { border-color: var(--accent-cyan); background: var(--bg-primary); box-shadow: 0 0 15px var(--glow-cyan); }
+        .node-cyan .timeline-node__hours { background: rgba(6,182,212,0.15); color: var(--accent-cyan); }
+        .node-emerald .timeline-node__dot { border-color: var(--accent-emerald); background: var(--bg-primary); box-shadow: 0 0 15px var(--glow-emerald); }
+        .node-emerald .timeline-node__hours { background: rgba(16,185,129,0.15); color: var(--accent-emerald); }
+        .node-amber .timeline-node__dot { border-color: var(--accent-amber); background: var(--bg-primary); box-shadow: 0 0 15px var(--glow-amber); }
+        .node-amber .timeline-node__hours { background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+        .node-rose .timeline-node__dot { border-color: var(--accent-rose); background: var(--bg-primary); box-shadow: 0 0 15px var(--glow-rose); }
+        .node-rose .timeline-node__hours { background: rgba(244,63,94,0.15); color: var(--accent-rose); }
+
+        /* ==================== YOU ARE HERE NODE ==================== */
+        .you-are-here {
+            position: relative;
+            max-width: 700px;
+            margin: 0 auto 80px;
+            text-align: center;
+            opacity: 0;
+            animation: fade-in-up 0.8s ease forwards;
+            animation-delay: 1s;
+        }
+
+        .you-are-here__node {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 28px 50px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(139, 92, 246, 0.12), rgba(236, 72, 153, 0.12));
+            border: 2px solid rgba(139, 92, 246, 0.35);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+            cursor: default;
+            animation: you-are-here-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes you-are-here-glow {
+            0%, 100% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.15), 0 0 60px rgba(59, 130, 246, 0.08); }
+            50% { box-shadow: 0 0 50px rgba(139, 92, 246, 0.3), 0 0 100px rgba(59, 130, 246, 0.15); }
+        }
+
+        .you-are-here__node::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-pink), var(--accent-cyan));
+            background-size: 300% 300%;
+            border-radius: inherit;
+            z-index: -1;
+            animation: gradient-border 4s ease infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes gradient-border {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .you-are-here__icon {
+            font-size: 2.5rem;
+            animation: bounce-icon 2s ease infinite;
+        }
+
+        @keyframes bounce-icon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .you-are-here__label {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .you-are-here__arabic {
+            font-family: var(--font-arabic);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            direction: rtl;
+        }
+
+        .you-are-here__subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Connector line from timeline to you-are-here */
+        .you-are-here::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: -80px;
+            height: 80px;
+            width: var(--timeline-width);
+            background: linear-gradient(180deg, var(--accent-rose), var(--accent-purple));
+            transform: translateX(-50%);
+            border-radius: 4px;
+            opacity: 0.6;
+        }
+
+        /* ==================== SPECIALIZATIONS SECTION ==================== */
+        .specializations-section {
+            position: relative;
+            margin-top: 40px;
+        }
+
+        .specializations-section .section-label {
+            margin-bottom: 60px;
+        }
+
+        /* ==================== BRANCH CONNECTOR LINES (SVG) ==================== */
+        .branch-connectors {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ==================== BRANCHES GRID ==================== */
+        .branches-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ==================== BRANCH CARD ==================== */
+        .branch-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 0;
+            backdrop-filter: blur(16px);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(40px);
+            position: relative;
+        }
+
+        .branch-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .branch-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .branch-card__glow {
+            position: absolute;
+            top: -1px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 3px 3px 0 0;
+        }
+
+        .branch-card__header {
+            padding: 24px 22px 16px;
+            position: relative;
+        }
+
+        .branch-card__icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .branch-card__number {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2.5rem;
+            font-weight: 900;
+            opacity: 0.06;
+            line-height: 1;
+        }
+
+        .branch-card__title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .branch-card__path-label {
+            font-size: 0.72rem;
+            font-style: italic;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 12px;
+            display: inline-block;
+            line-height: 1.4;
+        }
+
+        .branch-card__demand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .branch-card__demand-bar {
+            height: 4px;
+            border-radius: 4px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+            margin-bottom: 0px;
+        }
+
+        .branch-card__demand-fill {
+            height: 100%;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 1.2s ease;
+        }
+
+        .branch-card.visible .branch-card__demand-fill {
+            width: var(--demand-width);
+        }
+
+        /* Expandable detail panel */
+        .branch-card__details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+            border-top: 1px solid transparent;
+        }
+
+        .branch-card__details.open {
+            max-height: 800px;
+            border-top-color: var(--border-glass);
+        }
+
+        .branch-card__details-inner {
+            padding: 18px 22px 22px;
+        }
+
+        .branch-card__details-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .branch-card__study-block {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .branch-card__study-block:last-child {
+            border-bottom: none;
+        }
+
+        .branch-card__study-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .branch-card__study-text {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .branch-card__market {
+            margin-top: 16px;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.78rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        .branch-card__market-label {
+            font-weight: 700;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .branch-card__expand-hint {
+            padding: 12px 22px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-align: center;
+            transition: color 0.2s;
+        }
+
+        .branch-card:hover .branch-card__expand-hint {
+            color: var(--text-secondary);
+        }
+
+        /* Branch color variants */
+        .branch-cv { --branch-color: var(--accent-cyan); --branch-glow: var(--glow-cyan); --branch-bg: rgba(6,182,212,0.08); }
+        .branch-cv .branch-card__glow { background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent); }
+        .branch-cv:hover { box-shadow: 0 20px 50px var(--glow-cyan); }
+        .branch-cv .branch-card__path-label { background: rgba(6,182,212,0.1); color: var(--accent-cyan); }
+        .branch-cv .branch-card__demand { color: var(--accent-cyan); }
+        .branch-cv .branch-card__demand-fill { background: linear-gradient(90deg, var(--accent-cyan), rgba(6,182,212,0.5)); }
+        .branch-cv .branch-card__study-icon { background: rgba(6,182,212,0.12); color: var(--accent-cyan); }
+        .branch-cv .branch-card__market { background: rgba(6,182,212,0.06); border-left: 3px solid var(--accent-cyan); }
+        .branch-cv .branch-card__market-label { color: var(--accent-cyan); }
+
+        .branch-agent { --branch-color: var(--accent-purple); --branch-glow: var(--glow-purple); --branch-bg: rgba(139,92,246,0.08); }
+        .branch-agent .branch-card__glow { background: linear-gradient(90deg, transparent, var(--accent-purple), transparent); }
+        .branch-agent:hover { box-shadow: 0 20px 50px var(--glow-purple); }
+        .branch-agent .branch-card__path-label { background: rgba(139,92,246,0.1); color: var(--accent-purple); }
+        .branch-agent .branch-card__demand { color: var(--accent-purple); }
+        .branch-agent .branch-card__demand-fill { background: linear-gradient(90deg, var(--accent-purple), rgba(139,92,246,0.5)); }
+        .branch-agent .branch-card__study-icon { background: rgba(139,92,246,0.12); color: var(--accent-purple); }
+        .branch-agent .branch-card__market { background: rgba(139,92,246,0.06); border-left: 3px solid var(--accent-purple); }
+        .branch-agent .branch-card__market-label { color: var(--accent-purple); }
+
+        .branch-mlops { --branch-color: var(--accent-emerald); --branch-glow: var(--glow-emerald); --branch-bg: rgba(16,185,129,0.08); }
+        .branch-mlops .branch-card__glow { background: linear-gradient(90deg, transparent, var(--accent-emerald), transparent); }
+        .branch-mlops:hover { box-shadow: 0 20px 50px var(--glow-emerald); }
+        .branch-mlops .branch-card__path-label { background: rgba(16,185,129,0.1); color: var(--accent-emerald); }
+        .branch-mlops .branch-card__demand { color: var(--accent-emerald); }
+        .branch-mlops .branch-card__demand-fill { background: linear-gradient(90deg, var(--accent-emerald), rgba(16,185,129,0.5)); }
+        .branch-mlops .branch-card__study-icon { background: rgba(16,185,129,0.12); color: var(--accent-emerald); }
+        .branch-mlops .branch-card__market { background: rgba(16,185,129,0.06); border-left: 3px solid var(--accent-emerald); }
+        .branch-mlops .branch-card__market-label { color: var(--accent-emerald); }
+
+        .branch-ds { --branch-color: var(--accent-amber); --branch-glow: var(--glow-amber); --branch-bg: rgba(245,158,11,0.08); }
+        .branch-ds .branch-card__glow { background: linear-gradient(90deg, transparent, var(--accent-amber), transparent); }
+        .branch-ds:hover { box-shadow: 0 20px 50px var(--glow-amber); }
+        .branch-ds .branch-card__path-label { background: rgba(245,158,11,0.1); color: var(--accent-amber); }
+        .branch-ds .branch-card__demand { color: var(--accent-amber); }
+        .branch-ds .branch-card__demand-fill { background: linear-gradient(90deg, var(--accent-amber), rgba(245,158,11,0.5)); }
+        .branch-ds .branch-card__study-icon { background: rgba(245,158,11,0.12); color: var(--accent-amber); }
+        .branch-ds .branch-card__market { background: rgba(245,158,11,0.06); border-left: 3px solid var(--accent-amber); }
+        .branch-ds .branch-card__market-label { color: var(--accent-amber); }
+
+        .branch-genai { --branch-color: var(--accent-pink); --branch-glow: var(--glow-pink); --branch-bg: rgba(236,72,153,0.08); }
+        .branch-genai .branch-card__glow { background: linear-gradient(90deg, transparent, var(--accent-pink), transparent); }
+        .branch-genai:hover { box-shadow: 0 20px 50px var(--glow-pink); }
+        .branch-genai .branch-card__path-label { background: rgba(236,72,153,0.1); color: var(--accent-pink); }
+        .branch-genai .branch-card__demand { color: var(--accent-pink); }
+        .branch-genai .branch-card__demand-fill { background: linear-gradient(90deg, var(--accent-pink), rgba(236,72,153,0.5)); }
+        .branch-genai .branch-card__study-icon { background: rgba(236,72,153,0.12); color: var(--accent-pink); }
+        .branch-genai .branch-card__market { background: rgba(236,72,153,0.06); border-left: 3px solid var(--accent-pink); }
+        .branch-genai .branch-card__market-label { color: var(--accent-pink); }
+
+        /* ==================== FOOTER ==================== */
+        .footer {
+            text-align: center;
+            padding: 60px 20px 40px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .footer__text {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .footer__brand {
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ==================== SCROLL INDICATOR ==================== */
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+            z-index: 100;
+            transition: width 0.1s linear;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 1200px) {
+            .branches-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .branches-grid {
+                grid-template-columns: 1fr;
+                max-width: 450px;
+                margin: 0 auto;
+            }
+
+            .timeline::before {
+                left: 20px;
+            }
+
+            .timeline-node__dot {
+                left: 20px !important;
+            }
+
+            .timeline-node:nth-child(odd) .timeline-node__card,
+            .timeline-node:nth-child(even) .timeline-node__card {
+                margin-left: 52px;
+                margin-right: 0;
+                text-align: left;
+            }
+
+            .timeline-node:nth-child(odd) .timeline-node__topics ul {
+                justify-content: flex-start;
+            }
+
+            .you-are-here::before {
+                left: 20px;
+                transform: none;
+            }
+
+            .header__title {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* ==================== PATH LABEL LINES ==================== */
+        .path-labels-container {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 30px;
+            position: relative;
+            padding: 0 20px;
+        }
+
+        .path-label-line {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            padding: 40px 4px 20px;
+        }
+
+        .path-label-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 30px;
+            transform: translateX(-50%);
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+
+        .path-label-line__text {
+            font-size: 0.68rem;
+            font-style: italic;
+            line-height: 1.4;
+            padding: 6px 8px;
+            border-radius: var(--radius-sm);
+            display: inline-block;
+        }
+
+        .path-label-line:nth-child(1)::before { background: var(--accent-cyan); }
+        .path-label-line:nth-child(1) .path-label-line__text { color: var(--accent-cyan); background: rgba(6,182,212,0.08); }
+        .path-label-line:nth-child(2)::before { background: var(--accent-purple); }
+        .path-label-line:nth-child(2) .path-label-line__text { color: var(--accent-purple); background: rgba(139,92,246,0.08); }
+        .path-label-line:nth-child(3)::before { background: var(--accent-emerald); }
+        .path-label-line:nth-child(3) .path-label-line__text { color: var(--accent-emerald); background: rgba(16,185,129,0.08); }
+        .path-label-line:nth-child(4)::before { background: var(--accent-amber); }
+        .path-label-line:nth-child(4) .path-label-line__text { color: var(--accent-amber); background: rgba(245,158,11,0.08); }
+        .path-label-line:nth-child(5)::before { background: var(--accent-pink); }
+        .path-label-line:nth-child(5) .path-label-line__text { color: var(--accent-pink); background: rgba(236,72,153,0.08); }
+
+        /* ==================== MICRO-ROADMAP MODAL ==================== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 2000;
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.35s ease, visibility 0.35s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-panel {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 600px;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 60px var(--modal-glow, rgba(99, 102, 241, 0.1));
+            transform: translateY(30px) scale(0.96);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-panel {
+            transform: translateY(0) scale(1);
+        }
+
+        /* Custom scrollbar inside modal */
+        .modal-panel::-webkit-scrollbar { width: 6px; }
+        .modal-panel::-webkit-scrollbar-track { background: transparent; }
+        .modal-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+        .modal-panel::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* Modal header */
+        .modal-header {
+            padding: 32px 32px 24px;
+            position: relative;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .modal-header__glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-header__close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 5;
+        }
+
+        .modal-header__close:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: var(--text-primary);
+            transform: rotate(90deg);
+        }
+
+        .modal-header__icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .modal-header__title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .modal-header__subtitle {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .modal-header__eta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-header__eta-icon {
+            font-size: 1rem;
+        }
+
+        .modal-header__pacing {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-left: 4px;
+        }
+
+        /* Modal body — micro timeline */
+        .modal-body {
+            padding: 28px 32px 8px;
+        }
+
+        .modal-body__label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .micro-timeline {
+            position: relative;
+            padding-left: 36px;
+        }
+
+        .micro-timeline::before {
+            content: '';
+            position: absolute;
+            left: 13px;
+            top: 6px;
+            bottom: 60px;
+            width: 2px;
+            border-radius: 2px;
+            opacity: 0.4;
+        }
+
+        .micro-step {
+            position: relative;
+            margin-bottom: 28px;
+            opacity: 0;
+            transform: translateX(-10px);
+            animation: micro-step-in 0.4s ease forwards;
+        }
+
+        .micro-step:nth-child(1) { animation-delay: 0.15s; }
+        .micro-step:nth-child(2) { animation-delay: 0.25s; }
+        .micro-step:nth-child(3) { animation-delay: 0.35s; }
+        .micro-step:nth-child(4) { animation-delay: 0.45s; }
+        .micro-step:nth-child(5) { animation-delay: 0.55s; }
+
+        @keyframes micro-step-in {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .micro-step__dot {
+            position: absolute;
+            left: -30px;
+            top: 3px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: var(--bg-primary);
+            z-index: 2;
+        }
+
+        .micro-step__duration {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 3px 10px;
+            border-radius: 100px;
+            margin-bottom: 6px;
+        }
+
+        .micro-step__title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+
+        .micro-step__desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+        }
+
+        /* Capstone section */
+        .modal-capstone {
+            margin: 8px 32px 28px;
+            padding: 20px 22px;
+            border-radius: var(--radius-md);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: micro-step-in 0.4s ease forwards;
+            animation-delay: 0.6s;
+        }
+
+        .modal-capstone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1.5px;
+            background: linear-gradient(135deg, var(--modal-accent, #8b5cf6), transparent, var(--modal-accent, #8b5cf6));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+
+        .modal-capstone__badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+        }
+
+        .modal-capstone__title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .modal-capstone__desc {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Brand footer in modal */
+        .modal-brand {
+            text-align: center;
+            padding: 16px 32px 24px;
+            border-top: 1px solid var(--border-glass);
+        }
+
+        .modal-brand__text {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .modal-brand__name {
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Color theming via CSS variables set by JS */
+        .modal-panel[data-theme="cv"] { --modal-accent: var(--accent-cyan); --modal-glow: var(--glow-cyan); }
+        .modal-panel[data-theme="agent"] { --modal-accent: var(--accent-purple); --modal-glow: var(--glow-purple); }
+        .modal-panel[data-theme="mlops"] { --modal-accent: var(--accent-emerald); --modal-glow: var(--glow-emerald); }
+        .modal-panel[data-theme="ds"] { --modal-accent: var(--accent-amber); --modal-glow: var(--glow-amber); }
+        .modal-panel[data-theme="genai"] { --modal-accent: var(--accent-pink); --modal-glow: var(--glow-pink); }
+
+        .modal-panel .modal-header__glow { background: linear-gradient(90deg, transparent, var(--modal-accent), transparent); }
+        .modal-panel .modal-header__eta { background: color-mix(in srgb, var(--modal-accent) 12%, transparent); color: var(--modal-accent); }
+        .modal-panel .micro-timeline::before { background: var(--modal-accent); }
+        .modal-panel .micro-step__dot { background: var(--modal-accent); }
+        .modal-panel .micro-step__duration { background: color-mix(in srgb, var(--modal-accent) 12%, transparent); color: var(--modal-accent); }
+        .modal-panel .modal-capstone { background: color-mix(in srgb, var(--modal-accent) 6%, transparent); }
+        .modal-panel .modal-capstone__badge { color: var(--modal-accent); }
+
+        body.modal-open { overflow: hidden; }
+
+        /* ==================== PARTICLES ==================== */
+        .particle {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: float-particle linear infinite;
+        }
+
+        @keyframes float-particle {
+            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) translateX(var(--drift)); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background grid -->
+    <div class="bg-grid"></div>
+
+    <!-- Scroll progress indicator -->
+    <div class="scroll-indicator" id="scrollIndicator"></div>
+
+    <!-- Floating particles (generated by JS) -->
+    <div id="particles"></div>
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="header" id="header">
+        <div class="header__badge">
+            <span class="dot"></span>
+            Infinity X EdTech
+        </div>
+        <h1 class="header__title">AI & Machine Learning Mastery Program</h1>
+        <p class="header__subtitle">
+            Your <strong>120-Hour Live Interactive Program</strong> journey — from Python foundations to market-ready AI specializations.
+        </p>
+    </header>
+
+    <!-- ==================== MAIN ROADMAP ==================== -->
+    <main class="roadmap-container">
+
+        <!-- Section: The Past (Program Timeline) -->
+        <section class="section-label">
+            <span class="section-label__text">📚 Program Curriculum Timeline</span>
+        </section>
+
+        <div class="timeline" id="timeline">
+            <!-- Part 1 -->
+            <div class="timeline-node node-blue" id="node-1" onclick="toggleTopics(this)">
+                <div class="timeline-node__dot"></div>
+                <div class="timeline-node__card">
+                    <span class="timeline-node__hours">Part 1 — 15 Hours</span>
+                    <h3 class="timeline-node__title">Python & AI Foundations</h3>
+                    <p class="timeline-node__desc">Build your programming backbone — from variables and loops to virtual environments and Jupyter notebooks.</p>
+                    <div class="timeline-node__topics" id="topics-1">
+                        <ul>
+                            <li>Intro to AI, ML & DL</li>
+                            <li>Python Basics</li>
+                            <li>Variables & Data Types</li>
+                            <li>Conditions & Loops</li>
+                            <li>Functions & Modules</li>
+                            <li>File I/O</li>
+                            <li>Virtual Environments</li>
+                            <li>Jupyter & Colab</li>
+                            <li>Mini Exercises</li>
+                        </ul>
+                    </div>
+                    <div class="timeline-node__expand-hint">Click to expand topics ▾</div>
+                </div>
+            </div>
+
+            <!-- Part 2 -->
+            <div class="timeline-node node-purple" id="node-2" onclick="toggleTopics(this)">
+                <div class="timeline-node__dot"></div>
+                <div class="timeline-node__card">
+                    <span class="timeline-node__hours">Part 2 — 10 Hours</span>
+                    <h3 class="timeline-node__title">Data Analysis & Visualization</h3>
+                    <p class="timeline-node__desc">Master data wrangling with NumPy & Pandas, clean messy datasets, and create compelling visualizations.</p>
+                    <div class="timeline-node__topics" id="topics-2">
+                        <ul>
+                            <li>NumPy Fundamentals</li>
+                            <li>Pandas Data Wrangling</li>
+                            <li>Exploratory Data Analysis</li>
+                            <li>Data Cleaning</li>
+                            <li>Missing Values</li>
+                            <li>Feature Engineering</li>
+                            <li>Matplotlib Visualization</li>
+                            <li>Applied DA Project</li>
+                        </ul>
+                    </div>
+                    <div class="timeline-node__expand-hint">Click to expand topics ▾</div>
+                </div>
+            </div>
+
+            <!-- Part 3 -->
+            <div class="timeline-node node-cyan" id="node-3" onclick="toggleTopics(this)">
+                <div class="timeline-node__dot"></div>
+                <div class="timeline-node__card">
+                    <span class="timeline-node__hours">Part 3 — 25 Hours</span>
+                    <h3 class="timeline-node__title">Machine Learning Core</h3>
+                    <p class="timeline-node__desc">Dive deep into supervised & unsupervised learning — from Linear Regression to SVMs and K-Means clustering.</p>
+                    <div class="timeline-node__topics" id="topics-3">
+                        <ul>
+                            <li>Linear Regression</li>
+                            <li>Logistic Regression</li>
+                            <li>Decision Trees</li>
+                            <li>Random Forest</li>
+                            <li>SVM</li>
+                            <li>KNN</li>
+                            <li>Naive Bayes</li>
+                            <li>K-Means Clustering</li>
+                            <li>PCA</li>
+                            <li>Confusion Matrix</li>
+                            <li>ROC & AUC</li>
+                            <li>Cross-Validation</li>
+                            <li>Hyperparameter Tuning</li>
+                            <li>Grid & Random Search</li>
+                            <li>Classification Project</li>
+                            <li>Regression Project</li>
+                            <li>Clustering Project</li>
+                        </ul>
+                    </div>
+                    <div class="timeline-node__expand-hint">Click to expand topics ▾</div>
+                </div>
+            </div>
+
+            <!-- Part 4 -->
+            <div class="timeline-node node-emerald" id="node-4" onclick="toggleTopics(this)">
+                <div class="timeline-node__dot"></div>
+                <div class="timeline-node__card">
+                    <span class="timeline-node__hours">Part 4 — 20 Hours</span>
+                    <h3 class="timeline-node__title">Deep Learning Fundamentals</h3>
+                    <p class="timeline-node__desc">Understand neural networks from scratch — propagation, optimizers, regularization, and build with TensorFlow & Keras.</p>
+                    <div class="timeline-node__topics" id="topics-4">
+                        <ul>
+                            <li>Neural Networks</li>
+                            <li>Forward & Back Propagation</li>
+                            <li>Activation Functions</li>
+                            <li>Loss Functions</li>
+                            <li>SGD, Adam, RMSProp</li>
+                            <li>Regularization & Dropout</li>
+                            <li>TensorFlow & Keras</li>
+                            <li>Fully-Connected NNs</li>
+                            <li>DL Practical Project</li>
+                        </ul>
+                    </div>
+                    <div class="timeline-node__expand-hint">Click to expand topics ▾</div>
+                </div>
+            </div>
+
+            <!-- Part 5 -->
+            <div class="timeline-node node-amber" id="node-5" onclick="toggleTopics(this)">
+                <div class="timeline-node__dot"></div>
+                <div class="timeline-node__card">
+                    <span class="timeline-node__hours">Part 5 — 20 Hours</span>
+                    <h3 class="timeline-node__title">Computer Vision with CNNs</h3>
+                    <p class="timeline-node__desc">Master image processing, CNN architectures, transfer learning, and build end-to-end vision pipelines.</p>
+                    <div class="timeline-node__topics" id="topics-5">
+                        <ul>
+                            <li>Image Fundamentals</li>
+                            <li>Convolution & Filters</li>
+                            <li>Pooling Techniques</li>
+                            <li>CNN Architecture Design</li>
+                            <li>Transfer Learning</li>
+                            <li>Fine-Tuning Pretrained Models</li>
+                            <li>Data Augmentation</li>
+                            <li>Image Classification Project</li>
+                            <li>End-to-End CV Pipeline</li>
+                        </ul>
+                    </div>
+                    <div class="timeline-node__expand-hint">Click to expand topics ▾</div>
+                </div>
+            </div>
+
+            <!-- Part 6 -->
+            <div class="timeline-node node-rose" id="node-6" onclick="toggleTopics(this)">
+                <div class="timeline-node__dot"></div>
+                <div class="timeline-node__card">
+                    <span class="timeline-node__hours">Part 6 — 10 Hours</span>
+                    <h3 class="timeline-node__title">Final Graduation Project</h3>
+                    <p class="timeline-node__desc">Apply everything in a capstone — image classification, satellite analysis, medical imaging, object detection, or time series.</p>
+                    <div class="timeline-node__topics" id="topics-6">
+                        <ul>
+                            <li>Image Classification</li>
+                            <li>Satellite Imagery Analysis</li>
+                            <li>Medical Imaging</li>
+                            <li>Object Detection</li>
+                            <li>Time Series Prediction</li>
+                            <li>Full Documentation</li>
+                            <li>Final Presentation</li>
+                        </ul>
+                    </div>
+                    <div class="timeline-node__expand-hint">Click to expand topics ▾</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== YOU ARE HERE ==================== -->
+        <div class="you-are-here" id="youAreHere">
+            <div class="you-are-here__node">
+                <span class="you-are-here__icon">📍</span>
+                <span class="you-are-here__label">You Are Here</span>
+                <span class="you-are-here__arabic">أنت هنا</span>
+                <span class="you-are-here__subtitle">🎓 Congratulations! You've completed the 120-Hour AI Mastery Program.</span>
+            </div>
+        </div>
+
+        <!-- ==================== SPECIALIZATIONS ==================== -->
+        <section class="specializations-section" id="specializations">
+            <div class="section-label">
+                <span class="section-label__text">🚀 Choose Your Specialization Path</span>
+            </div>
+
+            <!-- Path Labels -->
+            <div class="path-labels-container" id="pathLabels">
+                <div class="path-label-line">
+                    <span class="path-label-line__text">"If you are an engineer or interested in robotics/space."</span>
+                </div>
+                <div class="path-label-line">
+                    <span class="path-label-line__text">"If you are a software developer focused on automation."</span>
+                </div>
+                <div class="path-label-line">
+                    <span class="path-label-line__text">"If you have a background in IT, sysadmin, or DevOps."</span>
+                </div>
+                <div class="path-label-line">
+                    <span class="path-label-line__text">"If you love statistics, business analysis, and big data."</span>
+                </div>
+                <div class="path-label-line">
+                    <span class="path-label-line__text">"If you are interested in creative tech, media, or product dev."</span>
+                </div>
+            </div>
+
+            <!-- Branch Cards Grid -->
+            <div class="branches-grid" id="branchesGrid">
+
+                <!-- Branch 1: Computer Vision & Spatial AI -->
+                <div class="branch-card branch-cv" id="branch-1" onclick="toggleBranch(this)">
+                    <div class="branch-card__glow"></div>
+                    <div class="branch-card__header">
+                        <span class="branch-card__icon">🛰️</span>
+                        <span class="branch-card__number">01</span>
+                        <h3 class="branch-card__title">Computer Vision & Spatial AI Engineer</h3>
+                        <div class="branch-card__path-label">Engineering · Robotics · Space Tech</div>
+                        <div class="branch-card__demand">
+                            <span>🔥 Market Demand</span>
+                        </div>
+                        <div class="branch-card__demand-bar">
+                            <div class="branch-card__demand-fill" style="--demand-width: 88%"></div>
+                        </div>
+                    </div>
+                    <div class="branch-card__expand-hint">Click to explore required skills →</div>
+                    <div class="branch-card__details" id="branch-details-1">
+                        <div class="branch-card__details-inner">
+                            <div class="branch-card__details-title">Required Study Blocks</div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">📦</div>
+                                <span class="branch-card__study-text">Advanced Object Detection (YOLOv8 / YOLOv10)</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🎯</div>
+                                <span class="branch-card__study-text">Real-time Object Tracking</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🖼️</div>
+                                <span class="branch-card__study-text">Image Segmentation (Semantic & Instance)</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🌍</div>
+                                <span class="branch-card__study-text">Satellite Imagery Analysis & Google Earth Engine (GEE)</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">⚡</div>
+                                <span class="branch-card__study-text">Deployment on Edge Devices (Jetson, Coral)</span>
+                            </div>
+                            <div class="branch-card__market">
+                                <span class="branch-card__market-label">📊 Market Insight</span>
+                                High demand in autonomous vehicles, defense, and space tech. Companies like Tesla, SpaceX, and Lockheed Martin actively recruit CV engineers with spatial AI expertise.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Branch 2: Agentic AI & LLM Developer -->
+                <div class="branch-card branch-agent" id="branch-2" onclick="toggleBranch(this)">
+                    <div class="branch-card__glow"></div>
+                    <div class="branch-card__header">
+                        <span class="branch-card__icon">🤖</span>
+                        <span class="branch-card__number">02</span>
+                        <h3 class="branch-card__title">Agentic AI & LLM Developer</h3>
+                        <div class="branch-card__path-label">Software Dev · Automation · AI Assistants</div>
+                        <div class="branch-card__demand">
+                            <span>🔥 Market Demand</span>
+                        </div>
+                        <div class="branch-card__demand-bar">
+                            <div class="branch-card__demand-fill" style="--demand-width: 96%"></div>
+                        </div>
+                    </div>
+                    <div class="branch-card__expand-hint">Click to explore required skills →</div>
+                    <div class="branch-card__details" id="branch-details-2">
+                        <div class="branch-card__details-inner">
+                            <div class="branch-card__details-title">Required Study Blocks</div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🧠</div>
+                                <span class="branch-card__study-text">Large Language Models (LLMs) Architectures</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🔗</div>
+                                <span class="branch-card__study-text">LangChain / LlamaIndex Frameworks</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🤖</div>
+                                <span class="branch-card__study-text">Building Autonomous Agents</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🔍</div>
+                                <span class="branch-card__study-text">Retrieval-Augmented Generation (RAG)</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">✍️</div>
+                                <span class="branch-card__study-text">Advanced Prompt Engineering</span>
+                            </div>
+                            <div class="branch-card__market">
+                                <span class="branch-card__market-label">📊 Market Insight</span>
+                                The fastest-growing sector for enterprise automation and AI assistants. Companies across all industries are building AI agents — this is the hottest AI role of 2025–2026.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Branch 3: MLOps & AI Infrastructure -->
+                <div class="branch-card branch-mlops" id="branch-3" onclick="toggleBranch(this)">
+                    <div class="branch-card__glow"></div>
+                    <div class="branch-card__header">
+                        <span class="branch-card__icon">⚙️</span>
+                        <span class="branch-card__number">03</span>
+                        <h3 class="branch-card__title">MLOps & AI Infrastructure Engineer</h3>
+                        <div class="branch-card__path-label">IT · Systems · DevOps · Cloud</div>
+                        <div class="branch-card__demand">
+                            <span>🔥 Market Demand</span>
+                        </div>
+                        <div class="branch-card__demand-bar">
+                            <div class="branch-card__demand-fill" style="--demand-width: 85%"></div>
+                        </div>
+                    </div>
+                    <div class="branch-card__expand-hint">Click to explore required skills →</div>
+                    <div class="branch-card__details" id="branch-details-3">
+                        <div class="branch-card__details-inner">
+                            <div class="branch-card__details-title">Required Study Blocks</div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🐳</div>
+                                <span class="branch-card__study-text">Model Deployment (Docker, Kubernetes)</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🔄</div>
+                                <span class="branch-card__study-text">CI/CD Pipelines for ML</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">⚡</div>
+                                <span class="branch-card__study-text">Edge AI Deployment (TensorRT)</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">📈</div>
+                                <span class="branch-card__study-text">Model Monitoring & Drift Detection</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">☁️</div>
+                                <span class="branch-card__study-text">Cloud AI Services (AWS / GCP)</span>
+                            </div>
+                            <div class="branch-card__market">
+                                <span class="branch-card__market-label">📊 Market Insight</span>
+                                Critical need in companies moving AI models from research to production. The bridge between data science and engineering — highly valued in enterprise teams.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Branch 4: Data Scientist -->
+                <div class="branch-card branch-ds" id="branch-4" onclick="toggleBranch(this)">
+                    <div class="branch-card__glow"></div>
+                    <div class="branch-card__header">
+                        <span class="branch-card__icon">📊</span>
+                        <span class="branch-card__number">04</span>
+                        <h3 class="branch-card__title">Data Scientist (Enterprise & Analytics)</h3>
+                        <div class="branch-card__path-label">Statistics · Business · Big Data</div>
+                        <div class="branch-card__demand">
+                            <span>🔥 Market Demand</span>
+                        </div>
+                        <div class="branch-card__demand-bar">
+                            <div class="branch-card__demand-fill" style="--demand-width: 90%"></div>
+                        </div>
+                    </div>
+                    <div class="branch-card__expand-hint">Click to explore required skills →</div>
+                    <div class="branch-card__details" id="branch-details-4">
+                        <div class="branch-card__details-inner">
+                            <div class="branch-card__details-title">Required Study Blocks</div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">📈</div>
+                                <span class="branch-card__study-text">Advanced Time Series Forecasting</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🎯</div>
+                                <span class="branch-card__study-text">Recommendation Systems</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🔥</div>
+                                <span class="branch-card__study-text">Big Data Ecosystems (Apache Spark, Hadoop)</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🧪</div>
+                                <span class="branch-card__study-text">Advanced A/B Testing</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🗄️</div>
+                                <span class="branch-card__study-text">SQL for Data Science</span>
+                            </div>
+                            <div class="branch-card__market">
+                                <span class="branch-card__market-label">📊 Market Insight</span>
+                                Consistently high demand in finance, e-commerce, and healthcare. Data Scientists remain among the top-paid tech roles globally, especially with big data skills.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Branch 5: Generative AI Architect -->
+                <div class="branch-card branch-genai" id="branch-5" onclick="toggleBranch(this)">
+                    <div class="branch-card__glow"></div>
+                    <div class="branch-card__header">
+                        <span class="branch-card__icon">🎨</span>
+                        <span class="branch-card__number">05</span>
+                        <h3 class="branch-card__title">Generative AI Architect</h3>
+                        <div class="branch-card__path-label">Creative Tech · Media · Product Dev</div>
+                        <div class="branch-card__demand">
+                            <span>🔥 Market Demand</span>
+                        </div>
+                        <div class="branch-card__demand-bar">
+                            <div class="branch-card__demand-fill" style="--demand-width: 92%"></div>
+                        </div>
+                    </div>
+                    <div class="branch-card__expand-hint">Click to explore required skills →</div>
+                    <div class="branch-card__details" id="branch-details-5">
+                        <div class="branch-card__details-inner">
+                            <div class="branch-card__details-title">Required Study Blocks</div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🌌</div>
+                                <span class="branch-card__study-text">Diffusion Models (Stable Diffusion)</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🎭</div>
+                                <span class="branch-card__study-text">Generative Adversarial Networks (GANs)</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🔮</div>
+                                <span class="branch-card__study-text">Multimodal AI Architectures</span>
+                            </div>
+                            <div class="branch-card__study-block">
+                                <div class="branch-card__study-icon">🎬</div>
+                                <span class="branch-card__study-text">Audio / Video Generation Techniques</span>
+                            </div>
+                            <div class="branch-card__market">
+                                <span class="branch-card__market-label">📊 Market Insight</span>
+                                Extremely high demand in media, gaming, and marketing sectors. Generative AI is reshaping creative industries — architects who understand both the art and the science are in unprecedented demand.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /branches-grid -->
+        </section>
+
+    </main>
+
+    <!-- ==================== MICRO-ROADMAP MODAL ==================== -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeMicroModal(event)">
+        <div class="modal-panel" id="modalPanel" role="dialog" aria-modal="true">
+            <div class="modal-header" id="modalHeader">
+                <div class="modal-header__glow"></div>
+                <button class="modal-header__close" onclick="closeMicroModal(event, true)" aria-label="Close modal">✕</button>
+                <span class="modal-header__icon" id="modalIcon"></span>
+                <h2 class="modal-header__title" id="modalTitle"></h2>
+                <p class="modal-header__subtitle" id="modalSubtitle"></p>
+                <div class="modal-header__eta" id="modalEta"></div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-body__label">Fast-Track Micro-Roadmap</div>
+                <div class="micro-timeline" id="microTimeline"></div>
+            </div>
+            <div class="modal-capstone" id="modalCapstone"></div>
+            <div class="modal-brand">
+                <span class="modal-brand__text">Powered by <span class="modal-brand__name">Infinity X EdTech</span> · Hands-on, project-based learning</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="footer">
+        <p class="footer__text">
+            Built with ❤️ by <span class="footer__brand">Infinity X EdTech</span> · AI & Machine Learning Mastery Program · 2025
+        </p>
+    </footer>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+    <script>
+        // ==================== SCROLL PROGRESS ====================
+        window.addEventListener('scroll', () => {
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const progress = (scrollTop / scrollHeight) * 100;
+            document.getElementById('scrollIndicator').style.width = progress + '%';
+        });
+
+        // ==================== TOGGLE TIMELINE TOPICS ====================
+        function toggleTopics(nodeEl) {
+            const topics = nodeEl.querySelector('.timeline-node__topics');
+            const hint = nodeEl.querySelector('.timeline-node__expand-hint');
+            if (topics.classList.contains('open')) {
+                topics.classList.remove('open');
+                hint.textContent = 'Click to expand topics ▾';
+            } else {
+                // Close all others
+                document.querySelectorAll('.timeline-node__topics.open').forEach(t => {
+                    t.classList.remove('open');
+                    t.closest('.timeline-node').querySelector('.timeline-node__expand-hint').textContent = 'Click to expand topics ▾';
+                });
+                topics.classList.add('open');
+                hint.textContent = 'Click to collapse ▴';
+            }
+        }
+
+        // ==================== MICRO-ROADMAP DATA ====================
+        const microRoadmaps = {
+            'branch-1': {
+                theme: 'cv',
+                icon: '🛰️',
+                title: 'Computer Vision & Spatial AI Engineer',
+                subtitle: 'A fast-track, hands-on path from YOLO to edge deployment. Focus: practical implementation over theory.',
+                eta: '6–8 Weeks',
+                pacing: '@ 10–15 hrs/week',
+                steps: [
+                    {
+                        num: 1,
+                        duration: '2 Weeks',
+                        title: 'Advanced Object Detection & Tracking',
+                        desc: 'YOLOv8/v11 implementation, DeepSORT integration, and training on custom datasets with real-world data.'
+                    },
+                    {
+                        num: 2,
+                        duration: '1 Week',
+                        title: 'Image Segmentation',
+                        desc: 'Semantic & Instance segmentation pipelines. Hands-on with SAM (Segment Anything Model) for zero-shot segmentation.'
+                    },
+                    {
+                        num: 3,
+                        duration: '2 Weeks',
+                        title: 'Geospatial & Satellite AI',
+                        desc: 'Extracting and processing satellite data using Google Earth Engine (GEE). Applying NDVI analysis and orbit prediction concepts.'
+                    },
+                    {
+                        num: 4,
+                        duration: '2 Weeks',
+                        title: 'Edge Deployment',
+                        desc: 'Exporting models to ONNX, optimizing with TensorRT, and deploying on edge devices (Jetson Nano / Raspberry Pi).'
+                    }
+                ],
+                capstone: {
+                    title: '🏗️ Capstone Project',
+                    desc: 'Build a real-time traffic or geospatial monitoring system with live inference, tracking, and dashboard visualization.'
+                }
+            },
+            'branch-2': {
+                theme: 'agent',
+                icon: '🤖',
+                title: 'Agentic AI & LLM Developer',
+                subtitle: 'From running local LLMs to orchestrating autonomous agents. Pure hands-on, zero theoretical bloat.',
+                eta: '6–8 Weeks',
+                pacing: '@ 10–15 hrs/week',
+                steps: [
+                    {
+                        num: 1,
+                        duration: '2 Weeks',
+                        title: 'Transformers & Local LLMs',
+                        desc: 'Hugging Face ecosystem mastery. Running open-source models locally with Ollama and vLLM for production inference.'
+                    },
+                    {
+                        num: 2,
+                        duration: '2 Weeks',
+                        title: 'Advanced RAG Pipelines',
+                        desc: 'Vector databases (Chroma / Pinecone), advanced chunking strategies, and building production-grade Retrieval-Augmented Generation systems.'
+                    },
+                    {
+                        num: 3,
+                        duration: '2 Weeks',
+                        title: 'AI Agents Orchestration',
+                        desc: 'LangChain, LlamaIndex, and building multi-agent systems using frameworks like CrewAI or AutoGPT for complex workflows.'
+                    },
+                    {
+                        num: 4,
+                        duration: '1 Week',
+                        title: 'Fine-Tuning',
+                        desc: 'Parameter-Efficient Fine-Tuning (PEFT) and LoRA for customizing LLMs on domain-specific data with minimal compute.'
+                    }
+                ],
+                capstone: {
+                    title: '🏗️ Capstone Project',
+                    desc: 'Build an autonomous research assistant or coding agent that can search, reason, and execute tasks end-to-end.'
+                }
+            },
+            'branch-3': {
+                theme: 'mlops',
+                icon: '⚙️',
+                title: 'MLOps & AI Infrastructure Engineer',
+                subtitle: 'The bridge between data science and production engineering. Ship models, not notebooks.',
+                eta: '5–6 Weeks',
+                pacing: '@ 10–15 hrs/week',
+                steps: [
+                    {
+                        num: 1,
+                        duration: '2 Weeks',
+                        title: 'Containerization & APIs',
+                        desc: 'Packaging ML models using Docker. Building robust, production-ready REST APIs with FastAPI and proper error handling.'
+                    },
+                    {
+                        num: 2,
+                        duration: '1 Week',
+                        title: 'CI/CD for Machine Learning',
+                        desc: 'Automating model testing, validation, and deployment pipelines using GitHub Actions with reproducible workflows.'
+                    },
+                    {
+                        num: 3,
+                        duration: '1 Week',
+                        title: 'Orchestration Basics',
+                        desc: 'Introduction to Kubernetes for scaling model endpoints. Auto-scaling, load balancing, and zero-downtime deployments.'
+                    },
+                    {
+                        num: 4,
+                        duration: '1 Week',
+                        title: 'Monitoring & Maintenance',
+                        desc: 'Handling model drift, logging with Evidently AI, and monitoring with Prometheus/Grafana for observability in production.'
+                    }
+                ],
+                capstone: {
+                    title: '🏗️ Capstone Project',
+                    desc: 'Deploy an end-to-end automated ML pipeline in the cloud — from data ingestion to model serving with full CI/CD.'
+                }
+            },
+            'branch-4': {
+                theme: 'ds',
+                icon: '📊',
+                title: 'Data Scientist (Enterprise & Analytics)',
+                subtitle: 'From advanced SQL to predictive dashboards. Become the data expert every enterprise needs.',
+                eta: '5–7 Weeks',
+                pacing: '@ 10–15 hrs/week',
+                steps: [
+                    {
+                        num: 1,
+                        duration: '2 Weeks',
+                        title: 'Advanced SQL & Data Wrangling',
+                        desc: 'Complex queries, window functions, CTEs, and handling massive datasets at scale with optimized query patterns.'
+                    },
+                    {
+                        num: 2,
+                        duration: '2 Weeks',
+                        title: 'Time Series Mastery',
+                        desc: 'Forecasting with Prophet, ARIMA, and LSTM/Transformers for sequential data. Real-world financial and IoT use cases.'
+                    },
+                    {
+                        num: 3,
+                        duration: '1 Week',
+                        title: 'Big Data Ecosystems',
+                        desc: 'Introduction to Apache Spark and PySpark for distributed data processing on large-scale enterprise datasets.'
+                    },
+                    {
+                        num: 4,
+                        duration: '1 Week',
+                        title: 'Experimentation & Storytelling',
+                        desc: 'Advanced A/B testing methodology and interactive dashboarding with Streamlit and Power BI for stakeholder communication.'
+                    }
+                ],
+                capstone: {
+                    title: '🏗️ Capstone Project',
+                    desc: 'Build an enterprise-level predictive analytics dashboard with live data, forecasting, and interactive visualizations.'
+                }
+            },
+            'branch-5': {
+                theme: 'genai',
+                icon: '🎨',
+                title: 'Generative AI Architect',
+                subtitle: 'Master the art and science of AI generation — images, audio, video, and multimodal systems.',
+                eta: '5–6 Weeks',
+                pacing: '@ 10–15 hrs/week',
+                steps: [
+                    {
+                        num: 1,
+                        duration: '2 Weeks',
+                        title: 'Image Generation Models',
+                        desc: 'Deep dive into Diffusion models, Stable Diffusion architecture, ControlNet for guided generation, and custom training.'
+                    },
+                    {
+                        num: 2,
+                        duration: '1 Week',
+                        title: 'Audio & Video Generation',
+                        desc: 'Text-to-speech systems, voice cloning techniques, and AI video generation tools for creative production.'
+                    },
+                    {
+                        num: 3,
+                        duration: '1 Week',
+                        title: 'Multimodal Integration',
+                        desc: 'Combining Vision and Language models (GPT-4V, LLaVA). Building systems that understand and generate across modalities.'
+                    },
+                    {
+                        num: 4,
+                        duration: '1 Week',
+                        title: 'Prompt Engineering Mastery',
+                        desc: 'System prompts, few-shot prompting, chain-of-thought reasoning, and jailbreak prevention for safe AI products.'
+                    }
+                ],
+                capstone: {
+                    title: '🏗️ Capstone Project',
+                    desc: 'Build a multimodal creative studio application that generates images, audio, and text from unified prompts.'
+                }
+            }
+        };
+
+        // ==================== OPEN MICRO-ROADMAP MODAL ====================
+        function toggleBranch(cardEl) {
+            const branchId = cardEl.id;
+            const data = microRoadmaps[branchId];
+            if (!data) return;
+
+            const panel = document.getElementById('modalPanel');
+            const overlay = document.getElementById('modalOverlay');
+
+            // Set theme
+            panel.setAttribute('data-theme', data.theme);
+
+            // Populate header
+            document.getElementById('modalIcon').textContent = data.icon;
+            document.getElementById('modalTitle').textContent = data.title;
+            document.getElementById('modalSubtitle').textContent = data.subtitle;
+            document.getElementById('modalEta').innerHTML =
+                `<span class="modal-header__eta-icon">⏱️</span> ETA: ${data.eta} <span class="modal-header__pacing">${data.pacing}</span>`;
+
+            // Build micro-timeline
+            const timelineEl = document.getElementById('microTimeline');
+            timelineEl.innerHTML = data.steps.map(step => `
+                <div class="micro-step">
+                    <div class="micro-step__dot">${step.num}</div>
+                    <span class="micro-step__duration">${step.duration}</span>
+                    <h4 class="micro-step__title">${step.title}</h4>
+                    <p class="micro-step__desc">${step.desc}</p>
+                </div>
+            `).join('');
+
+            // Capstone
+            document.getElementById('modalCapstone').innerHTML = `
+                <div class="modal-capstone__badge">🎓 INFINITY X EDTECH · CAPSTONE</div>
+                <h4 class="modal-capstone__title">${data.capstone.title}</h4>
+                <p class="modal-capstone__desc">${data.capstone.desc}</p>
+            `;
+
+            // Show modal
+            document.body.classList.add('modal-open');
+            overlay.classList.add('active');
+            panel.scrollTop = 0;
+
+            // Re-trigger step animations
+            timelineEl.querySelectorAll('.micro-step').forEach(el => {
+                el.style.animation = 'none';
+                el.offsetHeight; // force reflow
+                el.style.animation = '';
+            });
+            const capstoneEl = document.getElementById('modalCapstone');
+            capstoneEl.style.animation = 'none';
+            capstoneEl.offsetHeight;
+            capstoneEl.style.animation = '';
+        }
+
+        // ==================== CLOSE MODAL ====================
+        function closeMicroModal(event, forceClose) {
+            if (forceClose || event.target === document.getElementById('modalOverlay')) {
+                document.getElementById('modalOverlay').classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeMicroModal(null, true);
+            }
+        });
+
+        // ==================== INTERSECTION OBSERVER FOR BRANCHES ====================
+        const branchCards = document.querySelectorAll('.branch-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 100);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15 });
+
+        branchCards.forEach(card => observer.observe(card));
+
+        // ==================== FLOATING PARTICLES ====================
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const count = 20;
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (8 + Math.random() * 12) + 's';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.setProperty('--drift', (Math.random() * 100 - 50) + 'px');
+                particle.style.width = (2 + Math.random() * 2) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.background = `hsla(${220 + Math.random() * 60}, 70%, 60%, ${0.2 + Math.random() * 0.3})`;
+                container.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        // ==================== SMOOTH REVEAL FOR PATH LABELS ====================
+        const pathLabels = document.getElementById('pathLabels');
+        const pathObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                pathLabels.style.opacity = '1';
+                pathLabels.style.transform = 'translateY(0)';
+                pathObserver.unobserve(pathLabels);
+            }
+        }, { threshold: 0.3 });
+
+        pathLabels.style.opacity = '0';
+        pathLabels.style.transform = 'translateY(20px)';
+        pathLabels.style.transition = 'all 0.8s ease';
+        pathObserver.observe(pathLabels);
+
+        // ==================== KEYBOARD ACCESSIBILITY ====================
+        document.querySelectorAll('.timeline-node, .branch-card').forEach(el => {
+            el.setAttribute('tabindex', '0');
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    el.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

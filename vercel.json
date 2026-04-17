@@ -23,6 +23,10 @@
       "destination": "/:path*"
     },
     {
+      "source": "/roadmap",
+      "destination": "/roadmap/index.html"
+    },
+    {
       "source": "/:path*",
       "destination": "/index.html"
     }
