@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { trpc } from "@/lib/trpc";
 
 type Language = "en" | "ar";
 
@@ -19,10 +20,18 @@ const LanguageContext = createContext<LanguageContextType>({
 });
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const { data: defaults } = trpc.admin.getSiteDefaults.useQuery(undefined, { staleTime: 1000 * 60 * 30 });
   const [lang, setLang] = useState<Language>(() => {
     const stored = localStorage.getItem("infx-lang");
     return (stored as Language) || "en";
   });
+
+  // Apply server default if user hasn't set a preference
+  useEffect(() => {
+    if (defaults?.defaultLanguage && !localStorage.getItem("infx-lang")) {
+      setLang(defaults.defaultLanguage as Language);
+    }
+  }, [defaults]);
 
   const isRTL = lang === "ar";
 

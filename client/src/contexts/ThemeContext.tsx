@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { trpc } from "@/lib/trpc";
 
 type Theme = "light" | "dark";
 
@@ -8,15 +9,23 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: "light",
+  theme: "dark",
   toggleTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const { data: defaults } = trpc.admin.getSiteDefaults.useQuery(undefined, { staleTime: 1000 * 60 * 30 });
   const [theme, setTheme] = useState<Theme>(() => {
     const stored = localStorage.getItem("infx-theme");
-    return (stored as Theme) || "light";
+    return (stored as Theme) || "dark";
   });
+
+  // Apply server default if user hasn't set a preference
+  useEffect(() => {
+    if (defaults?.defaultTheme && !localStorage.getItem("infx-theme")) {
+      setTheme(defaults.defaultTheme as Theme);
+    }
+  }, [defaults]);
 
   useEffect(() => {
     const root = document.documentElement;

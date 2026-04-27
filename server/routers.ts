@@ -5,6 +5,7 @@ import { coursesEndpoints } from "./routers/admin/courses";
 import { contentEndpoints } from "./routers/admin/content";
 import { crmEndpoints } from "./routers/admin/crm";
 import { settingsEndpoints } from "./routers/admin/settings";
+import { solutionsEndpoints } from "./routers/admin/solutions";
 
 export const appRouter = router({
   system: systemRouter,
@@ -21,6 +22,7 @@ export const appRouter = router({
     ...crmEndpoints,
     ...settingsEndpoints,
     ...studentAuthEndpoints,
+    ...solutionsEndpoints,
   }),
 });
 

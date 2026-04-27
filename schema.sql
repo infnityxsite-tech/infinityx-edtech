@@ -511,3 +511,87 @@ CREATE TABLE IF NOT EXISTS device_sessions (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(user_id, device_id)
 );
+
+-- ==========================================
+-- B2B CMS: SERVICE PACKAGES
+-- ==========================================
+CREATE TABLE IF NOT EXISTS service_packages (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  title_ar VARCHAR(255),
+  description TEXT,
+  description_ar TEXT,
+  features_json TEXT,              -- JSON array of feature strings
+  price_tier VARCHAR(100),         -- e.g. "Starter", "Professional", "Enterprise"
+  icon_url TEXT,
+  is_active BOOLEAN DEFAULT true,
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER update_service_packages_updated_at BEFORE UPDATE ON service_packages FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==========================================
+-- B2B CMS: CLIENT CASE STUDIES
+-- ==========================================
+CREATE TABLE IF NOT EXISTS client_case_studies (
+  id SERIAL PRIMARY KEY,
+  client_name VARCHAR(255) NOT NULL,
+  client_name_ar VARCHAR(255),
+  industry VARCHAR(255),
+  industry_ar VARCHAR(255),
+  challenge TEXT,
+  challenge_ar TEXT,
+  solution TEXT,
+  solution_ar TEXT,
+  results_json TEXT,               -- JSON object with key metrics/results
+  image_url TEXT,
+  is_published BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER update_client_case_studies_updated_at BEFORE UPDATE ON client_case_studies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==========================================
+-- B2B CMS: SOLUTION TIERS
+-- ==========================================
+CREATE TABLE IF NOT EXISTS solution_tiers (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  name_ar VARCHAR(255),
+  description TEXT,
+  description_ar TEXT,
+  target_audience VARCHAR(255),
+  target_audience_ar VARCHAR(255),
+  tech_stack_json TEXT,            -- JSON array of technologies
+  price_range VARCHAR(255),
+  is_active BOOLEAN DEFAULT true,
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER update_solution_tiers_updated_at BEFORE UPDATE ON solution_tiers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==========================================
+-- B2B SALES FUNNEL: CONSULTATION LEADS
+-- ==========================================
+CREATE TABLE IF NOT EXISTS consultation_leads (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  company VARCHAR(255),
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(50),
+  industry_pain_point TEXT,
+  service_interest VARCHAR(255),   -- Which service they are interested in
+  status VARCHAR(50) DEFAULT 'new', -- new, contacted, qualified, proposal, closed_won, closed_lost
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_consultation_leads_status ON consultation_leads(status);
+CREATE INDEX idx_consultation_leads_email ON consultation_leads(email);
+CREATE TRIGGER update_consultation_leads_updated_at BEFORE UPDATE ON consultation_leads FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

@@ -13,7 +13,11 @@ import CoursesRecorded from "./pages/CoursesRecorded";
 import CoursePreview from "./pages/CoursePreview";
 import ProgramDetails from "./pages/ProgramDetails";
 import Programs from "./pages/Programs";
+import Solutions from "./pages/Solutions";
+import SolutionDetail from "./pages/SolutionDetail";
 import SchoolLanding from "./pages/SchoolLanding";
+import AcademyHub from "./pages/AcademyHub";
+import SchoolDeepDive from "./pages/SchoolDeepDive";
 import Blog from "./pages/Blog";
 import BlogDetail from "./pages/BlogDetail";
 import Careers from "./pages/Careers";
@@ -24,6 +28,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import Apply from "./pages/Apply";
 import Contact from "./pages/Contact";
+import Consultation from "./pages/Consultation";
 import StudentLogin from "./pages/StudentLogin";
 import StudentDashboard from "./pages/StudentDashboard";
 import LearningPortal from "./pages/LearningPortal";
@@ -74,6 +79,10 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/about" component={About} />
+      <Route path="/solutions" component={Solutions} />
+      <Route path="/solutions/:slug" component={SolutionDetail} />
+      <Route path="/academy" component={AcademyHub} />
+      <Route path="/academy/:school" component={SchoolDeepDive} />
       <Route path="/courses" component={Courses} />
       <Route path="/courses/live" component={CoursesLive} />
       <Route path="/courses/recorded" component={CoursesRecorded} />
@@ -83,13 +92,9 @@ function Router() {
       <Route path="/apply" component={Apply} />
       <Route path="/apply/:id" component={Apply} />
 
-      {/* ✅ EXISTING ROUTE (The list of all programs) */}
+      {/* Legacy Programs routes (retained for backward compatibility) */}
       <Route path="/programs" component={Programs} />
-
-      {/* ✅ Specific Program Details */}
       <Route path="/program/:id" component={ProgramDetails} />
-
-      {/* 🚀 School Landing Pages (Category based) */}
       <Route path="/programs/:category" component={SchoolLanding} />
 
       <Route path="/blog" component={Blog} />
@@ -97,6 +102,7 @@ function Router() {
       <Route path="/careers" component={Careers} />
       <Route path="/careers/apply" component={CareerApply} />
       <Route path="/contact" component={Contact} />
+      <Route path="/consultation" component={Consultation} />
       <Route path="/verify" component={Verify} />
       <Route path="/certificates/:certId" component={Certificate} />
       <Route path="/admin-login" component={AdminLogin} />

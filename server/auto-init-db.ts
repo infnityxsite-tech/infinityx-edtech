@@ -271,6 +271,350 @@ async function runMigrations(): Promise<void> {
       console.error('❌ Migration error for course platform:', error);
     }
   }
+
+  try {
+    // Migration 7: B2B CMS & Sales Funnel Tables
+    await query(`
+      CREATE TABLE IF NOT EXISTS service_packages (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        title_ar VARCHAR(255),
+        description TEXT,
+        description_ar TEXT,
+        features_json TEXT,
+        price_tier VARCHAR(100),
+        icon_url TEXT,
+        is_active BOOLEAN DEFAULT true,
+        order_index INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS client_case_studies (
+        id SERIAL PRIMARY KEY,
+        client_name VARCHAR(255) NOT NULL,
+        client_name_ar VARCHAR(255),
+        industry VARCHAR(255),
+        industry_ar VARCHAR(255),
+        challenge TEXT,
+        challenge_ar TEXT,
+        solution TEXT,
+        solution_ar TEXT,
+        results_json TEXT,
+        image_url TEXT,
+        is_published BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS solution_tiers (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        name_ar VARCHAR(255),
+        description TEXT,
+        description_ar TEXT,
+        target_audience VARCHAR(255),
+        target_audience_ar VARCHAR(255),
+        tech_stack_json TEXT,
+        price_range VARCHAR(255),
+        is_active BOOLEAN DEFAULT true,
+        order_index INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS consultation_leads (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        company VARCHAR(255),
+        email VARCHAR(255) NOT NULL,
+        phone VARCHAR(50),
+        industry_pain_point TEXT,
+        service_interest VARCHAR(255),
+        status VARCHAR(50) DEFAULT 'new',
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Add triggers for the new tables
+    const b2bTables = ['service_packages', 'client_case_studies', 'solution_tiers', 'consultation_leads'];
+    for (const table of b2bTables) {
+      let triggerExists = false;
+      try {
+        const result = await queryOne(`SELECT 1 FROM pg_trigger WHERE tgname = 'update_${table}_updated_at'`);
+        if (result) triggerExists = true;
+      } catch (e) { }
+
+      if (!triggerExists) {
+        await query(`
+            CREATE TRIGGER update_${table}_updated_at 
+            BEFORE UPDATE ON ${table}
+            FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
+          `);
+      }
+    }
+
+    // Add indexes for consultation_leads
+    try {
+      await query(`CREATE INDEX IF NOT EXISTS idx_consultation_leads_status ON consultation_leads(status)`);
+      await query(`CREATE INDEX IF NOT EXISTS idx_consultation_leads_email ON consultation_leads(email)`);
+    } catch (e) { }
+
+      // Seed services table
+      try {
+        const servicesCount = await queryOne<{ count: string }>(`SELECT COUNT(*) FROM services`);
+        if (servicesCount && parseInt(servicesCount.count) === 0) {
+          console.log('🌱 Seeding services table with B2B enterprise entries...');
+          const seedServices = [
+            {
+              title: "Computer Vision Systems",
+              titleAr: "أنظمة الرؤية الحاسوبية",
+              description: "Real-time object detection, quality inspection, and spatial tracking inference at the edge.",
+              descriptionAr: "كشف الأجسام في الوقت الفعلي، فحص الجودة، والتتبع المكاني على الحافة.",
+              icon: "Eye",
+              priceTier: "Enterprise Level",
+              status: "active",
+              featuresJson: JSON.stringify(["YOLOv11 Object Detection", "Real-time Inference <12ms", "Edge Deployment (Jetson)"])
+            },
+            {
+              title: "Enterprise MLOps & Data",
+              titleAr: "عمليات تعلم الآلة وبيانات المؤسسة",
+              description: "End-to-end model lifecycle management, scalable data lakes, and continuous training pipelines.",
+              descriptionAr: "إدارة دورة حياة النموذج، بحيرات بيانات قابلة للتوسع، ومسارات تدريب مستمرة.",
+              icon: "Database",
+              priceTier: "Enterprise Level",
+              status: "active",
+              featuresJson: JSON.stringify(["Model Lifecycle Management", "Automated Retraining", "AWS SageMaker Integration"])
+            },
+            {
+              title: "Cloud-Native Architecture",
+              titleAr: "هندسة الأنظمة السحابية",
+              description: "Microservices architecture, real-time WebSockets, and high-availability API layers.",
+              descriptionAr: "بنية الخدمات المصغرة، WebSockets في الوقت الفعلي، وطبقات API عالية التوفر.",
+              icon: "Cloud",
+              priceTier: "Enterprise Level",
+              status: "active",
+              featuresJson: JSON.stringify(["Microservices Architecture", "Real-time WebSockets", "Kubernetes Orchestration"])
+            },
+            {
+              title: "Predictive Analytics",
+              titleAr: "التحليلات التنبؤية",
+              description: "Advanced forecasting models leveraging historical data to predict trends, demand, and anomalies.",
+              descriptionAr: "نماذج تنبؤية متقدمة تستفيد من البيانات التاريخية للتنبؤ بالاتجاهات والطلب والتشوهات.",
+              icon: "BarChart3",
+              priceTier: "Enterprise Level",
+              status: "active",
+              featuresJson: JSON.stringify(["Time-Series Forecasting", "Anomaly Detection", "BI Dashboard Integration"])
+            }
+          ];
+
+          for (const s of seedServices) {
+            await query(`
+              INSERT INTO services (title, title_ar, description, description_ar, icon, price_tier, status, features_json)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            `, [s.title, s.titleAr, s.description, s.descriptionAr, s.icon, s.priceTier, s.status, s.featuresJson]);
+          }
+        }
+      } catch (e) {
+        console.error('Error seeding services:', e);
+      }
+
+    console.log('✅ Migration: Added B2B CMS & sales funnel tables');
+  } catch (error: any) {
+    if (error.code === '42P07' || error.message?.includes('already exists')) {
+      console.log('ℹ️  Migration: B2B tables already exist');
+    } else {
+      console.error('❌ Migration error for B2B tables:', error);
+    }
+  }
+
+  try {
+    // Migration 8: Headless CMS Normalized B2B Tables
+    await query(`
+      CREATE TABLE IF NOT EXISTS service_categories (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        slug VARCHAR(255) UNIQUE NOT NULL,
+        description TEXT,
+        order_index INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Check if services table exists from previous pivot, if not create it
+      CREATE TABLE IF NOT EXISTS services (
+        id SERIAL PRIMARY KEY,
+        category_id INTEGER REFERENCES service_categories(id) ON DELETE SET NULL,
+        title VARCHAR(255) NOT NULL,
+        title_ar VARCHAR(255),
+        slug VARCHAR(255) UNIQUE,
+        description TEXT,
+        description_ar TEXT,
+        icon VARCHAR(255),
+        featured BOOLEAN DEFAULT false,
+        show_on_homepage BOOLEAN DEFAULT false,
+        status VARCHAR(50) DEFAULT 'draft',
+        sort_order INTEGER DEFAULT 0,
+        price_tier VARCHAR(100),
+        features_json TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Add missing columns to services if it already existed
+      DO $$
+      BEGIN
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'services' AND column_name = 'slug') THEN
+              ALTER TABLE services ADD COLUMN slug VARCHAR(255) UNIQUE;
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'services' AND column_name = 'featured') THEN
+              ALTER TABLE services ADD COLUMN featured BOOLEAN DEFAULT false;
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'services' AND column_name = 'show_on_homepage') THEN
+              ALTER TABLE services ADD COLUMN show_on_homepage BOOLEAN DEFAULT false;
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'services' AND column_name = 'status') THEN
+              ALTER TABLE services ADD COLUMN status VARCHAR(50) DEFAULT 'draft';
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'services' AND column_name = 'sort_order') THEN
+              ALTER TABLE services ADD COLUMN sort_order INTEGER DEFAULT 0;
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'services' AND column_name = 'category_id') THEN
+              ALTER TABLE services ADD COLUMN category_id INTEGER REFERENCES service_categories(id) ON DELETE SET NULL;
+          END IF;
+      END $$;
+
+      CREATE TABLE IF NOT EXISTS service_pricing_models (
+        id SERIAL PRIMARY KEY,
+        service_id INTEGER REFERENCES services(id) ON DELETE CASCADE,
+        model_type VARCHAR(50) NOT NULL, -- 'Fixed', 'Retainer', 'Custom'
+        starting_price VARCHAR(100),
+        features_json TEXT,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS service_blocks (
+        id SERIAL PRIMARY KEY,
+        service_id INTEGER REFERENCES services(id) ON DELETE CASCADE,
+        block_type VARCHAR(50) NOT NULL, -- 'overview', 'architecture_diagram', 'pricing_matrix', etc
+        content_jsonb JSONB NOT NULL,
+        order_index INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS service_use_cases (
+        id SERIAL PRIMARY KEY,
+        service_id INTEGER REFERENCES services(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        metrics_json TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS service_deliverables (
+        id SERIAL PRIMARY KEY,
+        service_id INTEGER REFERENCES services(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- Extend existing client_case_studies with service relation
+      DO $$
+      BEGIN
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'client_case_studies' AND column_name = 'service_id') THEN
+              ALTER TABLE client_case_studies ADD COLUMN service_id INTEGER REFERENCES services(id) ON DELETE SET NULL;
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'client_case_studies' AND column_name = 'slug') THEN
+              ALTER TABLE client_case_studies ADD COLUMN slug VARCHAR(255) UNIQUE;
+          END IF;
+      END $$;
+    `);
+
+    const headlessTables = ['service_categories', 'services', 'service_pricing_models', 'service_blocks', 'service_use_cases', 'service_deliverables'];
+    for (const table of headlessTables) {
+      let triggerExists = false;
+      try {
+        const result = await queryOne(`SELECT 1 FROM pg_trigger WHERE tgname = 'update_${table}_updated_at'`);
+        if (result) triggerExists = true;
+      } catch (e) { }
+
+      if (!triggerExists) {
+        await query(`
+            CREATE TRIGGER update_${table}_updated_at 
+            BEFORE UPDATE ON ${table}
+            FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
+          `);
+      }
+    }
+
+    // Assign generic slugs to existing services if missing
+    await query(`UPDATE services SET slug = LOWER(REPLACE(title, ' ', '-')) WHERE slug IS NULL`);
+    await query(`UPDATE services SET status = 'active' WHERE status = 'draft'`);
+
+    console.log('✅ Migration: Added Headless CMS normalized tables for B2B pivot');
+  } catch (error: any) {
+    if (error.code === '42P07' || error.message?.includes('already exists')) {
+      console.log('ℹ️  Migration: Headless CMS tables already exist');
+    } else {
+      console.error('❌ Migration error for Headless CMS tables:', error);
+    }
+  }
+
+  try {
+    // Migration 9: Enterprise V2 — Normalized relational tables + rich content columns
+    await query(`ALTER TABLE services ADD COLUMN IF NOT EXISTS hero_image_url TEXT`);
+    await query(`ALTER TABLE services ADD COLUMN IF NOT EXISTS problem_statement TEXT`);
+    await query(`ALTER TABLE services ADD COLUMN IF NOT EXISTS problem_statement_ar TEXT`);
+    await query(`ALTER TABLE services ADD COLUMN IF NOT EXISTS overview_long TEXT`);
+    await query(`ALTER TABLE services ADD COLUMN IF NOT EXISTS overview_long_ar TEXT`);
+    await query(`ALTER TABLE client_case_studies ADD COLUMN IF NOT EXISTS outcome TEXT`);
+    await query(`ALTER TABLE client_case_studies ADD COLUMN IF NOT EXISTS outcome_ar TEXT`);
+    await query(`ALTER TABLE client_case_studies ADD COLUMN IF NOT EXISTS logo_url TEXT`);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS service_gallery (
+        id SERIAL PRIMARY KEY,
+        service_id INTEGER REFERENCES services(id) ON DELETE CASCADE,
+        image_url TEXT NOT NULL,
+        caption VARCHAR(255),
+        order_index INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS service_faq (
+        id SERIAL PRIMARY KEY,
+        service_id INTEGER REFERENCES services(id) ON DELETE CASCADE,
+        question TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        question_ar TEXT,
+        answer_ar TEXT,
+        order_index INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS service_tech_stack (
+        id SERIAL PRIMARY KEY,
+        service_id INTEGER REFERENCES services(id) ON DELETE CASCADE,
+        name VARCHAR(255) NOT NULL,
+        category VARCHAR(100),
+        order_index INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('✅ Migration 9: Enterprise V2 relational tables and columns');
+  } catch (error: any) {
+    if (error.code === '42P07' || error.message?.includes('already exists')) {
+      console.log('ℹ️  Migration 9: Tables already exist');
+    } else {
+      console.error('❌ Migration 9 error:', error);
+    }
+  }
 }
 
 /**

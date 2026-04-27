@@ -56,11 +56,11 @@ export default function Careers() {
           </div>
           
           <h1 className={`text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-            {t("Build the Future of ", "ابنِ مستقبل ", "Build the Future of ")}<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">{t("EdTech.", "التعليم التقني.", "EdTech.")}</span>
+            {t("Build the Future of ", "صمّم مستقبل ", "Build the Future of ")}<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">{t("AI Systems.", "أنظمة الذكاء الاصطناعي.", "AI Systems.")}</span>
           </h1>
           
           <p className={`text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed font-light ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-            {t("Join a team of innovators, engineers, and educators dedicated to transforming how the world learns Artificial Intelligence and Space Tech.", "انضم إلى فريق من المبتكرين والمهندسين والمعلمين المكرسين لتحويل طريقة تعلم العالم للذكاء الاصطناعي وتكنولوجيا الفضاء.", "Join our team.")}
+            {t("Join a team of engineers, architects, and AI specialists building production-grade systems for enterprises across the MENA region.", "انضم إلى فريق من المهندسين والمعماريين المتخصصين في بناء أنظمة ذكاء اصطناعي على مستوى الإنتاج للمؤسسات في منطقة الشرق الأوسط.", "Join our team.")}
           </p>
 
           <div className="flex justify-center gap-4">

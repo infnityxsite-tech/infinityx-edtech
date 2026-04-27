@@ -37,13 +37,15 @@ import { trpc } from "@/lib/trpc";
 import { useState, useEffect } from "react";
 import PageContentManager from "@/components/admin/PageContentManager";
 import CoursesManager from "@/components/admin/CoursesManager";
-import ProgramsManager from "@/components/admin/ProgramsManager";
 import BlogManager from "@/components/admin/BlogManager";
 import CareersManager from "@/components/admin/CareersManager";
 import MessagesManager from "@/components/admin/MessagesManager";
 import CertificatesManager from "@/components/admin/CertificatesManager";
 import SponsorsManager from "@/components/admin/SponsorsManager";
 import StudentManager from "@/components/admin/StudentManager";
+import LeadsManager from "@/components/admin/LeadsManager";
+import ServicesManager from "@/components/admin/ServicesManager";
+import CaseStudiesManager from "@/components/admin/CaseStudiesManager";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -55,7 +57,9 @@ const MENU_ITEMS = [
   { key: "overview", label: "Overview", label_ar: "نظرة عامة", icon: LayoutDashboard, color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20" },
   { key: "courses", label: "Courses", label_ar: "الدورات", icon: BookOpen, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
   { key: "students", label: "Students", label_ar: "الطلاب", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-  { key: "programs", label: "Programs", label_ar: "البرامج", icon: Users, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
+  { key: "leads", label: "B2B Leads", label_ar: "العملاء المحتملين", icon: Phone, color: "text-lime-400", bg: "bg-lime-500/10", border: "border-lime-500/20" },
+  { key: "services", label: "Services", label_ar: "الخدمات", icon: Sparkles, color: "text-fuchsia-400", bg: "bg-fuchsia-500/10", border: "border-fuchsia-500/20" },
+  { key: "case-studies", label: "Case Studies", label_ar: "دراسات الحالة", icon: FileText, color: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/20" },
   { key: "certificates", label: "Certificates", label_ar: "الشهادات", icon: Award, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
   { key: "sponsors", label: "Sponsors", label_ar: "الرعاة", icon: Building, color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20" },
   { key: "page-content", label: "Pages", label_ar: "الصفحات", icon: FileText, color: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-500/20" },
@@ -81,6 +85,8 @@ export default function AdminDashboard() {
     phone: "",
     whatsapp: "",
     footerText: "",
+    default_theme: "dark",
+    default_language: "en",
   });
 
   const [settingsDirty, setSettingsDirty] = useState(false);
@@ -97,6 +103,8 @@ export default function AdminDashboard() {
         phone: (siteSettings as any)?.phone || "",
         whatsapp: (siteSettings as any)?.whatsapp || "",
         footerText: (siteSettings as any)?.footerText || "",
+        default_theme: (siteSettings as any)?.default_theme || "dark",
+        default_language: (siteSettings as any)?.default_language || "en",
       });
     }
   }, [siteSettings]);
@@ -300,8 +308,14 @@ export default function AdminDashboard() {
         {/* STUDENTS */}
         {activeTab === "students" && <StudentManager />}
 
-        {/* PROGRAMS */}
-        {activeTab === "programs" && <ProgramsManager />}
+        {/* B2B LEADS */}
+        {activeTab === "leads" && <LeadsManager />}
+
+        {/* SERVICES */}
+        {activeTab === "services" && <ServicesManager />}
+
+        {/* CASE STUDIES */}
+        {activeTab === "case-studies" && <CaseStudiesManager />}
 
         {/* BLOG */}
         {activeTab === "blog" && <BlogManager />}
@@ -455,6 +469,36 @@ export default function AdminDashboard() {
                   />
                 </div>
               ))}
+
+              {/* Default Theme & Language */}
+              <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-white/[0.06]">
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-sm font-semibold text-slate-400">
+                    🎨 Default Theme
+                  </Label>
+                  <select
+                    value={settings.default_theme}
+                    onChange={(e) => handleSettingFieldChange('default_theme', e.target.value)}
+                    className={`w-full h-11 rounded-xl px-4 text-sm border focus:outline-none ${isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-[#0d1225] border-white/[0.08] text-white [color-scheme:dark]'}`}
+                  >
+                    <option value="dark">🌙 Dark Mode (Default)</option>
+                    <option value="light">☀️ Light Mode</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-sm font-semibold text-slate-400">
+                    🌐 Default Language
+                  </Label>
+                  <select
+                    value={settings.default_language}
+                    onChange={(e) => handleSettingFieldChange('default_language', e.target.value)}
+                    className={`w-full h-11 rounded-xl px-4 text-sm border focus:outline-none ${isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-[#0d1225] border-white/[0.08] text-white [color-scheme:dark]'}`}
+                  >
+                    <option value="en">🇬🇧 English (Default)</option>
+                    <option value="ar">🇪🇬 العربية</option>
+                  </select>
+                </div>
+              </div>
 
               {/* Save Button */}
               <div className={`pt-4 border-t ${isLight ? "border-slate-200" : "border-white/[0.06]"}`}>

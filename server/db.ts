@@ -1131,3 +1131,479 @@ export async function updateSponsor(id: number | string, data: Partial<InsertSpo
 export async function deleteSponsor(id: number | string): Promise<void> {
   await query(`DELETE FROM sponsors WHERE id = $1`, [id]);
 }
+
+// ==============================
+// 🚀 SERVICE PACKAGES OPERATIONS
+// ==============================
+
+export interface ServicePackage {
+  id: string;
+  title: string;
+  titleAr?: string | null;
+  description?: string | null;
+  descriptionAr?: string | null;
+  featuresJson?: string | null;
+  priceTier?: string | null;
+  iconUrl?: string | null;
+  isActive: boolean;
+  orderIndex: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type InsertServicePackage = Omit<ServicePackage, "id" | "createdAt" | "updatedAt">;
+
+export async function getServicePackages(): Promise<ServicePackage[]> {
+  return await queryMany<any>(
+    `SELECT id, title, title_ar as "titleAr", description, description_ar as "descriptionAr",
+            slug, icon, featured, show_on_homepage as "showOnHomepage", status,
+            price_tier as "priceTier", hero_image_url as "heroImageUrl",
+            problem_statement as "problemStatement", overview_long as "overviewLong",
+            sort_order as "orderIndex",
+            (status = 'active') as "isActive",
+            created_at as "createdAt", updated_at as "updatedAt"
+     FROM services ORDER BY sort_order ASC, created_at DESC`
+  );
+}
+
+export async function getActiveServicePackages(): Promise<ServicePackage[]> {
+  return await queryMany<any>(
+    `SELECT id, title, title_ar as "titleAr", description, description_ar as "descriptionAr",
+            slug, icon, price_tier as "priceTier",
+            sort_order as "orderIndex", true as "isActive",
+            created_at as "createdAt", updated_at as "updatedAt"
+     FROM services WHERE status = 'active' ORDER BY sort_order ASC`
+  );
+}
+
+export async function createServicePackage(pkg: InsertServicePackage): Promise<ServicePackage> {
+  const slug = (pkg.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const result = await queryOne<any>(
+    `INSERT INTO services (title, title_ar, description, description_ar, slug, price_tier, icon, status, sort_order)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+     RETURNING id, title, title_ar as "titleAr", description, description_ar as "descriptionAr",
+               slug, price_tier as "priceTier", icon, status,
+               sort_order as "orderIndex",
+               created_at as "createdAt", updated_at as "updatedAt"`,
+    [pkg.title, pkg.titleAr, pkg.description, pkg.descriptionAr,
+     slug, pkg.priceTier, 'Cpu',
+     'active', pkg.orderIndex || 0]
+  );
+  return result!;
+}
+
+export async function updateServicePackage(id: string, updates: Partial<InsertServicePackage>): Promise<void> {
+  const allowedKeys: string[] = [
+    'title', 'titleAr', 'description', 'descriptionAr',
+    'priceTier', 'icon', 'isActive', 'orderIndex', 'slug',
+    'heroImageUrl', 'problemStatement', 'overviewLong'
+  ];
+  const queryData = buildUpdateQuery('services', allowedKeys, updates, 'id', id);
+  if (!queryData) return;
+  await query(queryData.text, queryData.values);
+}
+
+export async function deleteServicePackage(id: string): Promise<void> {
+  // Delete related sub-tables first
+  await query(`DELETE FROM service_tech_stack WHERE service_id = $1`, [id]);
+  await query(`DELETE FROM service_deliverables WHERE service_id = $1`, [id]);
+  await query(`DELETE FROM service_use_cases WHERE service_id = $1`, [id]);
+  await query(`DELETE FROM service_pricing_models WHERE service_id = $1`, [id]);
+  await query(`DELETE FROM service_gallery WHERE service_id = $1`, [id]);
+  await query(`DELETE FROM service_faq WHERE service_id = $1`, [id]);
+  await query(`DELETE FROM services WHERE id = $1`, [id]);
+}
+
+// ==============================
+// 📊 CLIENT CASE STUDIES OPERATIONS
+// ==============================
+
+export interface ClientCaseStudy {
+  id: string;
+  clientName: string;
+  clientNameAr?: string | null;
+  industry?: string | null;
+  industryAr?: string | null;
+  challenge?: string | null;
+  challengeAr?: string | null;
+  solution?: string | null;
+  solutionAr?: string | null;
+  resultsJson?: string | null;
+  imageUrl?: string | null;
+  isPublished: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type InsertClientCaseStudy = Omit<ClientCaseStudy, "id" | "createdAt" | "updatedAt">;
+
+export async function getClientCaseStudies(): Promise<ClientCaseStudy[]> {
+  return await queryMany<any>(
+    `SELECT id, client_name as "clientName", client_name_ar as "clientNameAr",
+            industry, industry_ar as "industryAr", challenge, challenge_ar as "challengeAr",
+            solution, solution_ar as "solutionAr", results_json as "resultsJson",
+            image_url as "imageUrl", is_published as "isPublished",
+            created_at as "createdAt", updated_at as "updatedAt"
+     FROM client_case_studies ORDER BY created_at DESC`
+  );
+}
+
+export async function getPublishedCaseStudies(): Promise<ClientCaseStudy[]> {
+  return await queryMany<any>(
+    `SELECT id, client_name as "clientName", client_name_ar as "clientNameAr",
+            industry, industry_ar as "industryAr", challenge, challenge_ar as "challengeAr",
+            solution, solution_ar as "solutionAr", results_json as "resultsJson",
+            image_url as "imageUrl", is_published as "isPublished",
+            created_at as "createdAt", updated_at as "updatedAt"
+     FROM client_case_studies WHERE is_published = true ORDER BY created_at DESC`
+  );
+}
+
+export async function createClientCaseStudy(cs: InsertClientCaseStudy): Promise<ClientCaseStudy> {
+  const result = await queryOne<any>(
+    `INSERT INTO client_case_studies (client_name, client_name_ar, industry, industry_ar, challenge, challenge_ar, solution, solution_ar, results_json, image_url, is_published)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+     RETURNING id, client_name as "clientName", client_name_ar as "clientNameAr",
+               industry, industry_ar as "industryAr", challenge, challenge_ar as "challengeAr",
+               solution, solution_ar as "solutionAr", results_json as "resultsJson",
+               image_url as "imageUrl", is_published as "isPublished",
+               created_at as "createdAt", updated_at as "updatedAt"`,
+    [cs.clientName, cs.clientNameAr, cs.industry, cs.industryAr,
+     cs.challenge, cs.challengeAr, cs.solution, cs.solutionAr,
+     cs.resultsJson, cs.imageUrl, cs.isPublished !== undefined ? cs.isPublished : false]
+  );
+  return result!;
+}
+
+export async function updateClientCaseStudy(id: string, updates: Partial<InsertClientCaseStudy>): Promise<void> {
+  const allowedKeys: string[] = [
+    'clientName', 'clientNameAr', 'industry', 'industryAr',
+    'challenge', 'challengeAr', 'solution', 'solutionAr',
+    'resultsJson', 'imageUrl', 'isPublished'
+  ];
+  const queryData = buildUpdateQuery('client_case_studies', allowedKeys, updates, 'id', id);
+  if (!queryData) return;
+  await query(queryData.text, queryData.values);
+}
+
+export async function deleteClientCaseStudy(id: string): Promise<void> {
+  await query(`DELETE FROM client_case_studies WHERE id = $1`, [id]);
+}
+
+// ==============================
+// 🏗️ SOLUTION TIERS OPERATIONS
+// ==============================
+
+export interface SolutionTier {
+  id: string;
+  name: string;
+  nameAr?: string | null;
+  description?: string | null;
+  descriptionAr?: string | null;
+  targetAudience?: string | null;
+  targetAudienceAr?: string | null;
+  techStackJson?: string | null;
+  priceRange?: string | null;
+  isActive: boolean;
+  orderIndex: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type InsertSolutionTier = Omit<SolutionTier, "id" | "createdAt" | "updatedAt">;
+
+export async function getSolutionTiers(): Promise<SolutionTier[]> {
+  return await queryMany<any>(
+    `SELECT id, name, name_ar as "nameAr", description, description_ar as "descriptionAr",
+            target_audience as "targetAudience", target_audience_ar as "targetAudienceAr",
+            tech_stack_json as "techStackJson", price_range as "priceRange",
+            is_active as "isActive", order_index as "orderIndex",
+            created_at as "createdAt", updated_at as "updatedAt"
+     FROM solution_tiers ORDER BY order_index ASC`
+  );
+}
+
+export async function getActiveSolutionTiers(): Promise<SolutionTier[]> {
+  return await queryMany<any>(
+    `SELECT id, name, name_ar as "nameAr", description, description_ar as "descriptionAr",
+            target_audience as "targetAudience", target_audience_ar as "targetAudienceAr",
+            tech_stack_json as "techStackJson", price_range as "priceRange",
+            is_active as "isActive", order_index as "orderIndex",
+            created_at as "createdAt", updated_at as "updatedAt"
+     FROM solution_tiers WHERE is_active = true ORDER BY order_index ASC`
+  );
+}
+
+export async function createSolutionTier(tier: InsertSolutionTier): Promise<SolutionTier> {
+  const result = await queryOne<any>(
+    `INSERT INTO solution_tiers (name, name_ar, description, description_ar, target_audience, target_audience_ar, tech_stack_json, price_range, is_active, order_index)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+     RETURNING id, name, name_ar as "nameAr", description, description_ar as "descriptionAr",
+               target_audience as "targetAudience", target_audience_ar as "targetAudienceAr",
+               tech_stack_json as "techStackJson", price_range as "priceRange",
+               is_active as "isActive", order_index as "orderIndex",
+               created_at as "createdAt", updated_at as "updatedAt"`,
+    [tier.name, tier.nameAr, tier.description, tier.descriptionAr,
+     tier.targetAudience, tier.targetAudienceAr, tier.techStackJson,
+     tier.priceRange, tier.isActive !== undefined ? tier.isActive : true, tier.orderIndex || 0]
+  );
+  return result!;
+}
+
+export async function updateSolutionTier(id: string, updates: Partial<InsertSolutionTier>): Promise<void> {
+  const allowedKeys: string[] = [
+    'name', 'nameAr', 'description', 'descriptionAr',
+    'targetAudience', 'targetAudienceAr', 'techStackJson',
+    'priceRange', 'isActive', 'orderIndex'
+  ];
+  const queryData = buildUpdateQuery('solution_tiers', allowedKeys, updates, 'id', id);
+  if (!queryData) return;
+  await query(queryData.text, queryData.values);
+}
+
+export async function deleteSolutionTier(id: string): Promise<void> {
+  await query(`DELETE FROM solution_tiers WHERE id = $1`, [id]);
+}
+
+// ==============================
+// 📞 CONSULTATION LEADS (B2B SALES FUNNEL)
+// ==============================
+
+export interface ConsultationLead {
+  id: string;
+  name: string;
+  company?: string | null;
+  email: string;
+  phone?: string | null;
+  industryPainPoint?: string | null;
+  serviceInterest?: string | null;
+  status: string;
+  notes?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type InsertConsultationLead = Omit<ConsultationLead, "id" | "createdAt" | "updatedAt">;
+
+export async function getConsultationLeads(): Promise<ConsultationLead[]> {
+  return await queryMany<any>(
+    `SELECT id, name, company, email, phone,
+            industry_pain_point as "industryPainPoint", service_interest as "serviceInterest",
+            status, notes, created_at as "createdAt", updated_at as "updatedAt"
+     FROM consultation_leads ORDER BY created_at DESC`
+  );
+}
+
+export async function createConsultationLead(lead: InsertConsultationLead): Promise<ConsultationLead> {
+  const result = await queryOne<any>(
+    `INSERT INTO consultation_leads (name, company, email, phone, industry_pain_point, service_interest, status, notes)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     RETURNING id, name, company, email, phone,
+               industry_pain_point as "industryPainPoint", service_interest as "serviceInterest",
+               status, notes, created_at as "createdAt", updated_at as "updatedAt"`,
+    [lead.name, lead.company, lead.email, lead.phone,
+     lead.industryPainPoint, lead.serviceInterest, lead.status || 'new', lead.notes]
+  );
+  return result!;
+}
+
+export async function updateConsultationLeadStatus(id: string, status: string, notes?: string): Promise<void> {
+  if (notes !== undefined) {
+    await query(
+      `UPDATE consultation_leads SET status = $1, notes = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3`,
+      [status, notes, id]
+    );
+  } else {
+    await query(
+      `UPDATE consultation_leads SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
+      [status, id]
+    );
+  }
+}
+
+export async function deleteConsultationLead(id: string): Promise<void> {
+  await query(`DELETE FROM consultation_leads WHERE id = $1`, [id]);
+}
+
+// ============================================
+// 🚀 HEADLESS CMS SOLUTIONS HUB (COMPOSED)
+// ============================================
+
+export async function getSolutionsHub() {
+  const categoriesRes = await query(`SELECT * FROM service_categories ORDER BY order_index ASC`);
+  
+  const allServicesRes = await query(`
+    SELECT s.*, c.name as category_name
+    FROM services s
+    LEFT JOIN service_categories c ON s.category_id = c.id
+    WHERE s.status = 'active'
+    ORDER BY s.sort_order ASC
+  `);
+
+  // Compose each service with counts and tech stack for hub display
+  const serviceIds = allServicesRes.rows.map((s: any) => s.id);
+  let deliverableCounts: any = {};
+  let useCaseCounts: any = {};
+  let techStackByService: any = {};
+
+  if (serviceIds.length > 0) {
+    const delRes = await query(`SELECT service_id, COUNT(*) as c FROM service_deliverables WHERE service_id = ANY($1) GROUP BY service_id`, [serviceIds]);
+    delRes.rows.forEach((r: any) => { deliverableCounts[r.service_id] = parseInt(r.c); });
+
+    const ucRes = await query(`SELECT service_id, COUNT(*) as c FROM service_use_cases WHERE service_id = ANY($1) GROUP BY service_id`, [serviceIds]);
+    ucRes.rows.forEach((r: any) => { useCaseCounts[r.service_id] = parseInt(r.c); });
+
+    const tsRes = await query(`SELECT service_id, name FROM service_tech_stack WHERE service_id = ANY($1) ORDER BY order_index ASC`, [serviceIds]);
+    tsRes.rows.forEach((r: any) => {
+      if (!techStackByService[r.service_id]) techStackByService[r.service_id] = [];
+      techStackByService[r.service_id].push(r.name);
+    });
+  }
+
+  const composedServices = allServicesRes.rows.map((s: any) => ({
+    ...s,
+    deliverableCount: deliverableCounts[s.id] || 0,
+    useCaseCount: useCaseCounts[s.id] || 0,
+    techStack: techStackByService[s.id] || [],
+  }));
+
+  const featuredServices = composedServices.filter((s: any) => s.featured);
+
+  const caseStudiesRes = await query(`
+    SELECT cs.*, s.title as service_title, s.slug as service_slug
+    FROM client_case_studies cs
+    LEFT JOIN services s ON cs.service_id = s.id
+    WHERE cs.is_published = true 
+    ORDER BY cs.created_at DESC LIMIT 6
+  `);
+
+  return {
+    categories: categoriesRes.rows,
+    featuredServices,
+    allServices: composedServices,
+    caseStudies: caseStudiesRes.rows
+  };
+}
+
+export async function getSolutionBySlug(slug: string) {
+  const serviceRes = await queryOne(`
+    SELECT s.*, c.name as category_name, c.slug as category_slug
+    FROM services s
+    LEFT JOIN service_categories c ON s.category_id = c.id
+    WHERE s.slug = $1 AND s.status = 'active'
+  `, [slug]);
+
+  if (!serviceRes) return null;
+
+  const serviceId = serviceRes.id;
+
+  const [blocksRes, pricingRes, useCasesRes, deliverablesRes, caseStudiesRes, techStackRes, galleryRes, faqRes] = await Promise.all([
+    query(`SELECT * FROM service_blocks WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
+    query(`SELECT * FROM service_pricing_models WHERE service_id = $1`, [serviceId]),
+    query(`SELECT * FROM service_use_cases WHERE service_id = $1`, [serviceId]),
+    query(`SELECT * FROM service_deliverables WHERE service_id = $1`, [serviceId]),
+    query(`SELECT * FROM client_case_studies WHERE service_id = $1 AND is_published = true`, [serviceId]),
+    query(`SELECT * FROM service_tech_stack WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
+    query(`SELECT * FROM service_gallery WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
+    query(`SELECT * FROM service_faq WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
+  ]);
+
+  return {
+    ...serviceRes,
+    blocks: blocksRes.rows,
+    pricingModels: pricingRes.rows,
+    useCases: useCasesRes.rows,
+    deliverables: deliverablesRes.rows,
+    relatedCaseStudies: caseStudiesRes.rows,
+    techStack: techStackRes.rows,
+    gallery: galleryRes.rows,
+    faq: faqRes.rows,
+  };
+}
+
+// ============================================
+// 🔧 CRUD for relational sub-tables
+// ============================================
+
+export async function addServiceGalleryItem(serviceId: number, imageUrl: string, caption?: string) {
+  return await queryOne(`INSERT INTO service_gallery (service_id, image_url, caption) VALUES ($1, $2, $3) RETURNING *`, [serviceId, imageUrl, caption || '']);
+}
+export async function deleteServiceGalleryItem(id: string) {
+  await query(`DELETE FROM service_gallery WHERE id = $1`, [id]);
+}
+
+export async function addServiceFaq(serviceId: number, question: string, answer: string, questionAr?: string, answerAr?: string) {
+  return await queryOne(`INSERT INTO service_faq (service_id, question, answer, question_ar, answer_ar) VALUES ($1, $2, $3, $4, $5) RETURNING *`, [serviceId, question, answer, questionAr || '', answerAr || '']);
+}
+export async function deleteServiceFaq(id: string) {
+  await query(`DELETE FROM service_faq WHERE id = $1`, [id]);
+}
+
+export async function addServiceTechStack(serviceId: number, name: string, category?: string) {
+  return await queryOne(`INSERT INTO service_tech_stack (service_id, name, category) VALUES ($1, $2, $3) RETURNING *`, [serviceId, name, category || '']);
+}
+export async function deleteServiceTechStack(id: string) {
+  await query(`DELETE FROM service_tech_stack WHERE id = $1`, [id]);
+}
+
+export async function addServiceDeliverable(serviceId: number, title: string, description?: string) {
+  return await queryOne(`INSERT INTO service_deliverables (service_id, title, description) VALUES ($1, $2, $3) RETURNING *`, [serviceId, title, description || '']);
+}
+export async function deleteServiceDeliverable(id: string) {
+  await query(`DELETE FROM service_deliverables WHERE id = $1`, [id]);
+}
+
+export async function addServiceUseCase(serviceId: number, title: string, description?: string) {
+  return await queryOne(`INSERT INTO service_use_cases (service_id, title, description) VALUES ($1, $2, $3) RETURNING *`, [serviceId, title, description || '']);
+}
+export async function deleteServiceUseCase(id: string) {
+  await query(`DELETE FROM service_use_cases WHERE id = $1`, [id]);
+}
+
+export async function addServicePricingModel(serviceId: number, modelType: string, startingPrice: string, description?: string, featuresJson?: string) {
+  return await queryOne(`INSERT INTO service_pricing_models (service_id, model_type, starting_price, description, features_json) VALUES ($1, $2, $3, $4, $5) RETURNING *`, [serviceId, modelType, startingPrice, description || '', featuresJson || '[]']);
+}
+export async function deleteServicePricingModel(id: string) {
+  await query(`DELETE FROM service_pricing_models WHERE id = $1`, [id]);
+}
+
+export async function updateService(id: string, updates: any) {
+  const allowedKeys = ['title','titleAr','description','descriptionAr','icon','featured','showOnHomepage','status','sortOrder','priceTier','featuresJson','heroImageUrl','problemStatement','problemStatementAr','overviewLong','overviewLongAr','slug'];
+  const queryData = buildUpdateQuery('services', allowedKeys, updates, 'id', id);
+  if (!queryData) return;
+  await query(queryData.text, queryData.values);
+}
+
+export async function updateServicePricingModel(id: string, updates: { modelType?: string; startingPrice?: string; priceEgp?: string; description?: string; featuresJson?: string }) {
+  const sets: string[] = [];
+  const vals: any[] = [];
+  let idx = 1;
+  if (updates.modelType !== undefined) { sets.push(`model_type = $${idx++}`); vals.push(updates.modelType); }
+  if (updates.startingPrice !== undefined) { sets.push(`starting_price = $${idx++}`); vals.push(updates.startingPrice); }
+  if (updates.priceEgp !== undefined) { sets.push(`price_egp = $${idx++}`); vals.push(updates.priceEgp); }
+  if (updates.description !== undefined) { sets.push(`description = $${idx++}`); vals.push(updates.description); }
+  if (updates.featuresJson !== undefined) { sets.push(`features_json = $${idx++}`); vals.push(updates.featuresJson); }
+  if (sets.length === 0) return;
+  vals.push(id);
+  await query(`UPDATE service_pricing_models SET ${sets.join(', ')} WHERE id = $${idx}`, vals);
+}
+
+export async function updateClientCaseStudyFull(id: string, updates: any) {
+  const sets: string[] = [];
+  const vals: any[] = [];
+  let idx = 1;
+  const fields: [string, string][] = [
+    ['clientName', 'client_name'], ['clientNameAr', 'client_name_ar'],
+    ['industry', 'industry'], ['industryAr', 'industry_ar'],
+    ['challenge', 'challenge'], ['challengeAr', 'challenge_ar'],
+    ['solution', 'solution'], ['solutionAr', 'solution_ar'],
+    ['outcome', 'outcome'], ['outcomeAr', 'outcome_ar'],
+    ['imageUrl', 'image_url'], ['isPublished', 'is_published'],
+  ];
+  for (const [jsKey, dbKey] of fields) {
+    if (updates[jsKey] !== undefined) { sets.push(`${dbKey} = $${idx++}`); vals.push(updates[jsKey]); }
+  }
+  if (sets.length === 0) return;
+  vals.push(id);
+  await query(`UPDATE client_case_studies SET ${sets.join(', ')} WHERE id = $${idx}`, vals);
+}

@@ -24,21 +24,21 @@ export default function Footer() {
   const quickLinks = [
     { label: t("Home", "الرئيسية", "Home"), href: "/" },
     { label: t("About Us", "من نحن", "About Us"), href: "/about" },
+    { label: t("Solutions", "الحلول", "Solutions"), href: "/solutions" },
     { label: t("Courses", "الدورات", "Courses"), href: "/courses" },
-    { label: t("Programs", "البرامج", "Programs"), href: "/programs" },
     { label: t("Blog", "المدونة", "Blog"), href: "/blog" },
     { label: t("Careers", "الوظائف", "Careers"), href: "/careers" },
   ];
 
-  const schoolLinks = [
-    { label: t("AI & Data Science", "الذكاء الاصطناعي وعلوم البيانات", "AI & Data Science"), href: "/programs/ai" },
-    { label: t("Software Engineering", "هندسة البرمجيات", "Software Engineering"), href: "/programs/software" },
-    { label: t("Cybersecurity", "الأمن السيبراني", "Cybersecurity"), href: "/programs/security" },
-    { label: t("Space Technology", "تكنولوجيا الفضاء", "Space Technology"), href: "/programs/space" },
+  const serviceLinks = [
+    { label: t("AI Solutions", "حلول الذكاء الاصطناعي", "AI Solutions"), href: "/solutions" },
+    { label: t("Computer Vision", "الرؤية الحاسوبية", "Computer Vision"), href: "/solutions" },
+    { label: t("Custom Software", "برمجيات مخصصة", "Custom Software"), href: "/solutions" },
+    { label: t("Corporate Training", "التدريب المؤسسي", "Corporate Training"), href: "/courses" },
   ];
 
   return (
-    <footer className="bg-[#060a14] text-white border-t border-white/[0.06]">
+    <footer className="bg-[#030712] text-white border-t border-white/[0.08]">
       {/* Main Grid */}
       <div className="max-w-7xl mx-auto px-6 py-14">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8">
@@ -46,16 +46,16 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4 group">
-              <img src="/uploads/logo_new.png" alt={APP_TITLE}
-                className="h-7 w-auto object-contain"
-                onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-              <span className="font-bold text-base text-white group-hover:text-cyan-400 transition-colors">{APP_TITLE}</span>
+              <img src="/uploads/logo.png" alt={APP_TITLE}
+                className="h-8 w-auto object-contain brightness-110"
+                onError={(e) => { e.currentTarget.src = '/uploads/logo_new.png'; }} />
+              <span className="font-bold text-lg text-white group-hover:text-cyan-400 transition-colors">{APP_TITLE}</span>
             </Link>
-            <p className="text-slate-500 text-xs leading-relaxed mb-5 max-w-xs">
+            <p className="text-slate-400 text-xs leading-relaxed mb-5 max-w-xs">
               {t(
-                "Empowering the next generation of tech leaders through hands-on learning, live sessions, and industry-standard curriculum.",
-                "تمكين الجيل القادم من قادة التكنولوجيا من خلال التعلم العملي والجلسات المباشرة والمناهج وفق المعايير العالمية.",
-                "Empowering future tech leaders."
+                "Enterprise AI solutions, computer vision systems, and corporate tech upskilling. We build and train for the future.",
+                "حلول ذكاء اصطناعي للمؤسسات، وأنظمة رؤية حاسوبية، وتدريب تقني مؤسسي. نبني وندرب للمستقبل.",
+                "Enterprise AI, CV systems, and corporate training."
               )}
             </p>
             <a href="mailto:support@infx.space" className="inline-flex items-center gap-2 text-xs text-slate-400 hover:text-cyan-400 transition-colors">
@@ -82,12 +82,12 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Schools */}
+          {/* Services */}
           <div>
-            <h4 className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-4">{t("Schools", "المدارس", "Schools")}</h4>
+            <h4 className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-4">{t("Services", "الخدمات", "Services")}</h4>
             <ul className="space-y-2.5">
-              {schoolLinks.map(link => (
-                <li key={link.href}>
+              {serviceLinks.map(link => (
+                <li key={link.href + link.label}>
                   <Link href={link.href}>
                     <span className="text-sm text-slate-400 hover:text-white transition-colors cursor-pointer">{link.label}</span>
                   </Link>
@@ -107,9 +107,9 @@ export default function Footer() {
                 </a>
               ))}
             </div>
-            <Link href="/contact">
+            <Link href="/consultation">
               <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer">
-                {t("Get in Touch", "تواصل معنا", "Get in Touch")} <ArrowUpRight className="w-3 h-3" />
+                {t("Request Consultation", "اطلب استشارة", "Request Consultation")} <ArrowUpRight className="w-3 h-3" />
               </span>
             </Link>
           </div>

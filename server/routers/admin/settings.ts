@@ -1,8 +1,16 @@
-import { protectedProcedure } from "../../_core/trpc";
+import { publicProcedure, protectedProcedure } from "../../_core/trpc";
 import { z } from "zod";
 import * as db from "../../db";
 
 export const settingsEndpoints = {
+    getSiteDefaults: publicProcedure.query(async () => {
+        const settings = await db.getSiteSettings();
+        return {
+            defaultLanguage: settings.default_language || 'en',
+            defaultTheme: settings.default_theme || 'dark',
+        };
+    }),
+
     getSiteSettings: protectedProcedure.query(async ({ ctx }) => {
         return await db.getSiteSettings();
     }),
