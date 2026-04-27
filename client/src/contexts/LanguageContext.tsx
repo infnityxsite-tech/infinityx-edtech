@@ -20,16 +20,19 @@ const LanguageContext = createContext<LanguageContextType>({
 });
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const { data: defaults } = trpc.admin.getSiteDefaults.useQuery(undefined, { staleTime: 1000 * 60 * 30 });
-  const [lang, setLang] = useState<Language>(() => {
-    const stored = localStorage.getItem("infx-lang");
-    return (stored as Language) || "en";
+  const { data: defaults } = trpc.admin.getSiteDefaults.useQuery(undefined, { staleTime: 1000 * 60 * 5 });
+  const [lang, setLangState] = useState<Language>(() => {
+    // Only trust localStorage if the user manually chose a language
+    if (localStorage.getItem("infx-lang-manual") === "true") {
+      return (localStorage.getItem("infx-lang") as Language) || "en";
+    }
+    return "en";
   });
 
-  // Apply server default if user hasn't set a preference
+  // Apply server default if user hasn't manually chosen a preference
   useEffect(() => {
-    if (defaults?.defaultLanguage && !localStorage.getItem("infx-lang")) {
-      setLang(defaults.defaultLanguage as Language);
+    if (defaults?.defaultLanguage && localStorage.getItem("infx-lang-manual") !== "true") {
+      setLangState(defaults.defaultLanguage as Language);
     }
   }, [defaults]);
 
@@ -41,7 +44,16 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.lang = lang;
   }, [lang, isRTL]);
 
-  const toggleLang = () => setLang(prev => (prev === "en" ? "ar" : "en"));
+  // Wrap setLang to mark as manual choice
+  const setLang = (newLang: Language) => {
+    localStorage.setItem("infx-lang-manual", "true");
+    setLangState(newLang);
+  };
+
+  const toggleLang = () => {
+    localStorage.setItem("infx-lang-manual", "true");
+    setLangState(prev => (prev === "en" ? "ar" : "en"));
+  };
 
   const t = (en: string | undefined, ar: string | undefined, fallback: string): string => {
     return lang === "ar" ? (ar || fallback) : (en || fallback);

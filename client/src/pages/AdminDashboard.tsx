@@ -115,6 +115,7 @@ export default function AdminDashboard() {
     onSuccess: () => {
       toast.success("✅ Settings saved successfully!");
       utils.admin.getSiteSettings.invalidate();
+      utils.admin.getSiteDefaults.invalidate();
       setSettingsDirty(false);
     },
     onError: () => toast.error("Failed to save settings"),
