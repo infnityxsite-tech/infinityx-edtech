@@ -1497,7 +1497,7 @@ export async function getSolutionBySlug(slug: string) {
 
   const serviceId = serviceRes.id;
 
-  const [blocksRes, pricingRes, useCasesRes, deliverablesRes, caseStudiesRes, techStackRes, galleryRes, faqRes] = await Promise.all([
+  const [blocksRes, pricingRes, useCasesRes, deliverablesRes, caseStudiesRes, techStackRes, galleryRes, faqRes, impactRes] = await Promise.all([
     query(`SELECT * FROM service_blocks WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
     query(`SELECT * FROM service_pricing_models WHERE service_id = $1`, [serviceId]),
     query(`SELECT * FROM service_use_cases WHERE service_id = $1`, [serviceId]),
@@ -1506,6 +1506,7 @@ export async function getSolutionBySlug(slug: string) {
     query(`SELECT * FROM service_tech_stack WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
     query(`SELECT * FROM service_gallery WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
     query(`SELECT * FROM service_faq WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
+    query(`SELECT * FROM service_impact_metrics WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
   ]);
 
   return {
@@ -1518,6 +1519,7 @@ export async function getSolutionBySlug(slug: string) {
     techStack: techStackRes.rows,
     gallery: galleryRes.rows,
     faq: faqRes.rows,
+    impactMetrics: impactRes.rows,
   };
 }
 
@@ -1606,4 +1608,136 @@ export async function updateClientCaseStudyFull(id: string, updates: any) {
   if (sets.length === 0) return;
   vals.push(id);
   await query(`UPDATE client_case_studies SET ${sets.join(', ')} WHERE id = $${idx}`, vals);
+}
+
+// ============================================
+// 📊 SERVICE IMPACT METRICS
+// ============================================
+
+export async function getServiceImpactMetrics(serviceId: number) {
+  return await queryMany<any>(
+    `SELECT id, service_id as "serviceId", metric_title as "metricTitle", metric_title_ar as "metricTitleAr",
+            metric_value as "metricValue", metric_description as "metricDescription",
+            metric_description_ar as "metricDescriptionAr", impact_category as "impactCategory", order_index as "orderIndex"
+     FROM service_impact_metrics WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]
+  );
+}
+
+export async function addServiceImpactMetric(serviceId: number, data: any) {
+  return await queryOne(
+    `INSERT INTO service_impact_metrics (service_id, metric_title, metric_title_ar, metric_value, metric_description, metric_description_ar, impact_category, order_index)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+    [serviceId, data.metricTitle, data.metricTitleAr || '', data.metricValue, data.metricDescription || '', data.metricDescriptionAr || '', data.impactCategory || 'efficiency', data.orderIndex || 0]
+  );
+}
+
+export async function deleteServiceImpactMetric(id: string) {
+  await query(`DELETE FROM service_impact_metrics WHERE id = $1`, [id]);
+}
+
+// ============================================
+// 🏭 INDUSTRIES
+// ============================================
+
+export async function getIndustries() {
+  return await queryMany<any>(
+    `SELECT id, slug, title, title_ar as "titleAr", hero_image_url as "heroImageUrl",
+            overview, overview_ar as "overviewAr", pain_points_json as "painPointsJson",
+            pain_points_ar_json as "painPointsArJson", order_index as "orderIndex",
+            created_at as "createdAt"
+     FROM industries ORDER BY order_index ASC`
+  );
+}
+
+export async function getIndustryBySlug(slug: string) {
+  const industry = await queryOne<any>(
+    `SELECT id, slug, title, title_ar as "titleAr", hero_image_url as "heroImageUrl",
+            overview, overview_ar as "overviewAr", pain_points_json as "painPointsJson",
+            pain_points_ar_json as "painPointsArJson", order_index as "orderIndex"
+     FROM industries WHERE slug = $1`, [slug]
+  );
+  if (!industry) return null;
+
+  const services = await queryMany<any>(
+    `SELECT s.id, s.title, s.title_ar, s.slug, s.description, s.description_ar, s.icon, s.hero_image_url, s.price_tier
+     FROM industry_services isv
+     JOIN services s ON isv.service_id = s.id
+     WHERE isv.industry_id = $1 AND s.status = 'active'
+     ORDER BY s.sort_order ASC`, [industry.id]
+  );
+
+  const caseStudies = await queryMany<any>(
+    `SELECT cs.* FROM client_case_studies cs
+     WHERE cs.is_published = true AND cs.industry ILIKE $1
+     ORDER BY cs.created_at DESC LIMIT 4`, [`%${industry.title}%`]
+  );
+
+  return { ...industry, services, caseStudies };
+}
+
+export async function createIndustry(data: any) {
+  return await queryOne(
+    `INSERT INTO industries (slug, title, title_ar, hero_image_url, overview, overview_ar, pain_points_json, pain_points_ar_json, order_index)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+    [data.slug, data.title, data.titleAr, data.heroImageUrl || null, data.overview || '', data.overviewAr || '', data.painPointsJson || '[]', data.painPointsArJson || '[]', data.orderIndex || 0]
+  );
+}
+
+export async function updateIndustry(id: string, data: any) {
+  const allowedKeys = ['slug','title','titleAr','heroImageUrl','overview','overviewAr','painPointsJson','painPointsArJson','orderIndex'];
+  const queryData = buildUpdateQuery('industries', allowedKeys, data, 'id', id);
+  if (!queryData) return;
+  await query(queryData.text, queryData.values);
+}
+
+export async function deleteIndustry(id: string) {
+  await query(`DELETE FROM industries WHERE id = $1`, [id]);
+}
+
+export async function mapIndustryService(industryId: number, serviceId: number) {
+  await query(`INSERT INTO industry_services (industry_id, service_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [industryId, serviceId]);
+}
+
+export async function unmapIndustryService(industryId: number, serviceId: number) {
+  await query(`DELETE FROM industry_services WHERE industry_id = $1 AND service_id = $2`, [industryId, serviceId]);
+}
+
+// ============================================
+// 📝 ENHANCED PROPOSAL LEAD
+// ============================================
+
+export async function createProposalLead(lead: any) {
+  const result = await queryOne<any>(
+    `INSERT INTO consultation_leads (name, company, email, phone, industry_pain_point, service_interest, status, notes,
+     selected_service_id, selected_package_type, budget_range, timeline_expectation, requires_full_ip, proposal_summary_snapshot)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+     RETURNING id, name, company, email, phone,
+               industry_pain_point as "industryPainPoint", service_interest as "serviceInterest",
+               status, notes, selected_service_id as "selectedServiceId",
+               selected_package_type as "selectedPackageType", budget_range as "budgetRange",
+               timeline_expectation as "timelineExpectation", requires_full_ip as "requiresFullIp",
+               proposal_summary_snapshot as "proposalSummarySnapshot",
+               created_at as "createdAt"`,
+    [lead.name, lead.company, lead.email, lead.phone, lead.industryPainPoint, lead.serviceInterest,
+     'new', lead.notes || null, lead.selectedServiceId || null, lead.selectedPackageType || null,
+     lead.budgetRange || null, lead.timelineExpectation || null, lead.requiresFullIp || false,
+     lead.proposalSummarySnapshot ? JSON.stringify(lead.proposalSummarySnapshot) : null]
+  );
+  return result!;
+}
+
+export async function getEnhancedConsultationLeads() {
+  return await queryMany<any>(
+    `SELECT cl.id, cl.name, cl.company, cl.email, cl.phone,
+            cl.industry_pain_point as "industryPainPoint", cl.service_interest as "serviceInterest",
+            cl.status, cl.notes, cl.selected_service_id as "selectedServiceId",
+            cl.selected_package_type as "selectedPackageType", cl.budget_range as "budgetRange",
+            cl.timeline_expectation as "timelineExpectation", cl.requires_full_ip as "requiresFullIp",
+            cl.proposal_summary_snapshot as "proposalSummarySnapshot",
+            cl.created_at as "createdAt", cl.updated_at as "updatedAt",
+            s.title as "serviceName"
+     FROM consultation_leads cl
+     LEFT JOIN services s ON cl.selected_service_id = s.id
+     ORDER BY cl.created_at DESC`
+  );
 }

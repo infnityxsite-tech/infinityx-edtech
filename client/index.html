@@ -52,6 +52,18 @@
 </head>
 
 <body>
+  <script>
+    // FOUC prevention: apply theme before React hydration
+    (function(){
+      var m = localStorage.getItem('infx-theme-manual') === 'true';
+      var t = m ? (localStorage.getItem('infx-theme') || 'dark') : 'dark';
+      var r = document.documentElement;
+      r.setAttribute('data-theme', t);
+      r.classList.add(t === 'light' ? 'light-mode' : 'dark-mode');
+      if (t === 'dark') r.style.backgroundColor = '#020617';
+      else r.style.backgroundColor = '#f8fafc';
+    })();
+  </script>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

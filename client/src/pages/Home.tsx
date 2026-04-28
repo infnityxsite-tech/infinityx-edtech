@@ -75,23 +75,23 @@ export default function Home() {
                 <div className="col-span-2 rounded-2xl overflow-hidden relative group h-48">
                   <img src="/uploads/hero_cv_industrial.png" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="CV Pipeline" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-5">
-                    <div className="flex items-center gap-2 mb-2"><Eye className="w-5 h-5 text-cyan-400" /><span className="text-white font-bold">Industrial CV Pipeline</span></div>
+                    <div className="flex items-center gap-2 mb-2"><Eye className="w-5 h-5 text-cyan-400" /><span className="text-white font-bold">{t("Industrial CV Pipeline", "خط أنابيب الرؤية الحاسوبية الصناعية", "Industrial CV Pipeline")}</span></div>
                     <div className="flex gap-3 text-xs">
-                      <span className="bg-cyan-500/20 text-cyan-300 px-2 py-1 rounded border border-cyan-500/30">FPS: 60+</span>
-                      <span className="bg-emerald-500/20 text-emerald-300 px-2 py-1 rounded border border-emerald-500/30">Latency: &lt;12ms</span>
+                      <span className="bg-cyan-500/20 text-cyan-300 px-2 py-1 rounded border border-cyan-500/30">{t("FPS: 60+", "الإطارات: +٦٠", "FPS: 60+")}</span>
+                      <span className="bg-emerald-500/20 text-emerald-300 px-2 py-1 rounded border border-emerald-500/30">{t("Latency: <12ms", "زمن الاستجابة: >١٢مل‌ث", "Latency: <12ms")}</span>
                     </div>
                   </div>
                 </div>
                 <div className="rounded-2xl overflow-hidden relative group">
                   <img src="/uploads/hero_analytics_dash.png" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Analytics" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-4">
-                    <span className="text-white font-bold text-sm">Predictive Analytics</span>
+                    <span className="text-white font-bold text-sm">{t("Predictive Analytics", "التحليلات التنبؤية", "Predictive Analytics")}</span>
                   </div>
                 </div>
                 <div className={`rounded-2xl border p-5 flex flex-col justify-center ${isLight ? 'bg-white border-slate-200' : 'bg-[#0a0e1a] border-white/[0.08]'}`}>
                   <Activity className="w-8 h-8 text-purple-500 mb-4" />
                   <h4 className={`text-2xl font-black mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>99.8%</h4>
-                  <p className={`text-xs font-semibold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Model Accuracy</p>
+                  <p className={`text-xs font-semibold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{t("Model Accuracy", "دقة النموذج", "Model Accuracy")}</p>
                   <div className={`mt-4 h-2 w-full rounded-full overflow-hidden ${isLight ? 'bg-slate-200' : 'bg-slate-800'}`}>
                     <div className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 w-[99.8%]" />
                   </div>
@@ -155,7 +155,7 @@ export default function Home() {
                       </div>
                       <div>
                         <h3 className={`text-xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(svc.title, svc.title_ar, svc.title)}</h3>
-                        <p className={`text-sm mt-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{svc.deliverableCount} deliverables · {svc.useCaseCount} use cases</p>
+                        <p className={`text-sm mt-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{svc.deliverableCount} {t("deliverables", "مخرجات", "deliverables")} · {svc.useCaseCount} {t("use cases", "حالات استخدام", "use cases")}</p>
                       </div>
                     </div>
                     <p className={`text-sm font-medium leading-relaxed mb-6 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -219,7 +219,7 @@ export default function Home() {
                     <p className={`text-sm mb-4 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{cs.challenge}</p>
                     {cs.outcome && (
                       <div className={`p-3 rounded-xl border ${isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-500/5 border-emerald-500/20'}`}>
-                        <span className="text-xs font-bold text-emerald-500 uppercase">Result</span>
+                        <span className="text-xs font-bold text-emerald-500 uppercase">{t("Result", "النتيجة", "Result")}</span>
                         <p className={`text-sm mt-1 font-medium ${isLight ? 'text-emerald-800' : 'text-emerald-300'}`}>{cs.outcome}</p>
                       </div>
                     )}
@@ -256,7 +256,7 @@ export default function Home() {
             <div className={`inline-flex items-center gap-2 border rounded-full px-4 py-1.5 mb-6 ${isLight ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'}`}>
               <Brain className="w-4 h-4" /><span className="font-bold text-xs tracking-wider uppercase">{t("Talent Infrastructure", "بناء الكفاءات التقنية", "Talent")}</span>
             </div>
-            <h2 className={`text-4xl font-black mb-6 ${isLight ? 'text-slate-900' : 'text-white'}`}>Infinity X Academy</h2>
+            <h2 className={`text-4xl font-black mb-6 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t("Infinity X Academy", "أكاديمية إنفينيتي إكس", "Infinity X Academy")}</h2>
             <p className={`text-lg font-medium mb-8 leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
               {t("Train your teams to independently operate and scale the AI systems we deploy. Build internal capability, not dependency.", "ندرّب فِرق عملائنا على تشغيل وتوسيع أنظمة الذكاء الاصطناعي التي ننشرها بشكل مستقل — نبني قدرات داخلية حقيقية، لا تبعية خارجية.", "Train teams on deployed systems.")}
             </p>
@@ -289,7 +289,7 @@ export default function Home() {
             {t("Schedule a technical consultation with our engineering leadership.", "حدّد موعداً لاستشارة تقنية مع فريق القيادة الهندسية لدينا — نبدأ بفهم تحديك قبل أي التزام.", "Schedule consultation.")}
           </p>
           <Link href="/consultation">
-            <Button size="lg" className="h-16 px-12 bg-white text-[#020617] hover:bg-slate-200 font-bold rounded-2xl text-xl shadow-xl">
+            <Button size="lg" className="h-16 px-12 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-2xl text-xl shadow-xl shadow-cyan-500/25">
               {t("Request Enterprise Proposal", "اطلب مقترحاً مؤسسياً", "Request Proposal")}
             </Button>
           </Link>

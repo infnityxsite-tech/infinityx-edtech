@@ -315,4 +315,69 @@ export const solutionsEndpoints = {
       isPublished: z.boolean().optional(),
     }))
     .mutation(async ({ input }) => { const { id, ...data } = input; await db.updateClientCaseStudyFull(id, data); return { success: true }; }),
+
+  // ==============================
+  // 📊 IMPACT METRICS
+  // ==============================
+
+  addServiceImpactMetric: protectedProcedure
+    .input(z.object({ serviceId: z.number(), metricTitle: z.string(), metricTitleAr: z.string().optional(), metricValue: z.string(), metricDescription: z.string().optional(), metricDescriptionAr: z.string().optional(), impactCategory: z.string().optional(), orderIndex: z.number().optional() }))
+    .mutation(({ input }) => db.addServiceImpactMetric(input.serviceId, input)),
+
+  deleteServiceImpactMetric: protectedProcedure
+    .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
+    .mutation(({ input }) => db.deleteServiceImpactMetric(input.id)),
+
+  // ==============================
+  // 🏭 INDUSTRIES
+  // ==============================
+
+  getIndustries: publicProcedure.query(() => db.getIndustries()),
+
+  getIndustryBySlug: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(({ input }) => db.getIndustryBySlug(input.slug)),
+
+  createIndustry: protectedProcedure
+    .input(z.object({ slug: z.string(), title: z.string(), titleAr: z.string(), heroImageUrl: z.string().optional(), overview: z.string().optional(), overviewAr: z.string().optional(), painPointsJson: z.string().optional(), painPointsArJson: z.string().optional(), orderIndex: z.number().optional() }))
+    .mutation(({ input }) => db.createIndustry(input)),
+
+  updateIndustry: protectedProcedure
+    .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }).passthrough())
+    .mutation(async ({ input }) => { const { id, ...data } = input; await db.updateIndustry(id, data); return { success: true }; }),
+
+  deleteIndustry: protectedProcedure
+    .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
+    .mutation(({ input }) => db.deleteIndustry(input.id)),
+
+  mapIndustryService: protectedProcedure
+    .input(z.object({ industryId: z.number(), serviceId: z.number() }))
+    .mutation(({ input }) => db.mapIndustryService(input.industryId, input.serviceId)),
+
+  unmapIndustryService: protectedProcedure
+    .input(z.object({ industryId: z.number(), serviceId: z.number() }))
+    .mutation(({ input }) => db.unmapIndustryService(input.industryId, input.serviceId)),
+
+  // ==============================
+  // 📝 PROPOSAL GENERATOR
+  // ==============================
+
+  submitProposalLead: publicProcedure
+    .input(z.object({
+      name: z.string().min(2),
+      company: z.string().optional(),
+      email: z.string().email(),
+      phone: z.string().optional(),
+      industryPainPoint: z.string().optional(),
+      serviceInterest: z.string().optional(),
+      selectedServiceId: z.number().optional(),
+      selectedPackageType: z.string().optional(),
+      budgetRange: z.string().optional(),
+      timelineExpectation: z.string().optional(),
+      requiresFullIp: z.boolean().optional(),
+      proposalSummarySnapshot: z.any().optional(),
+    }))
+    .mutation(({ input }) => db.createProposalLead(input)),
+
+  getEnhancedLeads: protectedProcedure.query(() => db.getEnhancedConsultationLeads()),
 };

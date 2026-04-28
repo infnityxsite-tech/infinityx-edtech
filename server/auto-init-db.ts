@@ -615,6 +615,42 @@ async function runMigrations(): Promise<void> {
       console.error('❌ Migration 9 error:', error);
     }
   }
+
+  try {
+    // Migration 10: V3 Solutions Architecture — Impact metrics, Industries, Extended leads
+    await query(`ALTER TABLE services ADD COLUMN IF NOT EXISTS process_methodology_json TEXT`);
+
+    // Extend pricing models
+    const pkgCols = ['typical_range VARCHAR(255)', 'scope_summary TEXT', 'scope_summary_ar TEXT', 'deliverables_json TEXT', 'optional_add_ons_json TEXT', 'support_terms TEXT', 'support_terms_ar TEXT', 'ip_ownership_notes TEXT', 'ip_ownership_notes_ar TEXT', 'description_ar TEXT', 'model_type_ar VARCHAR(100)'];
+    for (const col of pkgCols) { await query(`ALTER TABLE service_pricing_models ADD COLUMN IF NOT EXISTS ${col}`).catch(() => {}); }
+
+    // Extend deliverables
+    const delCols = ['title_ar VARCHAR(255)', 'description_ar TEXT', 'acceptance_criteria TEXT', 'acceptance_criteria_ar TEXT', 'expected_timeline VARCHAR(100)'];
+    for (const col of delCols) { await query(`ALTER TABLE service_deliverables ADD COLUMN IF NOT EXISTS ${col}`).catch(() => {}); }
+
+    // Extend use cases
+    const ucCols = ['title_ar VARCHAR(255)', 'description_ar TEXT', 'industry VARCHAR(100)', 'business_impact TEXT', 'business_impact_ar TEXT', 'example_scenario TEXT', 'example_scenario_ar TEXT'];
+    for (const col of ucCols) { await query(`ALTER TABLE service_use_cases ADD COLUMN IF NOT EXISTS ${col}`).catch(() => {}); }
+
+    // Impact metrics
+    await query(`CREATE TABLE IF NOT EXISTS service_impact_metrics (id SERIAL PRIMARY KEY, service_id INTEGER REFERENCES services(id) ON DELETE CASCADE, metric_title VARCHAR(255) NOT NULL, metric_title_ar VARCHAR(255), metric_value VARCHAR(100) NOT NULL, metric_description TEXT, metric_description_ar TEXT, impact_category VARCHAR(100), order_index INTEGER DEFAULT 0)`);
+
+    // Industries
+    await query(`CREATE TABLE IF NOT EXISTS industries (id SERIAL PRIMARY KEY, slug VARCHAR(100) UNIQUE NOT NULL, title VARCHAR(255) NOT NULL, title_ar VARCHAR(255) NOT NULL, hero_image_url TEXT, overview TEXT, overview_ar TEXT, pain_points_json TEXT, pain_points_ar_json TEXT, order_index INTEGER DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
+    await query(`CREATE TABLE IF NOT EXISTS industry_services (id SERIAL PRIMARY KEY, industry_id INTEGER REFERENCES industries(id) ON DELETE CASCADE, service_id INTEGER REFERENCES services(id) ON DELETE CASCADE, UNIQUE(industry_id, service_id))`);
+
+    // Extended consultation leads
+    const leadCols = ['selected_service_id INTEGER', 'selected_package_type VARCHAR(100)', 'budget_range VARCHAR(100)', 'timeline_expectation VARCHAR(100)', 'requires_full_ip BOOLEAN DEFAULT false', 'proposal_summary_snapshot JSONB'];
+    for (const col of leadCols) { await query(`ALTER TABLE consultation_leads ADD COLUMN IF NOT EXISTS ${col}`).catch(() => {}); }
+
+    console.log('✅ Migration 10: V3 Solutions Architecture tables and columns');
+  } catch (error: any) {
+    if (error.code === '42P07' || error.message?.includes('already exists')) {
+      console.log('ℹ️  Migration 10: V3 tables already exist');
+    } else {
+      console.error('❌ Migration 10 error:', error);
+    }
+  }
 }
 
 /**

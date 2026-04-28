@@ -15,6 +15,7 @@ import ProgramDetails from "./pages/ProgramDetails";
 import Programs from "./pages/Programs";
 import Solutions from "./pages/Solutions";
 import SolutionDetail from "./pages/SolutionDetail";
+import IndustryLanding from "./pages/IndustryLanding";
 import SchoolLanding from "./pages/SchoolLanding";
 import AcademyHub from "./pages/AcademyHub";
 import SchoolDeepDive from "./pages/SchoolDeepDive";
@@ -81,6 +82,7 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/solutions" component={Solutions} />
       <Route path="/solutions/:slug" component={SolutionDetail} />
+      <Route path="/industries/:slug" component={IndustryLanding} />
       <Route path="/academy" component={AcademyHub} />
       <Route path="/academy/:school" component={SchoolDeepDive} />
       <Route path="/courses" component={Courses} />
