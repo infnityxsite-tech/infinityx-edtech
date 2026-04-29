@@ -81,7 +81,7 @@ export default function Solutions() {
                           <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
                             <Icon className="w-5 h-5 text-white" />
                           </div>
-                          <h3 className="text-xl font-bold text-white">{t(svc.title, svc.title_ar, svc.title)}</h3>
+                          <h3 className="text-xl font-extrabold text-white drop-shadow-lg" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.6)' }}>{t(svc.title, svc.title_ar, svc.title)}</h3>
                         </div>
                         <div className="flex gap-2 flex-wrap">
                           {(svc.techStack || []).slice(0, 4).map((tech: string) => (
@@ -94,15 +94,9 @@ export default function Solutions() {
                     
                     {/* Content */}
                     <div className="p-8">
-                      <div className="flex items-start gap-4 mb-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${isLight ? 'bg-cyan-50 text-cyan-600' : 'bg-cyan-500/10 text-cyan-400'}`}>
-                          <Icon className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h3 className={`text-xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(svc.title, svc.title_ar, svc.title)}</h3>
-                          <p className={`text-sm mt-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{svc.deliverableCount || 0} {t("deliverables", "مخرجات", "deliverables")} · {svc.useCaseCount || 0} {t("use cases", "حالات استخدام", "use cases")}</p>
-                        </div>
-                      </div>
+                      <p className={`text-xs font-semibold uppercase tracking-wider mb-4 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {svc.deliverableCount || 0} {t("deliverables", "مخرجات", "deliverables")} · {svc.useCaseCount || 0} {t("use cases", "حالات استخدام", "use cases")}
+                      </p>
                       <p className={`text-sm font-medium leading-relaxed mb-6 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                         {t(svc.problem_statement || svc.description, svc.problem_statement_ar || svc.description_ar, svc.description)}
                       </p>
