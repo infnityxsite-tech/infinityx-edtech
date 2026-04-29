@@ -34,7 +34,7 @@ import StudentLogin from "./pages/StudentLogin";
 import StudentDashboard from "./pages/StudentDashboard";
 import LearningPortal from "./pages/LearningPortal";
 import { useAuth } from "./_core/hooks/useAuth";
-import FloatingContact from "./components/FloatingContact";
+
 
 // 🔒 Protected route for admin
 function ProtectedRoute({ component: Component }: { component: React.FC }) {
@@ -134,7 +134,7 @@ function App() {
         <LanguageProvider>
           <TooltipProvider>
             <Toaster />
-            <FloatingContact />
+
             <FloatingControls />
             <ScrollToTop />
             <Router />
