@@ -94,6 +94,15 @@ export default function Solutions() {
                     
                     {/* Content */}
                     <div className="p-8">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${isLight ? 'bg-cyan-50 text-cyan-600' : 'bg-cyan-500/10 text-cyan-400'}`}>
+                          <Icon className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h3 className={`text-xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(svc.title, svc.title_ar, svc.title)}</h3>
+                          <p className={`text-sm mt-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{svc.deliverableCount || 0} {t("deliverables", "مخرجات", "deliverables")} · {svc.useCaseCount || 0} {t("use cases", "حالات استخدام", "use cases")}</p>
+                        </div>
+                      </div>
                       <p className={`text-sm font-medium leading-relaxed mb-6 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                         {t(svc.problem_statement || svc.description, svc.problem_statement_ar || svc.description_ar, svc.description)}
                       </p>
