@@ -41,6 +41,10 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+html {
+  transition: background-color 0.15s ease;
+}
+
 :root {
   --primary: var(--color-blue-700);
   --primary-foreground: var(--color-blue-50);
@@ -257,10 +261,20 @@
   color: var(--lm-text-muted) !important;
 }
 
-/* Preserve white text on gradient buttons and badges */
+/* Preserve white text and icons on gradient buttons and badges */
 [data-theme="light"] .bg-gradient-to-r .text-white,
 [data-theme="light"] [class*="bg-gradient"] .text-white,
-[data-theme="light"] button[class*="bg-gradient"] {
+[data-theme="light"] button[class*="bg-gradient"],
+[data-theme="light"] [class*="bg-gradient"] svg,
+[data-theme="light"] button[class*="bg-gradient"] svg,
+[data-theme="light"] .bg-gradient-to-r svg {
+  color: white !important;
+}
+
+/* Preserve white for icons/text inside dark overlays (hero cards, image gradients) */
+[data-theme="light"] .bg-gradient-to-t svg,
+[data-theme="light"] [class*="from-black"] svg,
+[data-theme="light"] [class*="from-black"] .text-white {
   color: white !important;
 }
 
