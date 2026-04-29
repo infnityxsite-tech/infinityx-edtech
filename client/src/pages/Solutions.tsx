@@ -81,7 +81,6 @@ export default function Solutions() {
                           <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
                             <Icon className="w-5 h-5 text-white" />
                           </div>
-                          <h3 className="text-xl font-extrabold text-white drop-shadow-lg" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.6)' }}>{t(svc.title, svc.title_ar, svc.title)}</h3>
                         </div>
                         <div className="flex gap-2 flex-wrap">
                           {(svc.techStack || []).slice(0, 4).map((tech: string) => (
@@ -94,6 +93,7 @@ export default function Solutions() {
                     
                     {/* Content */}
                     <div className="p-8">
+                      <h3 className={`text-xl font-extrabold mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(svc.title, svc.title_ar, svc.title)}</h3>
                       <p className={`text-xs font-semibold uppercase tracking-wider mb-4 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
                         {svc.deliverableCount || 0} {t("deliverables", "مخرجات", "deliverables")} · {svc.useCaseCount || 0} {t("use cases", "حالات استخدام", "use cases")}
                       </p>
