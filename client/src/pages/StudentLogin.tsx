@@ -9,6 +9,7 @@ import { Link } from "wouter";
 import { loginUser, registerUser, signInWithGoogle } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { trpc } from "@/lib/trpc";
 
 export default function StudentLogin() {
     const [, navigate] = useLocation();
@@ -24,10 +25,20 @@ export default function StudentLogin() {
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setGoogleLoading] = useState(false);
 
+    const syncGoogleMutation = trpc.admin.syncGoogleStudent.useMutation();
+
     const handleGoogleLogin = async () => {
         setGoogleLoading(true);
         try {
             const user = await signInWithGoogle();
+            
+            // Sync user to PostgreSQL backend
+            await syncGoogleMutation.mutateAsync({
+                openId: user.uid,
+                name: user.displayName || "Student",
+                email: user.email || ""
+            });
+
             localStorage.setItem("studentToken", user.uid);
             localStorage.setItem("studentId", user.uid);
             localStorage.setItem("studentName", user.displayName || "");

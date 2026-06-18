@@ -91,4 +91,17 @@ export const studentAuthEndpoints = {
             }
             return { success: true, token: result.rows[0].id.toString(), user: result.rows[0] };
         }),
+
+    syncGoogleStudent: publicProcedure
+        .input(z.object({ openId: z.string(), name: z.string(), email: z.string() }))
+        .mutation(async ({ input }) => {
+            const result = await db.query(
+                `INSERT INTO users (open_id, name, email, login_method, role) 
+                 VALUES ($1, $2, $3, 'google', 'student')
+                 ON CONFLICT (email) DO UPDATE SET open_id = $1, name = $2, login_method = 'google'
+                 RETURNING id, name, email`,
+                [input.openId, input.name, input.email]
+            );
+            return { success: true, user: result.rows[0] };
+        }),
 };

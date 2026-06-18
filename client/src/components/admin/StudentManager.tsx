@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, RefreshCcw, Search, User, Edit, Trash2, ShieldCheck } from "lucide-react";
+import { Loader2, RefreshCcw, Search, User, Edit, Trash2, ShieldCheck, Database } from "lucide-react";
+import { collection, getDocs } from "firebase/firestore";
+import { db as firebaseDb } from "@/lib/firebase";
 
 export default function StudentManager() {
     const utils = trpc.useUtils();
@@ -55,6 +57,35 @@ export default function StudentManager() {
         },
         onError: (err) => toast.error(err.message || "Failed to delete student"),
     });
+
+    const syncLegacyMutation = trpc.admin.syncLegacyFirestoreStudent.useMutation();
+    const [isSyncing, setIsSyncing] = useState(false);
+
+    const handleSyncLegacy = async () => {
+        if (!window.confirm("Are you sure you want to sync all legacy students from Firebase to Postgres? This will merge their enrollments.")) return;
+        setIsSyncing(true);
+        try {
+            const snap = await getDocs(collection(firebaseDb, "students"));
+            let synced = 0;
+            for (const doc of snap.docs) {
+                const data = doc.data();
+                if (data.email) {
+                    await syncLegacyMutation.mutateAsync({
+                        email: data.email,
+                        name: data.name || "Legacy Student",
+                        enrolledSubjectIds: data.enrolledSubjectIds || []
+                    });
+                    synced++;
+                }
+            }
+            toast.success(`Successfully synced ${synced} legacy students!`);
+            utils.admin.getAllStudents.invalidate();
+        } catch (err: any) {
+            toast.error("Failed to sync legacy students: " + err.message);
+        } finally {
+            setIsSyncing(false);
+        }
+    };
 
     // When editing a student, fetch their enrolled course IDs from PostgreSQL
     const { data: fetchedEnrolledIds } = trpc.admin.getStudentEnrolledCourseIds.useQuery(
@@ -138,11 +169,18 @@ export default function StudentManager() {
                     </div>
                 </div>
 
-                {/* Search */}
-                <div className="relative mb-5">
-                    <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
-                    <Input placeholder="Search by name or email…" className="pl-9"
-                        value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                {/* Search and Sync */}
+                <div className="flex flex-col md:flex-row justify-between items-center mb-5 gap-3">
+                    <div className="relative w-full md:max-w-md">
+                        <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                        <Input placeholder="Search by name or email…" className="pl-9"
+                            value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                    </div>
+                    
+                    <Button onClick={handleSyncLegacy} disabled={isSyncing} variant="outline" className="w-full md:w-auto flex items-center gap-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                        {isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+                        Sync Missing Students
+                    </Button>
                 </div>
 
                 {/* Student List */}

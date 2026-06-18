@@ -36,6 +36,28 @@ export const crmEndpoints = {
         .input(z.object({ userId: z.string() }))
         .query(({ input }) => db.getStudentEnrolledCourseIds(input.userId)),
 
+    syncLegacyFirestoreStudent: protectedProcedure
+        .input(z.object({ email: z.string(), name: z.string(), enrolledSubjectIds: z.array(z.string()) }))
+        .mutation(async ({ input }) => {
+            const tempOpenId = `legacy_${input.email}`;
+            const result = await db.query(
+                `INSERT INTO users (open_id, name, email, login_method, role) 
+                 VALUES ($1, $2, $3, 'firebase_legacy', 'student')
+                 ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name
+                 RETURNING id`,
+                [tempOpenId, input.name, input.email]
+            );
+            
+            const userId = result.rows[0].id.toString();
+            
+            // Only update enrollments if they had any in Firestore
+            if (input.enrolledSubjectIds.length > 0) {
+                await db.updateStudentCourses(userId, input.enrolledSubjectIds);
+            }
+            
+            return { success: true, userId };
+        }),
+
     // STUDENT APPLICATIONS
     getApplications: protectedProcedure.query(async () => {
         const result = await db.query(`
