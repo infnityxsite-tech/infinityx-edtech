@@ -727,19 +727,7 @@ export async function autoInitializeDatabase(): Promise<void> {
     // We check if the admin table exists to determine if we need to run the full schema
     const isInitialized = await isDatabaseInitialized();
 
-    // Always run migrations to ensure DB is up to date with new columns
-    if (isInitialized) {
-      console.log('✅ Database already initialized, checking for migrations...');
-      await runMigrations();
-
-      // Even if initialized, we might want to try running the schema for missing triggers
-      // But we must be very careful to ignore "already exists" errors
-    }
-
-    // If NOT initialized, or if we want to ensure triggers exist, we run schema.sql
-    // Ideally, we only run this if !isInitialized, but your previous logs showed missing triggers.
-    // The safest way is to run it but SWALLOW specific errors.
-
+    // If NOT initialized, run schema.sql to create base tables
     if (!isInitialized) {
       console.log('🚀 Initializing database schema...');
 
@@ -794,10 +782,13 @@ export async function autoInitializeDatabase(): Promise<void> {
       console.log('   Password: admin123');
       console.log('   ⚠️  CHANGE THIS PASSWORD IMMEDIATELY AFTER FIRST LOGIN!');
     } else {
-      // If already initialized, we skip the full schema run to avoid overhead,
-      // as migrations handled the column updates.
       console.log('⏩ Skipping schema execution (DB already exists).');
     }
+
+    // ALWAYS run migrations to ensure DB is up to date — 
+    // regardless of whether this is a fresh deploy or existing DB
+    console.log('🔄 Running migrations...');
+    await runMigrations();
 
   } catch (error) {
     console.error('❌ Error initializing database:', error);
