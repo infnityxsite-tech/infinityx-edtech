@@ -227,7 +227,7 @@ function ModuleBuilder({ module, index, onChange, onRemove }: {
   const updateLesson = (id: string, lesson: LessonBlock) =>
     set({ lessons: module.lessons.map(l => l.id === id ? lesson : l) });
   const removeLesson = (id: string) => {
-    if (module.lessons.length <= 1) return toast.error("A module needs at least 1 lesson");
+    
     set({ lessons: module.lessons.filter(l => l.id !== id) });
   };
 
@@ -392,6 +392,7 @@ export default function CoursesManager() {
               lessons: m.lessons.map((l, li) => ({
                 title: l.title.trim() || `Lesson ${li + 1}`,
                 videoUrl: l.videoUrl.trim() || undefined,
+                duration: l.duration.trim() || undefined,
                 materials: l.materials.filter(mat => mat.title && mat.url),
                 duration: l.duration.trim() || undefined,
                 isPreview: l.isPreview,
@@ -435,7 +436,7 @@ export default function CoursesManager() {
 
   const addModule = () => setModules(prev => [...prev, { ...makeModule(), orderIndex: prev.length }]);
   const removeModule = (id: string) => {
-    if (modules.length <= 1) return toast.error("Need at least 1 module");
+    
     setModules(prev => prev.filter(m => m.id !== id));
   };
   const updateModule = (id: string, m: ModuleBlock) =>
