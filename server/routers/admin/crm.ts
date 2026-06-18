@@ -32,6 +32,10 @@ export const crmEndpoints = {
     getAllStudents: protectedProcedure
         .query(() => db.getAllStudents()),
 
+    getStudentEnrolledCourseIds: protectedProcedure
+        .input(z.object({ userId: z.string() }))
+        .query(({ input }) => db.getStudentEnrolledCourseIds(input.userId)),
+
     // STUDENT APPLICATIONS
     getApplications: protectedProcedure.query(async () => {
         const result = await db.query(`

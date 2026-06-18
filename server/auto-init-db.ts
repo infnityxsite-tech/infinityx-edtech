@@ -651,6 +651,20 @@ async function runMigrations(): Promise<void> {
       console.error('❌ Migration 10 error:', error);
     }
   }
+
+  try {
+    // Migration 11: Add missing columns to careers table (requirements, job_type, salary)
+    await query(`ALTER TABLE careers ADD COLUMN IF NOT EXISTS requirements TEXT`);
+    await query(`ALTER TABLE careers ADD COLUMN IF NOT EXISTS job_type VARCHAR(100)`);
+    await query(`ALTER TABLE careers ADD COLUMN IF NOT EXISTS salary VARCHAR(255)`);
+    console.log('✅ Migration 11: Added requirements, job_type, salary columns to careers');
+  } catch (error: any) {
+    if (error.code === '42701' || error.message?.includes('already exists')) {
+      console.log('ℹ️  Migration 11: Careers columns already exist');
+    } else {
+      console.error('❌ Migration 11 error:', error);
+    }
+  }
 }
 
 /**

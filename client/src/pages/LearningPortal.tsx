@@ -6,8 +6,9 @@ import { toast } from "sonner";
 import {
     Loader2, PlayCircle, CheckCircle2, Lock, ChevronLeft, MonitorPlay,
     LogOut, FileText, Download, BookOpen, HelpCircle, X, Check, XCircle,
-    LayoutDashboard, Menu
+    LayoutDashboard, Menu, Maximize2
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // ─── QUIZ VIEWER ──────────────────────────────────────────────────────────────
 
@@ -184,7 +185,16 @@ export default function LearningPortal() {
     const [activeLesson, setActiveLesson] = useState<any | null>(null);
     const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [activeMaterial, setActiveMaterial] = useState<{ title: string; url: string } | null>(null);
     const [quizKey, setQuizKey] = useState(0); // force quiz reset
+
+    // Helper to make Google Drive links embeddable
+    const getEmbedUrl = (url: string) => {
+        if (url.includes('drive.google.com/file/d/')) {
+            return url.replace(/\/view.*$/, '/preview');
+        }
+        return url;
+    };
 
     useEffect(() => {
         const id = localStorage.getItem("studentId");
@@ -343,7 +353,7 @@ export default function LearningPortal() {
                             <div className="bg-black relative" style={{ paddingTop: "56.25%" }}>
                                 {activeLesson.videoUrl ? (
                                     <iframe
-                                        src={activeLesson.videoUrl}
+                                        src={getEmbedUrl(activeLesson.videoUrl)}
                                         className="absolute inset-0 w-full h-full border-0"
                                         allow="autoplay; fullscreen"
                                         allowFullScreen
@@ -394,14 +404,17 @@ export default function LearningPortal() {
                                         <div className="mb-6 space-y-2">
                                             <p className="text-sm font-semibold text-slate-700 flex items-center gap-1.5"><FileText className="w-4 h-4 text-indigo-500" /> Lesson Materials</p>
                                             {mats.map((mat, i) => (
-                                                <a key={i} href={mat.url} target="_blank" rel="noopener noreferrer"
-                                                    className="flex items-center justify-between p-3.5 bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100 transition-colors group">
+                                                <button key={i} onClick={() => setActiveMaterial(mat)}
+                                                    className="w-full flex items-center justify-between p-3.5 bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100 transition-colors group text-left">
                                                     <div className="flex items-center gap-2.5">
-                                                        <Download className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                                                        <FileText className="w-4 h-4 text-indigo-500 flex-shrink-0" />
                                                         <span className="font-medium text-indigo-800 text-sm">{mat.title || `File ${i + 1}`}</span>
                                                     </div>
-                                                    <Download className="w-3.5 h-3.5 text-indigo-400 group-hover:text-indigo-600" />
-                                                </a>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs text-indigo-600 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">View Document</span>
+                                                        <Maximize2 className="w-3.5 h-3.5 text-indigo-400 group-hover:text-indigo-600" />
+                                                    </div>
+                                                </button>
                                             ))}
                                         </div>
                                     ) : null;
@@ -445,6 +458,33 @@ export default function LearningPortal() {
                     )}
                 </main>
             </div>
+
+            {/* Material Viewer Dialog */}
+            <Dialog open={!!activeMaterial} onOpenChange={v => { if (!v) setActiveMaterial(null); }}>
+                <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 overflow-hidden">
+                    <DialogHeader className="p-4 border-b bg-white flex-shrink-0">
+                        <div className="flex items-center justify-between">
+                            <DialogTitle className="flex items-center gap-2 text-lg">
+                                <FileText className="w-5 h-5 text-indigo-500" />
+                                {activeMaterial?.title || "Document Viewer"}
+                            </DialogTitle>
+                            <a href={activeMaterial?.url} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-full mr-6">
+                                <Download className="w-3 h-3" /> Open in New Tab
+                            </a>
+                        </div>
+                    </DialogHeader>
+                    <div className="flex-1 bg-slate-100 w-full relative">
+                        {activeMaterial && (
+                            <iframe 
+                                src={getEmbedUrl(activeMaterial.url)} 
+                                className="absolute inset-0 w-full h-full border-0"
+                                title={activeMaterial.title}
+                                allow="autoplay"
+                            />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

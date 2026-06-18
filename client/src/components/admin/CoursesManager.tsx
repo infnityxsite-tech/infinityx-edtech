@@ -511,7 +511,7 @@ export default function CoursesManager() {
               <DialogTitle className="text-lg font-bold">
                 {editingId ? "Edit Course" : step === 1 ? "New Course — Basic Info" : "Content Builder"}
               </DialogTitle>
-              {!editingId && info.courseType === "Recorded" && (
+              {info.courseType === "Recorded" && (
                 <div className="flex items-center gap-2 text-sm text-slate-500">
                   <span className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ${step === 1 ? 'bg-indigo-600 text-white' : 'bg-green-500 text-white'}`}>
                     {step > 1 ? <Check className="w-4 h-4" /> : "1"}
@@ -655,7 +655,7 @@ export default function CoursesManager() {
                   <ChevronLeft className="w-4 h-4 mr-1" /> Back
                 </Button>
               )}
-              {step === 1 && !editingId && info.courseType === "Recorded" ? (
+              {step === 1 && info.courseType === "Recorded" ? (
                 <Button onClick={() => { if (!info.title.trim()) return toast.error("Title required"); setStep(2); }}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white">
                   Next: Add Content <ChevronRight className="w-4 h-4 ml-1" />

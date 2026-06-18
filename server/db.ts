@@ -528,10 +528,22 @@ export async function updateStudentCourses(userId: string, courseIds: string[]) 
 
 export async function getAllStudents() {
   return await queryMany<any>(
-    `SELECT id, name, email, created_at as "createdAt"
-         FROM users WHERE role = 'student' ORDER BY created_at DESC`
+    `SELECT u.id, u.name, u.email, u.created_at as "createdAt",
+            COALESCE(ec.cnt, 0)::int as "enrollmentCount"
+         FROM users u
+         LEFT JOIN (SELECT student_id, COUNT(*) as cnt FROM enrollments GROUP BY student_id) ec ON ec.student_id = u.id
+         WHERE u.role = 'student' ORDER BY u.created_at DESC`
   )
 }
+
+export async function getStudentEnrolledCourseIds(studentId: string): Promise<string[]> {
+  const rows = await queryMany<{ course_id: string }>(
+    `SELECT course_id::text as course_id FROM enrollments WHERE student_id = $1`,
+    [studentId]
+  );
+  return rows.map(r => r.course_id);
+}
+
 
 // ==============================
 // 🎓 PROGRAMS OPERATIONS
@@ -782,8 +794,12 @@ export interface Career {
   id: string;
   title: string;
   description?: string | null;
+  requirements?: string | null;
   location?: string | null;
   type?: string | null;
+  jobType?: string | null;
+  salary?: string | null;
+  isActive?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -792,7 +808,7 @@ export type InsertCareer = Omit<Career, "id" | "createdAt" | "updatedAt">;
 
 export async function getCareers(): Promise<Career[]> {
   return await queryMany<any>(
-    `SELECT id, title, description, location, type,
+    `SELECT id, title, description, requirements, location, type, job_type as "jobType", salary,
             created_at as "createdAt", updated_at as "updatedAt"
      FROM careers ORDER BY created_at DESC`
   );
@@ -800,15 +816,15 @@ export async function getCareers(): Promise<Career[]> {
 
 export async function createCareer(career: InsertCareer) {
   await query(
-    `INSERT INTO careers (title, description, location, type)
-     VALUES ($1, $2, $3, $4)`,
-    [career.title, career.description, career.location, career.type]
+    `INSERT INTO careers (title, description, requirements, location, type, job_type, salary)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    [career.title, career.description, career.requirements, career.location, career.type, career.jobType, career.salary]
   );
 }
 
 export async function updateCareer(id: string, updates: Partial<InsertCareer>) {
   const allowedKeys: (keyof InsertCareer)[] = [
-    'title', 'description', 'location', 'type'
+    'title', 'description', 'requirements', 'location', 'type', 'jobType', 'salary'
   ];
 
   const queryData = buildUpdateQuery('careers', allowedKeys, updates, 'id', id);
