@@ -6,14 +6,14 @@ import { toast } from "sonner";
 import {
     Loader2, PlayCircle, CheckCircle2, Lock, ChevronLeft, MonitorPlay,
     LogOut, FileText, Download, BookOpen, HelpCircle, X, Check, XCircle,
-    LayoutDashboard, Menu, Maximize2
+    LayoutDashboard, Menu, Maximize2, StickyNote, Save
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // ─── QUIZ VIEWER ──────────────────────────────────────────────────────────────
 
 function QuizViewer({ lessonId, onAllDone }: { lessonId: string; onAllDone: () => void }) {
-    const { data: quizzes = [], isLoading } = trpc.admin.getCourseQuizzes.useQuery({ lessonId });
+    const { data: quizzes = [], isLoading } = trpc.admin.getCourseQuizzes.useQuery({ lessonId: String(lessonId) });
     const [current, setCurrent] = useState(0);
     const [selected, setSelected] = useState<number | null>(null);
     const [submitted, setSubmitted] = useState(false);
@@ -187,6 +187,8 @@ export default function LearningPortal() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [activeMaterial, setActiveMaterial] = useState<{ title: string; url: string } | null>(null);
     const [quizKey, setQuizKey] = useState(0); // force quiz reset
+    const [noteContent, setNoteContent] = useState("");
+    const [noteSaving, setNoteSaving] = useState(false);
 
     // Helper to make Google Drive links embeddable
     const getEmbedUrl = (url: string) => {
@@ -246,6 +248,42 @@ export default function LearningPortal() {
             toast.success("Lesson marked complete! ✅");
         }
     });
+
+    // Fetch materials for the active lesson from the DB
+    const activeLessonId = activeLesson?.id;
+    const { data: lessonMaterials = [] } = trpc.admin.getLessonMaterials.useQuery(
+        { lessonId: String(activeLessonId) },
+        { enabled: !!activeLessonId }
+    );
+
+    // Student Notes
+    const { data: existingNote, refetch: refetchNote } = trpc.admin.getStudentNote.useQuery(
+        { userId: studentId!, lessonId: String(activeLessonId) },
+        { enabled: !!studentId && !!activeLessonId }
+    );
+
+    // When the lesson or loaded note changes, update the textarea
+    useEffect(() => {
+        setNoteContent(existingNote?.content || "");
+    }, [existingNote, activeLessonId]);
+
+    const saveNoteMutation = trpc.admin.saveStudentNote.useMutation({
+        onSuccess: () => {
+            toast.success("Note saved! 📝");
+            setNoteSaving(false);
+            refetchNote();
+        },
+        onError: () => {
+            toast.error("Failed to save note.");
+            setNoteSaving(false);
+        }
+    });
+
+    const handleSaveNote = () => {
+        if (!studentId || !activeLessonId) return;
+        setNoteSaving(true);
+        saveNoteMutation.mutate({ userId: studentId, lessonId: String(activeLessonId), content: noteContent });
+    };
 
     // Enroll
     const enrollMutation = trpc.admin.enrollUser.useMutation({
@@ -383,56 +421,75 @@ export default function LearningPortal() {
                                     </div>
                                     {isEnrolled && (
                                         <Button
-                                            onClick={() => markComplete.mutate({ userId: studentId!, lessonId: activeLesson.id })}
-                                            disabled={completedIds.includes(activeLesson.id) || markComplete.isPending}
-                                            className={completedIds.includes(activeLesson.id)
+                                            onClick={() => markComplete.mutate({ userId: studentId!, lessonId: String(activeLesson.id) })}
+                                            disabled={completedIds.includes(activeLesson.id) || completedIds.includes(String(activeLesson.id)) || markComplete.isPending}
+                                            className={(completedIds.includes(activeLesson.id) || completedIds.includes(String(activeLesson.id)))
                                                 ? "bg-green-600 text-white cursor-default"
                                                 : "bg-white border border-green-500 text-green-700 hover:bg-green-50"}
                                             variant="outline"
                                         >
                                             <CheckCircle2 className="w-4 h-4 mr-2" />
-                                            {completedIds.includes(activeLesson.id) ? "Completed" : "Mark Complete"}
+                                            {(completedIds.includes(activeLesson.id) || completedIds.includes(String(activeLesson.id))) ? "Completed" : "Mark Complete"}
                                         </Button>
                                     )}
                                 </div>
 
-                                {/* Materials — supports multi-material JSON array or single URL */}
-                                {activeLesson.materialLink && (() => {
-                                    let mats: { title: string; url: string }[] = [];
-                                    try {
-                                        const parsed = JSON.parse(activeLesson.materialLink);
-                                        if (Array.isArray(parsed)) mats = parsed;
-                                        else mats = [{ title: "Download Material", url: activeLesson.materialLink }];
-                                    } catch {
-                                        mats = [{ title: "Download Material", url: activeLesson.materialLink }];
-                                    }
-                                    return mats.length > 0 ? (
-                                        <div className="mb-6 space-y-2">
-                                            <p className="text-sm font-semibold text-slate-700 flex items-center gap-1.5"><FileText className="w-4 h-4 text-indigo-500" /> Lesson Materials</p>
-                                            {mats.map((mat, i) => (
-                                                <button key={i} onClick={() => setActiveMaterial(mat)}
-                                                    className="w-full flex items-center justify-between p-3.5 bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100 transition-colors group text-left">
-                                                    <div className="flex items-center gap-2.5">
-                                                        <FileText className="w-4 h-4 text-indigo-500 flex-shrink-0" />
-                                                        <span className="font-medium text-indigo-800 text-sm">{mat.title || `File ${i + 1}`}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs text-indigo-600 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">View Document</span>
-                                                        <Maximize2 className="w-3.5 h-3.5 text-indigo-400 group-hover:text-indigo-600" />
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    ) : null;
-                                })()}
+                                {/* Materials — fetched from database */}
+                                {lessonMaterials.length > 0 && (
+                                    <div className="mb-6 space-y-2">
+                                        <p className="text-sm font-semibold text-slate-700 flex items-center gap-1.5"><FileText className="w-4 h-4 text-indigo-500" /> Lesson Materials</p>
+                                        {(lessonMaterials as any[]).map((mat: any, i: number) => (
+                                            <button key={mat.id || i} onClick={() => setActiveMaterial({ title: mat.title, url: mat.url })}
+                                                className="w-full flex items-center justify-between p-3.5 bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100 transition-colors group text-left">
+                                                <div className="flex items-center gap-2.5">
+                                                    <FileText className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                                                    <span className="font-medium text-indigo-800 text-sm">{mat.title || `File ${i + 1}`}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-indigo-600 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">View Document</span>
+                                                    <Maximize2 className="w-3.5 h-3.5 text-indigo-400 group-hover:text-indigo-600" />
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
 
                                 {/* Quiz section */}
                                 {isEnrolled && (
                                     <QuizViewer
                                         key={quizKey}
                                         lessonId={activeLesson.id}
-                                        onAllDone={() => markComplete.mutate({ userId: studentId!, lessonId: activeLesson.id })}
+                                        onAllDone={() => markComplete.mutate({ userId: studentId!, lessonId: String(activeLesson.id) })}
                                     />
+                                )}
+
+                                {/* My Notes Section */}
+                                {isEnrolled && (
+                                    <div className="mt-8 border-t border-slate-100 pt-6">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h4 className="font-bold text-slate-800 flex items-center gap-2">
+                                                <StickyNote className="w-5 h-5 text-amber-500" /> My Notes
+                                            </h4>
+                                            <Button
+                                                size="sm"
+                                                onClick={handleSaveNote}
+                                                disabled={noteSaving || saveNoteMutation.isPending}
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs rounded-full px-4"
+                                            >
+                                                {noteSaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Save className="w-3 h-3 mr-1" />}
+                                                Save Note
+                                            </Button>
+                                        </div>
+                                        <textarea
+                                            value={noteContent}
+                                            onChange={(e) => setNoteContent(e.target.value)}
+                                            placeholder="Type your notes for this lesson here... These are private and only visible to you."
+                                            className="w-full min-h-[150px] p-4 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 resize-y bg-amber-50/30"
+                                        />
+                                        {existingNote?.updatedAt && (
+                                            <p className="text-xs text-slate-400 mt-1.5">Last saved: {new Date(existingNote.updatedAt).toLocaleString()}</p>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         </div>

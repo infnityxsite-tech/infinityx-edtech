@@ -665,6 +665,37 @@ async function runMigrations(): Promise<void> {
       console.error('❌ Migration 11 error:', error);
     }
   }
+
+  try {
+    // Migration 12: Student progress tracking & notes (uses `lessons` table, not `course_lessons`)
+    await query(`
+      CREATE TABLE IF NOT EXISTS student_lesson_progress (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        lesson_id INTEGER NOT NULL,
+        completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, lesson_id)
+      );
+    `);
+    await query(`
+      CREATE TABLE IF NOT EXISTS student_notes (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        lesson_id INTEGER NOT NULL,
+        content TEXT NOT NULL DEFAULT '',
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, lesson_id)
+      );
+    `);
+    console.log('✅ Migration 12: Added student_lesson_progress and student_notes tables');
+  } catch (error: any) {
+    if (error.code === '42P07' || error.message?.includes('already exists')) {
+      console.log('ℹ️  Migration 12: student_lesson_progress / student_notes already exist');
+    } else {
+      console.error('❌ Migration 12 error:', error);
+    }
+  }
 }
 
 /**

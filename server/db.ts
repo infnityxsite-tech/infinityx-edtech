@@ -460,11 +460,28 @@ export async function verifyAndRegisterDeviceSession(userId: string, deviceId: s
 // ==============================
 
 export async function getCourseQuizzes(lessonId: string) {
-  return await queryMany<any>(
-    `SELECT id, lesson_id as "lessonId", title
-     FROM quizzes WHERE lesson_id = $1`,
+  // Get all quizzes for this lesson, then flatten their questions
+  // into the format the frontend QuizViewer expects: { question, options[], correctIndex }
+  const quizzesRaw = await queryMany<any>(
+    `SELECT id FROM quizzes WHERE lesson_id = $1`,
     [lessonId]
   );
+
+  const allQuestions: any[] = [];
+  for (const quiz of quizzesRaw) {
+    const questions = await queryMany<any>(
+      `SELECT question, option_a, option_b, option_c, option_d, correct_answer
+       FROM quiz_questions WHERE quiz_id = $1`,
+      [quiz.id]
+    );
+    for (const q of questions) {
+      const options = [q.option_a, q.option_b, q.option_c, q.option_d].filter(Boolean);
+      const answerMap: Record<string, number> = { A: 0, B: 1, C: 2, D: 3, a: 0, b: 1, c: 2, d: 3 };
+      const correctIndex = answerMap[q.correct_answer] ?? 0;
+      allQuestions.push({ question: q.question, options, correctIndex });
+    }
+  }
+  return allQuestions;
 }
 
 export async function getQuizQuestions(quizId: string) {
@@ -478,13 +495,47 @@ export async function getQuizQuestions(quizId: string) {
 
 // Progress
 export async function markLessonComplete(userId: string, lessonId: string) {
-  // lesson_progress was dropped, we aren't tracking simple lesson clicks anymore unless we recreate it,
-  // but let's silently accept to prevent frontend crash while we rewrite it.
-  return;
+  await query(
+    `INSERT INTO student_lesson_progress (user_id, lesson_id)
+     VALUES ($1, $2)
+     ON CONFLICT (user_id, lesson_id) DO NOTHING`,
+    [userId, lessonId]
+  );
 }
 
 export async function getCompletedLessons(userId: string, courseId: string) {
-  return []; // Mocked out during structural refactor
+  // Join through lessons -> modules -> course to find completed lessons for this course
+  return await queryMany<any>(
+    `SELECT slp.lesson_id as "lessonId"
+     FROM student_lesson_progress slp
+     JOIN lessons l ON slp.lesson_id = l.id
+     JOIN modules m ON l.module_id = m.id
+     WHERE slp.user_id = $1 AND m.course_id = $2`,
+    [userId, courseId]
+  );
+}
+
+// ==============================
+// 📝 STUDENT NOTES
+// ==============================
+
+export async function getStudentNote(userId: string, lessonId: string) {
+  return await queryOne<any>(
+    `SELECT id, content, updated_at as "updatedAt"
+     FROM student_notes WHERE user_id = $1 AND lesson_id = $2`,
+    [userId, lessonId]
+  );
+}
+
+export async function saveStudentNote(userId: string, lessonId: string, content: string) {
+  await query(
+    `INSERT INTO student_notes (user_id, lesson_id, content, updated_at)
+     VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+     ON CONFLICT (user_id, lesson_id)
+     DO UPDATE SET content = $3, updated_at = CURRENT_TIMESTAMP`,
+    [userId, lessonId, content]
+  );
+  return { success: true };
 }
 
 // Admin Utilities

@@ -170,6 +170,15 @@ export const coursesEndpoints = {
             return { success: true };
         }),
 
+    // STUDENT NOTES
+    getStudentNote: publicProcedure
+        .input(z.object({ userId: z.string(), lessonId: z.string() }))
+        .query(({ input }) => db.getStudentNote(input.userId, input.lessonId)),
+
+    saveStudentNote: publicProcedure
+        .input(z.object({ userId: z.string(), lessonId: z.string(), content: z.string() }))
+        .mutation(({ input }) => db.saveStudentNote(input.userId, input.lessonId, input.content)),
+
     // CERTIFICATES
     getCertificates: protectedProcedure.query(() => db.getCertificates()),
 
