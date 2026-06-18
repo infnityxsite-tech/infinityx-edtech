@@ -366,14 +366,14 @@ function LessonBuilder({ lesson, index, onChange, onRemove, onDuplicate }: {
           <span className="font-medium text-slate-800 text-sm">{lesson.title || `Lesson ${index + 1}`}</span>
         </div>
         <div className="flex items-center gap-1">
-          {/* Context Menu */}
+          {/* More actions menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <div
                 role="button"
                 tabIndex={0}
                 onClick={e => e.stopPropagation()}
-                className="text-slate-300 hover:text-slate-600 p-1 rounded cursor-pointer transition-colors opacity-0 group-hover/lesson:opacity-100 focus:opacity-100"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded cursor-pointer transition-colors"
                 aria-label="Lesson actions"
               >
                 <MoreVertical className="w-4 h-4" />
@@ -392,6 +392,17 @@ function LessonBuilder({ lesson, index, onChange, onRemove, onDuplicate }: {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          {/* Always-visible delete button */}
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={e => { e.stopPropagation(); onRemove(); }}
+            onKeyDown={e => e.key === 'Enter' && (e.stopPropagation(), onRemove())}
+            className="text-slate-300 hover:text-red-500 hover:bg-red-50 p-1 rounded cursor-pointer transition-colors"
+            aria-label="Remove lesson"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </div>
           {expanded
             ? <ChevronLeft className="w-4 h-4 text-slate-400 rotate-90 flex-shrink-0" />
             : <ChevronRight className="w-4 h-4 text-slate-400 -rotate-90 flex-shrink-0" />}
@@ -487,10 +498,10 @@ function ModuleBuilder({ module, index, onChange, onRemove, onDuplicate, onImpor
           placeholder={`Module ${index + 1} title — e.g. "Getting Started"`}
           className="flex-1 font-semibold h-10 bg-white border-slate-200" />
 
-        {/* Module Context Menu */}
+        {/* Module Context Menu — always visible */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button type="button" className="text-slate-300 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors flex-shrink-0 opacity-0 group-hover/module:opacity-100 focus:opacity-100" aria-label="Module actions">
+            <button type="button" className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors flex-shrink-0" aria-label="Module actions">
               <MoreVertical className="w-4 h-4" />
             </button>
           </DropdownMenuTrigger>
@@ -507,6 +518,10 @@ function ModuleBuilder({ module, index, onChange, onRemove, onDuplicate, onImpor
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        {/* Always-visible delete button for module */}
+        <button type="button" onClick={onRemove} className="text-slate-300 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors flex-shrink-0" aria-label="Remove module">
+          <Trash2 className="w-4 h-4" />
+        </button>
       </div>
 
       <div className="space-y-3 ml-11">
