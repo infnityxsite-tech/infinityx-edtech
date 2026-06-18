@@ -32,15 +32,15 @@ export default function StudentLogin() {
         try {
             const user = await signInWithGoogle();
             
-            // Sync user to PostgreSQL backend
-            await syncGoogleMutation.mutateAsync({
+            // Sync user to PostgreSQL backend and fetch their numeric DB ID
+            const pgResponse = await syncGoogleMutation.mutateAsync({
                 openId: user.uid,
                 name: user.displayName || "Student",
                 email: user.email || ""
             });
 
             localStorage.setItem("studentToken", user.uid);
-            localStorage.setItem("studentId", user.uid);
+            localStorage.setItem("studentId", String(pgResponse.user.id));
             localStorage.setItem("studentName", user.displayName || "");
             toast.success("Logged in with Google successfully! 🎉");
             navigate("/dashboard");
@@ -79,8 +79,16 @@ export default function StudentLogin() {
         setIsLoading(true);
         try {
             const user = await loginUser(email, password);
+            
+            // Universal sync to get Postgres ID
+            const pgResponse = await syncGoogleMutation.mutateAsync({
+                openId: user.uid,
+                name: user.displayName || "Student",
+                email: user.email || email
+            });
+
             localStorage.setItem("studentToken", user.uid);
-            localStorage.setItem("studentId", user.uid);
+            localStorage.setItem("studentId", String(pgResponse.user.id));
             localStorage.setItem("studentName", user.displayName || "");
             toast.success("Welcome back! 🎉");
             navigate("/dashboard");

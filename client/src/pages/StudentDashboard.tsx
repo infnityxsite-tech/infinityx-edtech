@@ -21,9 +21,18 @@ export default function StudentDashboard() {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                setStudentId(user.uid);
-                setStudentName(user.displayName || user.email?.split('@')[0] || "Student");
-                setStudentEmail(user.email);
+                const id = localStorage.getItem("studentId");
+                if (id && !isNaN(Number(id))) {
+                    setStudentId(id);
+                    setStudentName(user.displayName || user.email?.split('@')[0] || "Student");
+                    setStudentEmail(user.email);
+                } else {
+                    // Force re-login if they have a legacy string Firebase UID instead of numeric Postgres ID
+                    localStorage.removeItem("studentId");
+                    localStorage.removeItem("studentToken");
+                    toast.error("Invalid session. Please sign in again.");
+                    navigate("/login");
+                }
             } else {
                 toast.error("Please sign in to access your dashboard");
                 navigate("/login");

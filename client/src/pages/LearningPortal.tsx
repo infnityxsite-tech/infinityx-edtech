@@ -198,12 +198,18 @@ export default function LearningPortal() {
 
     useEffect(() => {
         const id = localStorage.getItem("studentId");
-        if (!id) { toast.error("Please sign in to access the learning portal"); navigate("/login"); return; }
+        if (!id || isNaN(Number(id))) { 
+            localStorage.removeItem("studentId");
+            localStorage.removeItem("studentToken");
+            toast.error("Invalid or expired session. Please sign in again."); 
+            navigate("/login"); 
+            return; 
+        }
         setStudentId(id);
         let did = localStorage.getItem("deviceId");
         if (!did) { did = `dev_${Math.random().toString(36).substr(2, 9)}`; localStorage.setItem("deviceId", did); }
         setDeviceId(did);
-    }, []);
+    }, [navigate]);
 
     // Data queries
     const { data: enrollment, isLoading: loadEnroll } = trpc.admin.getEnrollment.useQuery(
