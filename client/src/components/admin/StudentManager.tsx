@@ -73,7 +73,7 @@ export default function StudentManager() {
                     await syncLegacyMutation.mutateAsync({
                         email: data.email,
                         name: data.name || "Legacy Student",
-                        enrolledSubjectIds: data.enrolledSubjectIds || []
+                        enrolledSubjectIds: (data.enrolledSubjectIds || []).map(String)
                     });
                     synced++;
                 }
