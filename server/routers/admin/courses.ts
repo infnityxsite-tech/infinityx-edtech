@@ -84,6 +84,33 @@ export const coursesEndpoints = {
             return { success: true };
         }),
 
+    // ─── CONTENT LIBRARY — Reusability Endpoints ───────────────────────
+    getAllModulesWithCourse: protectedProcedure
+        .query(() => db.getAllModulesWithCourse()),
+
+    getAllLessonsWithModule: protectedProcedure
+        .query(() => db.getAllLessonsWithModule()),
+
+    importModule: protectedProcedure
+        .input(z.object({
+            sourceModuleId: z.union([z.string(), z.number()]).transform(String),
+            targetCourseId: z.union([z.string(), z.number()]).transform(String),
+            orderIndex: z.number().default(0),
+        }))
+        .mutation(async ({ input }) => {
+            return await db.deepCopyModule(input.sourceModuleId, input.targetCourseId, input.orderIndex);
+        }),
+
+    importLesson: protectedProcedure
+        .input(z.object({
+            sourceLessonId: z.union([z.string(), z.number()]).transform(String),
+            targetModuleId: z.union([z.string(), z.number()]).transform(String),
+            orderIndex: z.number().default(0),
+        }))
+        .mutation(async ({ input }) => {
+            return await db.deepCopyLesson(input.sourceLessonId, input.targetModuleId, input.orderIndex);
+        }),
+
     // COURSE MODULES
     getCourseModules: publicProcedure
         .input(z.object({ courseId: z.union([z.string(), z.number()]).transform(String) }))

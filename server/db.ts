@@ -318,40 +318,83 @@ export async function updateCourseComplete(courseId: string, courseData: any, mo
   try {
     await client.query('BEGIN');
 
+    // 1. Update course info
     await client.query(
       `UPDATE courses SET title=$1, description=$2, cover_image=$3, duration=$4, level=$5, instructor=$6,
                           price_egp=$7, price_usd=$8, external_link=$9, category=$10, type=$11,
                           syllabus=$12, schedule_details=$13, updated_at=CURRENT_TIMESTAMP
        WHERE id = $14`,
       [courseData.title, courseData.description, courseData.imageUrl, courseData.duration, courseData.level,
-      courseData.instructor, courseData.priceEgp, courseData.priceUsd, courseData.courseLink,
-      courseData.category, courseData.courseType, courseData.syllabus, courseData.scheduleDetails, courseId]
+       courseData.instructor, courseData.priceEgp, courseData.priceUsd, courseData.courseLink,
+       courseData.category, courseData.courseType, courseData.syllabus, courseData.scheduleDetails, courseId]
     );
 
-    await client.query(`DELETE FROM modules WHERE course_id = $1`, [courseId]);
+    // 2. Intelligent upsert for modules — preserves IDs so student_lesson_progress is not broken
+    const existingModulesRes = await client.query(`SELECT id FROM modules WHERE course_id = $1`, [courseId]);
+    const existingModuleIds = new Set(existingModulesRes.rows.map((r: any) => String(r.id)));
+    const incomingModuleIds = new Set<string>();
 
     for (const mod of modulesData) {
-      const moduleRes = await client.query(
-        `INSERT INTO modules (course_id, title, order_index) VALUES ($1, $2, $3) RETURNING id`,
-        [courseId, mod.title, mod.orderIndex]
-      );
-      const moduleId = moduleRes.rows[0].id;
+      // Client-side temp IDs start with "_"; real DB IDs are numeric strings
+      const isExisting = mod.id && !String(mod.id).startsWith('_') && existingModuleIds.has(String(mod.id));
+
+      let moduleId: string;
+      if (isExisting) {
+        await client.query(
+          `UPDATE modules SET title = $1, order_index = $2 WHERE id = $3`,
+          [mod.title, mod.orderIndex, mod.id]
+        );
+        moduleId = String(mod.id);
+      } else {
+        const res = await client.query(
+          `INSERT INTO modules (course_id, title, order_index) VALUES ($1, $2, $3) RETURNING id`,
+          [courseId, mod.title, mod.orderIndex]
+        );
+        moduleId = String(res.rows[0].id);
+      }
+      incomingModuleIds.add(moduleId);
+
+      // 3. Intelligent upsert for lessons within this module
+      const existingLessonsRes = await client.query(`SELECT id FROM lessons WHERE module_id = $1`, [moduleId]);
+      const existingLessonIds = new Set(existingLessonsRes.rows.map((r: any) => String(r.id)));
+      const incomingLessonIds = new Set<string>();
 
       for (const lesson of mod.lessons || []) {
-        const lessonRes = await client.query(
-          `INSERT INTO lessons (module_id, title, video_url, duration, is_preview, order_index) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-          [moduleId, lesson.title, lesson.videoUrl, lesson.duration || null, lesson.isPreview || false, lesson.orderIndex]
-        );
-        const lessonId = lessonRes.rows[0].id;
+        const isExistingLesson = lesson.id && !String(lesson.id).startsWith('_') && existingLessonIds.has(String(lesson.id));
 
+        let lessonId: string;
+        if (isExistingLesson) {
+          await client.query(
+            `UPDATE lessons SET title=$1, video_url=$2, duration=$3, is_preview=$4, order_index=$5 WHERE id=$6`,
+            [lesson.title, lesson.videoUrl, lesson.duration || null, lesson.isPreview || false, lesson.orderIndex, lesson.id]
+          );
+          lessonId = String(lesson.id);
+        } else {
+          const res = await client.query(
+            `INSERT INTO lessons (module_id, title, video_url, duration, is_preview, order_index) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+            [moduleId, lesson.title, lesson.videoUrl, lesson.duration || null, lesson.isPreview || false, lesson.orderIndex]
+          );
+          lessonId = String(res.rows[0].id);
+        }
+        incomingLessonIds.add(lessonId);
+
+        // Materials: always replace (no progress tracking on materials)
+        await client.query(`DELETE FROM materials WHERE lesson_id = $1`, [lessonId]);
         for (const mat of lesson.materials || []) {
-          await client.query(`INSERT INTO materials (lesson_id, material_title, material_url) VALUES ($1, $2, $3)`, [lessonId, mat.title, mat.url]);
+          await client.query(
+            `INSERT INTO materials (lesson_id, material_title, material_url) VALUES ($1, $2, $3)`,
+            [lessonId, mat.title, mat.url]
+          );
         }
 
+        // Quizzes: always replace (quiz questions don't have stable IDs in the current UI)
+        await client.query(`DELETE FROM quizzes WHERE lesson_id = $1`, [lessonId]);
         for (const quiz of lesson.quizzes || []) {
-          const quizRes = await client.query(`INSERT INTO quizzes (lesson_id, title) VALUES ($1, $2) RETURNING id`, [lessonId, quiz.title]);
+          const quizRes = await client.query(
+            `INSERT INTO quizzes (lesson_id, title) VALUES ($1, $2) RETURNING id`,
+            [lessonId, quiz.title]
+          );
           const quizId = quizRes.rows[0].id;
-
           for (const q of quiz.questions || []) {
             await client.query(
               `INSERT INTO quiz_questions (quiz_id, question, option_a, option_b, option_c, option_d, correct_answer) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
@@ -359,6 +402,20 @@ export async function updateCourseComplete(courseId: string, courseData: any, mo
             );
           }
         }
+      }
+
+      // Delete lessons removed from the payload (cascade deletes materials/quizzes/questions)
+      for (const existId of Array.from(existingLessonIds)) {
+        if (!incomingLessonIds.has(existId)) {
+          await client.query(`DELETE FROM lessons WHERE id = $1`, [existId]);
+        }
+      }
+    }
+
+    // Delete modules removed from the payload (cascade deletes lessons and everything below)
+    for (const existId of Array.from(existingModuleIds)) {
+      if (!incomingModuleIds.has(existId)) {
+        await client.query(`DELETE FROM modules WHERE id = $1`, [existId]);
       }
     }
 
@@ -375,6 +432,150 @@ export async function updateCourseComplete(courseId: string, courseData: any, mo
 export async function deleteCourse(id: string) {
   await query(`DELETE FROM courses WHERE id = $1`, [id]);
 }
+
+// ==============================
+// 📦 CONTENT LIBRARY — Reusability APIs
+// ==============================
+
+/** Get all modules across all courses for the import picker */
+export async function getAllModulesWithCourse() {
+  return await queryMany<any>(
+    `SELECT m.id, m.title, m.order_index as "orderIndex", m.course_id as "courseId",
+            c.title as "courseTitle",
+            COUNT(l.id)::int as "lessonCount"
+     FROM modules m
+     JOIN courses c ON m.course_id = c.id
+     LEFT JOIN lessons l ON l.module_id = m.id
+     GROUP BY m.id, m.title, m.order_index, m.course_id, c.title
+     ORDER BY c.title, m.order_index`
+  );
+}
+
+/** Get all lessons across all courses for the import picker */
+export async function getAllLessonsWithModule() {
+  return await queryMany<any>(
+    `SELECT l.id, l.title, l.order_index as "orderIndex", l.module_id as "moduleId",
+            m.title as "moduleTitle", c.title as "courseTitle", c.id as "courseId",
+            (SELECT COUNT(*)::int FROM quizzes q WHERE q.lesson_id = l.id) as "quizCount",
+            (SELECT COUNT(*)::int FROM materials mat WHERE mat.lesson_id = l.id) as "materialCount"
+     FROM lessons l
+     JOIN modules m ON l.module_id = m.id
+     JOIN courses c ON m.course_id = c.id
+     ORDER BY c.title, m.order_index, l.order_index`
+  );
+}
+
+/** Deep copy a module (with all lessons, materials, quizzes, questions) into a target course */
+export async function deepCopyModule(sourceModuleId: string, targetCourseId: string, orderIndex: number): Promise<{ moduleId: string }> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const srcMod = (await client.query(`SELECT * FROM modules WHERE id = $1`, [sourceModuleId])).rows[0];
+    if (!srcMod) throw new Error('Source module not found');
+
+    const newModRes = await client.query(
+      `INSERT INTO modules (course_id, title, order_index) VALUES ($1, $2, $3) RETURNING id`,
+      [targetCourseId, srcMod.title, orderIndex]
+    );
+    const newModuleId = String(newModRes.rows[0].id);
+
+    const srcLessons = (await client.query(`SELECT * FROM lessons WHERE module_id = $1 ORDER BY order_index`, [sourceModuleId])).rows;
+    for (const lesson of srcLessons) {
+      const newLesRes = await client.query(
+        `INSERT INTO lessons (module_id, title, video_url, duration, is_preview, order_index)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+        [newModuleId, lesson.title, lesson.video_url, lesson.duration, lesson.is_preview, lesson.order_index]
+      );
+      const newLessonId = newLesRes.rows[0].id;
+
+      const mats = (await client.query(`SELECT * FROM materials WHERE lesson_id = $1`, [lesson.id])).rows;
+      for (const mat of mats) {
+        await client.query(
+          `INSERT INTO materials (lesson_id, material_title, material_url) VALUES ($1, $2, $3)`,
+          [newLessonId, mat.material_title, mat.material_url]
+        );
+      }
+
+      const quizzes = (await client.query(`SELECT * FROM quizzes WHERE lesson_id = $1`, [lesson.id])).rows;
+      for (const quiz of quizzes) {
+        const newQuizRes = await client.query(
+          `INSERT INTO quizzes (lesson_id, title) VALUES ($1, $2) RETURNING id`,
+          [newLessonId, quiz.title]
+        );
+        const newQuizId = newQuizRes.rows[0].id;
+
+        const questions = (await client.query(`SELECT * FROM quiz_questions WHERE quiz_id = $1`, [quiz.id])).rows;
+        for (const q of questions) {
+          await client.query(
+            `INSERT INTO quiz_questions (quiz_id, question, option_a, option_b, option_c, option_d, correct_answer) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [newQuizId, q.question, q.option_a, q.option_b, q.option_c, q.option_d, q.correct_answer]
+          );
+        }
+      }
+    }
+
+    await client.query('COMMIT');
+    return { moduleId: newModuleId };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/** Deep copy a single lesson (with materials, quizzes, questions) into a target module */
+export async function deepCopyLesson(sourceLessonId: string, targetModuleId: string, orderIndex: number): Promise<{ lessonId: string }> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const srcLesson = (await client.query(`SELECT * FROM lessons WHERE id = $1`, [sourceLessonId])).rows[0];
+    if (!srcLesson) throw new Error('Source lesson not found');
+
+    const newLesRes = await client.query(
+      `INSERT INTO lessons (module_id, title, video_url, duration, is_preview, order_index)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      [targetModuleId, srcLesson.title, srcLesson.video_url, srcLesson.duration, srcLesson.is_preview, orderIndex]
+    );
+    const newLessonId = String(newLesRes.rows[0].id);
+
+    const mats = (await client.query(`SELECT * FROM materials WHERE lesson_id = $1`, [sourceLessonId])).rows;
+    for (const mat of mats) {
+      await client.query(
+        `INSERT INTO materials (lesson_id, material_title, material_url) VALUES ($1, $2, $3)`,
+        [newLessonId, mat.material_title, mat.material_url]
+      );
+    }
+
+    const quizzes = (await client.query(`SELECT * FROM quizzes WHERE lesson_id = $1`, [sourceLessonId])).rows;
+    for (const quiz of quizzes) {
+      const newQuizRes = await client.query(
+        `INSERT INTO quizzes (lesson_id, title) VALUES ($1, $2) RETURNING id`,
+        [newLessonId, quiz.title]
+      );
+      const newQuizId = newQuizRes.rows[0].id;
+
+      const questions = (await client.query(`SELECT * FROM quiz_questions WHERE quiz_id = $1`, [quiz.id])).rows;
+      for (const q of questions) {
+        await client.query(
+          `INSERT INTO quiz_questions (quiz_id, question, option_a, option_b, option_c, option_d, correct_answer) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [newQuizId, q.question, q.option_a, q.option_b, q.option_c, q.option_d, q.correct_answer]
+        );
+      }
+    }
+
+    await client.query('COMMIT');
+    return { lessonId: newLessonId };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 
 // ==============================
 // 📖 COURSE MODULES OPERATIONS

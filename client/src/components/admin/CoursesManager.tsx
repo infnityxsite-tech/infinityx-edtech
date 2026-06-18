@@ -1,4 +1,4 @@
-import { useState, useId } from "react";
+import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -6,10 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenuItem, DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
   Loader2, Plus, Edit2, Trash2, ChevronRight, ChevronLeft,
-  BookOpen, Video, FileText, HelpCircle, Check, X
+  BookOpen, Video, FileText, HelpCircle, Check, X,
+  MoreVertical, Copy, Download, Search
 } from "lucide-react";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
@@ -44,6 +54,194 @@ const DEFAULT_INFO = (): CourseFormData => ({
   instructor: "", priceEgp: 0, priceUsd: 0, courseLink: "",
   category: "", courseType: "Recorded", syllabus: "", scheduleDetails: ""
 });
+
+// ─── DELETE CONFIRMATION MODAL ────────────────────────────────────────────────
+
+function DeleteConfirmModal({ open, onClose, onConfirm, entityType, entityTitle, childSummary }: {
+  open: boolean; onClose: () => void; onConfirm: () => void;
+  entityType: string; entityTitle: string; childSummary?: string;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={v => !v && onClose()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Trash2 className="w-5 h-5 text-red-500" /> Delete {entityType}?
+          </AlertDialogTitle>
+          <AlertDialogDescription className="space-y-2">
+            <span className="block">
+              Are you sure you want to delete <strong className="text-slate-800">{entityTitle || `this ${entityType.toLowerCase()}`}</strong>?
+            </span>
+            {childSummary && (
+              <span className="block text-red-600 font-medium text-xs bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-2">
+                ⚠️ {childSummary}
+              </span>
+            )}
+            <span className="block text-xs text-slate-500 mt-2">This action cannot be undone.</span>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700 text-white">
+            Delete {entityType}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+// ─── IMPORT MODULE MODAL ──────────────────────────────────────────────────────
+
+function ImportModuleModal({ open, onClose, onImport, excludeCourseId }: {
+  open: boolean; onClose: () => void; onImport: (moduleId: string) => void; excludeCourseId?: string;
+}) {
+  const { data: allModules = [], isLoading } = trpc.admin.getAllModulesWithCourse.useQuery(undefined, { enabled: open });
+  const [search, setSearch] = useState("");
+
+  const filtered = allModules.filter((m: any) => {
+    if (excludeCourseId && String(m.courseId) === String(excludeCourseId)) return false;
+    const q = search.toLowerCase();
+    return m.title.toLowerCase().includes(q) || m.courseTitle.toLowerCase().includes(q);
+  });
+
+  // Group by course
+  const grouped: Record<string, any[]> = {};
+  for (const mod of filtered) {
+    const key = mod.courseTitle;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(mod);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={v => !v && onClose()}>
+      <DialogContent className="max-w-lg max-h-[75vh] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-5 py-4 border-b border-slate-200 flex-shrink-0">
+          <DialogTitle className="text-base font-bold flex items-center gap-2">
+            <Download className="w-4 h-4 text-indigo-500" /> Import Module from Another Course
+          </DialogTitle>
+        </DialogHeader>
+        <div className="px-5 pt-3 pb-2 flex-shrink-0">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search modules or courses..." className="pl-9 h-9 text-sm" />
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto px-5 pb-4 space-y-4">
+          {isLoading ? (
+            <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-indigo-500" /></div>
+          ) : Object.keys(grouped).length === 0 ? (
+            <p className="text-center text-sm text-slate-400 py-8">No modules found in other courses.</p>
+          ) : (
+            Object.entries(grouped).map(([courseTitle, mods]) => (
+              <div key={courseTitle}>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">📚 {courseTitle}</p>
+                <div className="space-y-1.5">
+                  {mods.map((mod: any) => (
+                    <button
+                      key={mod.id}
+                      type="button"
+                      onClick={() => onImport(String(mod.id))}
+                      className="w-full text-left flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50/50 transition-all group"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm text-slate-800 truncate">{mod.title}</p>
+                        <p className="text-xs text-slate-400">{mod.lessonCount} lesson{mod.lessonCount !== 1 ? 's' : ''}</p>
+                      </div>
+                      <Download className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 flex-shrink-0 transition-colors" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── IMPORT LESSON MODAL ──────────────────────────────────────────────────────
+
+function ImportLessonModal({ open, onClose, onImport, excludeModuleId }: {
+  open: boolean; onClose: () => void; onImport: (lessonId: string) => void; excludeModuleId?: string;
+}) {
+  const { data: allLessons = [], isLoading } = trpc.admin.getAllLessonsWithModule.useQuery(undefined, { enabled: open });
+  const [search, setSearch] = useState("");
+
+  const filtered = allLessons.filter((l: any) => {
+    if (excludeModuleId && String(l.moduleId) === String(excludeModuleId)) return false;
+    const q = search.toLowerCase();
+    return l.title.toLowerCase().includes(q) || l.moduleTitle.toLowerCase().includes(q) || l.courseTitle.toLowerCase().includes(q);
+  });
+
+  // Group by course > module
+  const grouped: Record<string, Record<string, any[]>> = {};
+  for (const les of filtered) {
+    const ck = les.courseTitle;
+    const mk = les.moduleTitle;
+    if (!grouped[ck]) grouped[ck] = {};
+    if (!grouped[ck][mk]) grouped[ck][mk] = [];
+    grouped[ck][mk].push(les);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={v => !v && onClose()}>
+      <DialogContent className="max-w-lg max-h-[75vh] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-5 py-4 border-b border-slate-200 flex-shrink-0">
+          <DialogTitle className="text-base font-bold flex items-center gap-2">
+            <Download className="w-4 h-4 text-blue-500" /> Import Lesson from Another Module
+          </DialogTitle>
+        </DialogHeader>
+        <div className="px-5 pt-3 pb-2 flex-shrink-0">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search lessons, modules, or courses..." className="pl-9 h-9 text-sm" />
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto px-5 pb-4 space-y-4">
+          {isLoading ? (
+            <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>
+          ) : Object.keys(grouped).length === 0 ? (
+            <p className="text-center text-sm text-slate-400 py-8">No lessons found in other modules.</p>
+          ) : (
+            Object.entries(grouped).map(([courseTitle, modules]) => (
+              <div key={courseTitle}>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">📚 {courseTitle}</p>
+                {Object.entries(modules).map(([moduleTitle, lessons]) => (
+                  <div key={moduleTitle} className="mb-3">
+                    <p className="text-xs font-semibold text-indigo-600 mb-1.5 pl-1">📦 {moduleTitle}</p>
+                    <div className="space-y-1.5 pl-3">
+                      {lessons.map((les: any) => (
+                        <button
+                          key={les.id}
+                          type="button"
+                          onClick={() => onImport(String(les.id))}
+                          className="w-full text-left flex items-center justify-between p-2.5 border border-slate-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 transition-all group"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm text-slate-800 truncate">{les.title}</p>
+                            <p className="text-xs text-slate-400">
+                              {les.quizCount > 0 && `${les.quizCount} quiz${les.quizCount !== 1 ? 'zes' : ''}`}
+                              {les.quizCount > 0 && les.materialCount > 0 && ' · '}
+                              {les.materialCount > 0 && `${les.materialCount} material${les.materialCount !== 1 ? 's' : ''}`}
+                              {les.quizCount === 0 && les.materialCount === 0 && 'No quizzes or materials'}
+                            </p>
+                          </div>
+                          <Download className="w-4 h-4 text-slate-300 group-hover:text-blue-500 flex-shrink-0 transition-colors" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // ─── QUIZ BUILDER ─────────────────────────────────────────────────────────────
 
@@ -141,15 +339,18 @@ function MaterialBuilder({ materials, onChange }: { materials: Material[]; onCha
 
 // ─── LESSON BUILDER ───────────────────────────────────────────────────────────
 
-function LessonBuilder({ lesson, index, onChange, onRemove }: {
-  lesson: LessonBlock; index: number; onChange: (l: LessonBlock) => void; onRemove: () => void;
+function LessonBuilder({ lesson, index, onChange, onRemove, onDuplicate }: {
+  lesson: LessonBlock; index: number; onChange: (l: LessonBlock) => void; onRemove: () => void; onDuplicate: () => void;
 }) {
   const [expanded, setExpanded] = useState(index === 0);
   const set = (patch: Partial<LessonBlock>) => onChange({ ...lesson, ...patch });
 
+  const quizCount = lesson.quizzes.length;
+  const matCount = lesson.materials.length;
+
   return (
-    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
-      {/* Header — use div not button to avoid nesting */}
+    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm group/lesson">
+      {/* Header */}
       <div
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer select-none"
         onClick={() => setExpanded(!expanded)}
@@ -164,18 +365,33 @@ function LessonBuilder({ lesson, index, onChange, onRemove }: {
           </div>
           <span className="font-medium text-slate-800 text-sm">{lesson.title || `Lesson ${index + 1}`}</span>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Separate remove button — stops propagation so it doesn't toggle collapse */}
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={e => { e.stopPropagation(); onRemove(); }}
-            onKeyDown={e => e.key === 'Enter' && (e.stopPropagation(), onRemove())}
-            className="text-slate-300 hover:text-red-500 p-1 rounded cursor-pointer transition-colors"
-            aria-label="Remove lesson"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </div>
+        <div className="flex items-center gap-1">
+          {/* Context Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={e => e.stopPropagation()}
+                className="text-slate-300 hover:text-slate-600 p-1 rounded cursor-pointer transition-colors opacity-0 group-hover/lesson:opacity-100 focus:opacity-100"
+                aria-label="Lesson actions"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44" onClick={e => e.stopPropagation()}>
+              <DropdownMenuItem onClick={() => setExpanded(true)}>
+                <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit Lesson
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onDuplicate}>
+                <Copy className="w-3.5 h-3.5 mr-2" /> Duplicate
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onRemove} className="text-red-600 focus:text-red-600 focus:bg-red-50">
+                <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete Lesson
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           {expanded
             ? <ChevronLeft className="w-4 h-4 text-slate-400 rotate-90 flex-shrink-0" />
             : <ChevronRight className="w-4 h-4 text-slate-400 -rotate-90 flex-shrink-0" />}
@@ -218,21 +434,51 @@ function LessonBuilder({ lesson, index, onChange, onRemove }: {
 
 // ─── MODULE BUILDER ───────────────────────────────────────────────────────────
 
-function ModuleBuilder({ module, index, onChange, onRemove }: {
+function ModuleBuilder({ module, index, onChange, onRemove, onDuplicate, onImportLesson }: {
   module: ModuleBlock; index: number; onChange: (m: ModuleBlock) => void; onRemove: () => void;
+  onDuplicate: () => void; onImportLesson: () => void;
 }) {
+  const [deleteTarget, setDeleteTarget] = useState<{ type: string; title: string; id: string; childSummary?: string } | null>(null);
   const set = (patch: Partial<ModuleBlock>) => onChange({ ...module, ...patch });
 
   const addLesson = () => set({ lessons: [...module.lessons, { ...makeLesson(), orderIndex: module.lessons.length }] });
   const updateLesson = (id: string, lesson: LessonBlock) =>
     set({ lessons: module.lessons.map(l => l.id === id ? lesson : l) });
-  const removeLesson = (id: string) => {
-    
-    set({ lessons: module.lessons.filter(l => l.id !== id) });
+  const removeLesson = (id: string) => set({ lessons: module.lessons.filter(l => l.id !== id) });
+
+  const duplicateLesson = (lesson: LessonBlock) => {
+    const copy: LessonBlock = {
+      ...JSON.parse(JSON.stringify(lesson)),
+      id: uid(),
+      title: `${lesson.title} (Copy)`,
+      orderIndex: module.lessons.length,
+    };
+    // Regenerate IDs for quizzes in the copy
+    copy.quizzes = copy.quizzes.map((q: QuizBlock) => ({ ...q, id: uid() }));
+    set({ lessons: [...module.lessons, copy] });
+    toast.success(`Duplicated "${lesson.title}"`);
   };
 
+  const requestDeleteLesson = (lesson: LessonBlock) => {
+    const quizCount = lesson.quizzes.length;
+    const matCount = lesson.materials.length;
+    const parts: string[] = [];
+    if (quizCount > 0) parts.push(`${quizCount} quiz${quizCount > 1 ? 'zes' : ''}`);
+    if (matCount > 0) parts.push(`${matCount} material${matCount > 1 ? 's' : ''}`);
+    setDeleteTarget({
+      type: 'Lesson',
+      title: lesson.title || `Lesson`,
+      id: lesson.id,
+      childSummary: parts.length > 0 ? `This will also remove ${parts.join(' and ')}.` : undefined
+    });
+  };
+
+  // Count children for module-level info
+  const totalLessons = module.lessons.length;
+  const totalQuizzes = module.lessons.reduce((sum, l) => sum + l.quizzes.length, 0);
+
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-indigo-50/30 border border-slate-200 rounded-2xl p-5 space-y-4">
+    <div className="bg-gradient-to-br from-slate-50 to-indigo-50/30 border border-slate-200 rounded-2xl p-5 space-y-4 group/module">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-sm flex items-center justify-center flex-shrink-0">
           M{index + 1}
@@ -240,9 +486,27 @@ function ModuleBuilder({ module, index, onChange, onRemove }: {
         <Input value={module.title} onChange={e => set({ title: e.target.value })}
           placeholder={`Module ${index + 1} title — e.g. "Getting Started"`}
           className="flex-1 font-semibold h-10 bg-white border-slate-200" />
-        <button type="button" onClick={onRemove} className="text-slate-300 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0" aria-label="Remove module">
-          <Trash2 className="w-4 h-4" />
-        </button>
+
+        {/* Module Context Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button type="button" className="text-slate-300 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors flex-shrink-0 opacity-0 group-hover/module:opacity-100 focus:opacity-100" aria-label="Module actions">
+              <MoreVertical className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={onDuplicate}>
+              <Copy className="w-3.5 h-3.5 mr-2" /> Duplicate Module
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onImportLesson}>
+              <Download className="w-3.5 h-3.5 mr-2" /> Import Lesson
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onRemove} className="text-red-600 focus:text-red-600 focus:bg-red-50">
+              <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete Module
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="space-y-3 ml-11">
@@ -252,14 +516,33 @@ function ModuleBuilder({ module, index, onChange, onRemove }: {
             lesson={lesson}
             index={li}
             onChange={(l) => updateLesson(lesson.id, l)}
-            onRemove={() => removeLesson(lesson.id)}
+            onRemove={() => requestDeleteLesson(lesson)}
+            onDuplicate={() => duplicateLesson(lesson)}
           />
         ))}
-        <button type="button" onClick={addLesson}
-          className="w-full h-9 text-sm border border-dashed border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 rounded-lg flex items-center justify-center gap-2 transition-colors">
-          <Plus className="w-3.5 h-3.5" /> Add Lesson
-        </button>
+        <div className="flex gap-2">
+          <button type="button" onClick={addLesson}
+            className="flex-1 h-9 text-sm border border-dashed border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 rounded-lg flex items-center justify-center gap-2 transition-colors">
+            <Plus className="w-3.5 h-3.5" /> Add Lesson
+          </button>
+          <button type="button" onClick={onImportLesson}
+            className="h-9 px-3 text-sm border border-dashed border-indigo-300 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 rounded-lg flex items-center justify-center gap-2 transition-colors">
+            <Download className="w-3.5 h-3.5" /> Import
+          </button>
+        </div>
       </div>
+
+      {/* Delete Confirmation for lessons within this module */}
+      {deleteTarget && (
+        <DeleteConfirmModal
+          open={!!deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={() => { removeLesson(deleteTarget.id); setDeleteTarget(null); toast.success(`Deleted ${deleteTarget.type}`); }}
+          entityType={deleteTarget.type}
+          entityTitle={deleteTarget.title}
+          childSummary={deleteTarget.childSummary}
+        />
+      )}
     </div>
   );
 }
@@ -277,12 +560,21 @@ export default function CoursesManager() {
   const [info, setInfo] = useState<CourseFormData>(DEFAULT_INFO());
   const [modules, setModules] = useState<ModuleBlock[]>([makeModule()]);
 
+  // Delete confirmation state
+  const [deleteTarget, setDeleteTarget] = useState<{ type: string; title: string; id: string; childSummary?: string } | null>(null);
+
+  // Import modal state
+  const [importModuleOpen, setImportModuleOpen] = useState(false);
+  const [importLessonTarget, setImportLessonTarget] = useState<{ moduleId: string } | null>(null);
+
   const createCourse = trpc.admin.createCourse.useMutation();
   const createCourseComplete = trpc.admin.createCourseComplete.useMutation();
   const updateCourseComplete = trpc.admin.updateCourseComplete.useMutation();
   const deleteCourse = trpc.admin.deleteCourse.useMutation({
     onSuccess: () => { toast.success("Course deleted"); utils.admin.getCourses.invalidate(); }
   });
+  const importModuleMutation = trpc.admin.importModule.useMutation();
+  const importLessonMutation = trpc.admin.importLesson.useMutation();
 
   const resetForm = () => { setInfo(DEFAULT_INFO()); setModules([makeModule()]); setStep(1); setEditingId(null); };
 
@@ -302,11 +594,11 @@ export default function CoursesManager() {
 
       if (completeData.modules && completeData.modules.length > 0) {
         setModules(completeData.modules.map((m: any) => ({
-          id: m.id || uid(),
+          id: m.id ? String(m.id) : uid(), // Preserve real DB ID
           title: m.title || "",
           orderIndex: m.orderIndex || 0,
           lessons: (m.lessons || []).map((l: any) => ({
-            id: l.id || uid(),
+            id: l.id ? String(l.id) : uid(), // Preserve real DB ID
             title: l.title || "",
             videoUrl: l.videoUrl || "",
             materials: Array.isArray(l.materials) ? l.materials : [],
@@ -323,7 +615,7 @@ export default function CoursesManager() {
                 ];
                 const cIdx = ['A', 'B', 'C', 'D'].indexOf(questionData.correctAnswer);
                 return {
-                  id: uid(),
+                  id: uid(), // Quiz IDs are always client-side
                   question: questionData.question || "",
                   options: opts,
                   correctIndex: cIdx >= 0 ? cIdx : 0,
@@ -346,6 +638,35 @@ export default function CoursesManager() {
     }
   };
 
+  const buildModulesPayload = () => modules.map((m, mi) => ({
+    id: m.id, // Pass ID through — backend will upsert
+    title: m.title.trim() || `Module ${mi + 1}`,
+    orderIndex: mi,
+    lessons: m.lessons.map((l, li) => ({
+      id: l.id, // Pass ID through — backend will upsert
+      title: l.title.trim() || `Lesson ${li + 1}`,
+      videoUrl: l.videoUrl.trim() || undefined,
+      materials: l.materials.filter(mat => mat.title && mat.url),
+      duration: l.duration.trim() || undefined,
+      isPreview: l.isPreview,
+      orderIndex: li,
+      quizzes: l.quizzes.length > 0 ? [{
+        title: `${l.title.trim() || 'Lesson'} Quiz`,
+        questions: l.quizzes.filter(q => q.question.trim()).map(q => {
+          const letters = ['A', 'B', 'C', 'D'];
+          return {
+            question: q.question,
+            optionA: q.options[0]?.text || "",
+            optionB: q.options[1]?.text || "",
+            optionC: q.options[2]?.text || "",
+            optionD: q.options[3]?.text || "",
+            correctAnswer: letters[q.correctIndex] || 'A'
+          };
+        })
+      }] : []
+    }))
+  }));
+
   const handleSave = async () => {
     if (!info.title.trim()) return toast.error("Course title is required");
     setIsSaving(true);
@@ -354,72 +675,14 @@ export default function CoursesManager() {
         await updateCourseComplete.mutateAsync({
           id: editingId,
           info: info,
-          modules: info.courseType === "Recorded" ? modules.map((m, mi) => ({
-            title: m.title.trim() || `Module ${mi + 1}`,
-            orderIndex: mi,
-            lessons: m.lessons.map((l, li) => ({
-              title: l.title.trim() || `Lesson ${li + 1}`,
-              videoUrl: l.videoUrl.trim() || undefined,
-              materials: l.materials.filter(mat => mat.title && mat.url),
-              duration: l.duration.trim() || undefined,
-              isPreview: l.isPreview,
-              orderIndex: li,
-              quizzes: l.quizzes.length > 0 ? [{
-                title: `${l.title.trim() || 'Lesson'} Quiz`,
-                questions: l.quizzes.filter(q => q.question.trim()).map(q => {
-                  const letters = ['A', 'B', 'C', 'D'];
-                  return {
-                    question: q.question,
-                    optionA: q.options[0]?.text || "",
-                    optionB: q.options[1]?.text || "",
-                    optionC: q.options[2]?.text || "",
-                    optionD: q.options[3]?.text || "",
-                    correctAnswer: letters[q.correctIndex] || 'A'
-                  };
-                })
-              }] : []
-            }))
-          })) : []
+          modules: info.courseType === "Recorded" ? buildModulesPayload() : []
         });
         toast.success("✅ Course updated!");
       } else {
-        if (info.courseType === "Recorded") {
-          await createCourseComplete.mutateAsync({
-            info: info,
-            modules: modules.map((m, mi) => ({
-              title: m.title.trim() || `Module ${mi + 1}`,
-              orderIndex: mi,
-              lessons: m.lessons.map((l, li) => ({
-                title: l.title.trim() || `Lesson ${li + 1}`,
-                videoUrl: l.videoUrl.trim() || undefined,
-                duration: l.duration.trim() || undefined,
-                materials: l.materials.filter(mat => mat.title && mat.url),
-                duration: l.duration.trim() || undefined,
-                isPreview: l.isPreview,
-                orderIndex: li,
-                quizzes: l.quizzes.length > 0 ? [{
-                  title: `${l.title.trim() || 'Lesson'} Quiz`,
-                  questions: l.quizzes.filter(q => q.question.trim()).map(q => {
-                    const letters = ['A', 'B', 'C', 'D'];
-                    return {
-                      question: q.question,
-                      optionA: q.options[0]?.text || "",
-                      optionB: q.options[1]?.text || "",
-                      optionC: q.options[2]?.text || "",
-                      optionD: q.options[3]?.text || "",
-                      correctAnswer: letters[q.correctIndex] || 'A'
-                    };
-                  })
-                }] : []
-              }))
-            }))
-          });
-        } else {
-          await createCourseComplete.mutateAsync({
-            info: info,
-            modules: []
-          });
-        }
+        await createCourseComplete.mutateAsync({
+          info: info,
+          modules: info.courseType === "Recorded" ? buildModulesPayload() : []
+        });
         toast.success("✅ Course created completely!");
       }
 
@@ -435,13 +698,156 @@ export default function CoursesManager() {
   };
 
   const addModule = () => setModules(prev => [...prev, { ...makeModule(), orderIndex: prev.length }]);
+
+  const requestDeleteModule = (mod: ModuleBlock) => {
+    const lessonCount = mod.lessons.length;
+    const quizCount = mod.lessons.reduce((sum, l) => sum + l.quizzes.length, 0);
+    const parts: string[] = [];
+    if (lessonCount > 0) parts.push(`${lessonCount} lesson${lessonCount > 1 ? 's' : ''}`);
+    if (quizCount > 0) parts.push(`${quizCount} quiz${quizCount > 1 ? 'zes' : ''}`);
+    setDeleteTarget({
+      type: 'Module',
+      title: mod.title || `Module`,
+      id: mod.id,
+      childSummary: parts.length > 0 ? `This will also remove ${parts.join(' and ')}.` : undefined
+    });
+  };
+
   const removeModule = (id: string) => {
-    
     setModules(prev => prev.filter(m => m.id !== id));
   };
+
+  const duplicateModule = (mod: ModuleBlock) => {
+    const copy: ModuleBlock = {
+      ...JSON.parse(JSON.stringify(mod)),
+      id: uid(),
+      title: `${mod.title} (Copy)`,
+      orderIndex: modules.length,
+    };
+    // Regenerate all IDs for lessons and quizzes in the copy
+    copy.lessons = copy.lessons.map((l: LessonBlock) => ({
+      ...l,
+      id: uid(),
+      quizzes: l.quizzes.map((q: QuizBlock) => ({ ...q, id: uid() }))
+    }));
+    setModules(prev => [...prev, copy]);
+    toast.success(`Duplicated module "${mod.title}"`);
+  };
+
   const updateModule = (id: string, m: ModuleBlock) =>
     setModules(prev => prev.map(mod => mod.id === id ? m : mod));
 
+  // Import module handler — deep copies via API, then reloads
+  const handleImportModule = async (sourceModuleId: string) => {
+    if (!editingId) {
+      // For new (unsaved) courses, we can't import from DB yet.
+      // Close modal and show info
+      toast.error("Please save the course first before importing modules.");
+      setImportModuleOpen(false);
+      return;
+    }
+    try {
+      await importModuleMutation.mutateAsync({
+        sourceModuleId,
+        targetCourseId: editingId,
+        orderIndex: modules.length,
+      });
+      toast.success("Module imported! Reloading...");
+      setImportModuleOpen(false);
+      // Reload the course data to pick up the newly imported module
+      const refreshed = await utils.admin.getCourseComplete.fetch({ id: editingId });
+      if (refreshed && refreshed.modules) {
+        setModules(refreshed.modules.map((m: any) => ({
+          id: m.id ? String(m.id) : uid(),
+          title: m.title || "",
+          orderIndex: m.orderIndex || 0,
+          lessons: (m.lessons || []).map((l: any) => ({
+            id: l.id ? String(l.id) : uid(),
+            title: l.title || "",
+            videoUrl: l.videoUrl || "",
+            materials: Array.isArray(l.materials) ? l.materials : [],
+            duration: l.duration || "",
+            isPreview: l.isPreview || false,
+            orderIndex: l.orderIndex || 0,
+            quizzes: (l.quizzes || []).flatMap((q: any) =>
+              Array.isArray(q.questions) ? q.questions.map((questionData: any, qi: number) => {
+                const opts = [
+                  { text: questionData.optionA || "" },
+                  { text: questionData.optionB || "" },
+                  { text: questionData.optionC || "" },
+                  { text: questionData.optionD || "" }
+                ];
+                const cIdx = ['A', 'B', 'C', 'D'].indexOf(questionData.correctAnswer);
+                return { id: uid(), question: questionData.question || "", options: opts, correctIndex: cIdx >= 0 ? cIdx : 0, orderIndex: qi };
+              }) : []
+            )
+          }))
+        })));
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "Failed to import module");
+    }
+  };
+
+  // Import lesson handler
+  const handleImportLesson = async (sourceLessonId: string) => {
+    if (!editingId || !importLessonTarget) {
+      toast.error("Please save the course first before importing lessons.");
+      setImportLessonTarget(null);
+      return;
+    }
+    const targetModuleId = importLessonTarget.moduleId;
+    // Only allow import if the module has a real DB ID
+    if (String(targetModuleId).startsWith('_')) {
+      toast.error("Please save the course first — this module doesn't have a database ID yet.");
+      setImportLessonTarget(null);
+      return;
+    }
+    try {
+      const targetModule = modules.find(m => m.id === targetModuleId);
+      await importLessonMutation.mutateAsync({
+        sourceLessonId,
+        targetModuleId,
+        orderIndex: targetModule ? targetModule.lessons.length : 0,
+      });
+      toast.success("Lesson imported! Reloading...");
+      setImportLessonTarget(null);
+      // Reload course data
+      const refreshed = await utils.admin.getCourseComplete.fetch({ id: editingId });
+      if (refreshed && refreshed.modules) {
+        setModules(refreshed.modules.map((m: any) => ({
+          id: m.id ? String(m.id) : uid(),
+          title: m.title || "",
+          orderIndex: m.orderIndex || 0,
+          lessons: (m.lessons || []).map((l: any) => ({
+            id: l.id ? String(l.id) : uid(),
+            title: l.title || "",
+            videoUrl: l.videoUrl || "",
+            materials: Array.isArray(l.materials) ? l.materials : [],
+            duration: l.duration || "",
+            isPreview: l.isPreview || false,
+            orderIndex: l.orderIndex || 0,
+            quizzes: (l.quizzes || []).flatMap((q: any) =>
+              Array.isArray(q.questions) ? q.questions.map((questionData: any, qi: number) => {
+                const opts = [
+                  { text: questionData.optionA || "" },
+                  { text: questionData.optionB || "" },
+                  { text: questionData.optionC || "" },
+                  { text: questionData.optionD || "" }
+                ];
+                const cIdx = ['A', 'B', 'C', 'D'].indexOf(questionData.correctAnswer);
+                return { id: uid(), question: questionData.question || "", options: opts, correctIndex: cIdx >= 0 ? cIdx : 0, orderIndex: qi };
+              }) : []
+            )
+          }))
+        })));
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "Failed to import lesson");
+    }
+  };
 
 
   return (
@@ -627,10 +1033,18 @@ export default function CoursesManager() {
                     <p className="font-bold text-slate-800">{info.title}</p>
                     <p className="text-sm text-slate-500 mt-0.5">Add modules, lessons, materials, and quizzes below.</p>
                   </div>
-                  <button type="button" onClick={addModule}
-                    className="border border-indigo-300 text-indigo-600 hover:bg-indigo-50 rounded-lg px-3 py-1.5 text-sm font-semibold flex items-center gap-1.5 transition-colors">
-                    <Plus className="w-4 h-4" /> Add Module
-                  </button>
+                  <div className="flex gap-2">
+                    {editingId && (
+                      <button type="button" onClick={() => setImportModuleOpen(true)}
+                        className="border border-indigo-300 text-indigo-600 hover:bg-indigo-50 rounded-lg px-3 py-1.5 text-sm font-semibold flex items-center gap-1.5 transition-colors">
+                        <Download className="w-4 h-4" /> Import Module
+                      </button>
+                    )}
+                    <button type="button" onClick={addModule}
+                      className="border border-indigo-300 text-indigo-600 hover:bg-indigo-50 rounded-lg px-3 py-1.5 text-sm font-semibold flex items-center gap-1.5 transition-colors">
+                      <Plus className="w-4 h-4" /> Add Module
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-5">
                   {modules.map((mod, mi) => (
@@ -639,7 +1053,15 @@ export default function CoursesManager() {
                       module={mod}
                       index={mi}
                       onChange={(m) => updateModule(mod.id, m)}
-                      onRemove={() => removeModule(mod.id)}
+                      onRemove={() => requestDeleteModule(mod)}
+                      onDuplicate={() => duplicateModule(mod)}
+                      onImportLesson={() => {
+                        if (!editingId || String(mod.id).startsWith('_')) {
+                          toast.error("Save the course first before importing lessons into this module.");
+                          return;
+                        }
+                        setImportLessonTarget({ moduleId: mod.id });
+                      }}
                     />
                   ))}
                 </div>
@@ -670,6 +1092,34 @@ export default function CoursesManager() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Module-level delete confirmation */}
+      {deleteTarget && (
+        <DeleteConfirmModal
+          open={!!deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={() => { removeModule(deleteTarget.id); setDeleteTarget(null); toast.success(`Deleted ${deleteTarget.type}`); }}
+          entityType={deleteTarget.type}
+          entityTitle={deleteTarget.title}
+          childSummary={deleteTarget.childSummary}
+        />
+      )}
+
+      {/* Import Module Modal */}
+      <ImportModuleModal
+        open={importModuleOpen}
+        onClose={() => setImportModuleOpen(false)}
+        onImport={handleImportModule}
+        excludeCourseId={editingId || undefined}
+      />
+
+      {/* Import Lesson Modal */}
+      <ImportLessonModal
+        open={!!importLessonTarget}
+        onClose={() => setImportLessonTarget(null)}
+        onImport={handleImportLesson}
+        excludeModuleId={importLessonTarget?.moduleId}
+      />
     </Card >
   );
 }
