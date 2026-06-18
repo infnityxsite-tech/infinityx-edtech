@@ -20,10 +20,24 @@ function QuizViewer({ lessonId, onAllDone }: { lessonId: string; onAllDone: () =
     const [score, setScore] = useState(0);
     const [finished, setFinished] = useState(false);
 
+    const [previousScore, setPreviousScore] = useState<number | null>(() => {
+        const saved = localStorage.getItem(`quiz_score_${lessonId}`);
+        return saved !== null ? parseInt(saved) : null;
+    });
+
     // Reset when lessonId changes
     useEffect(() => {
         setCurrent(0); setSelected(null); setSubmitted(false); setScore(0); setFinished(false);
+        const saved = localStorage.getItem(`quiz_score_${lessonId}`);
+        setPreviousScore(saved !== null ? parseInt(saved) : null);
     }, [lessonId]);
+
+    useEffect(() => {
+        if (finished) {
+            localStorage.setItem(`quiz_score_${lessonId}`, score.toString());
+            setPreviousScore(score);
+        }
+    }, [finished, score, lessonId]);
 
     if (isLoading) return <div className="py-6 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-indigo-400" /></div>;
     if (quizzes.length === 0) return null;
@@ -37,9 +51,14 @@ function QuizViewer({ lessonId, onAllDone }: { lessonId: string; onAllDone: () =
                 </div>
                 <h4 className="font-bold text-slate-800 text-xl mb-1">Quiz Complete!</h4>
                 <p className="text-slate-500">You scored <span className="font-bold text-indigo-700">{score}/{quizzes.length}</span> ({pct}%)</p>
-                <Button className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white" onClick={onAllDone}>
-                    <CheckCircle2 className="w-4 h-4 mr-2" /> Mark Lesson Complete
-                </Button>
+                <div className="mt-6 flex flex-wrap gap-3 justify-center">
+                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={onAllDone}>
+                        <CheckCircle2 className="w-4 h-4 mr-2" /> Mark Lesson Complete
+                    </Button>
+                    <Button variant="outline" onClick={() => { setCurrent(0); setSelected(null); setSubmitted(false); setScore(0); setFinished(false); }}>
+                        Try Again
+                    </Button>
+                </div>
             </div>
         );
     }
@@ -52,9 +71,16 @@ function QuizViewer({ lessonId, onAllDone }: { lessonId: string; onAllDone: () =
                 <h4 className="font-bold text-slate-800 flex items-center gap-2">
                     <HelpCircle className="w-5 h-5 text-indigo-500" /> Knowledge Check
                 </h4>
-                <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full font-medium">
-                    {current + 1} / {quizzes.length}
-                </span>
+                <div className="flex items-center gap-3">
+                    {previousScore !== null && current === 0 && !submitted && (
+                        <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded font-medium">
+                            Previous trial: {previousScore}/{quizzes.length}
+                        </span>
+                    )}
+                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full font-medium">
+                        {current + 1} / {quizzes.length}
+                    </span>
+                </div>
             </div>
 
             <p className="text-base font-semibold text-slate-800 mb-5 leading-relaxed">{quiz.question}</p>

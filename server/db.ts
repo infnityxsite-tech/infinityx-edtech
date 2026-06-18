@@ -246,9 +246,9 @@ export async function createCourseComplete(courseData: any, modulesData: any[]):
       // 3. Create Lessons
       for (const lesson of mod.lessons || []) {
         const lessonRes = await client.query(
-          `INSERT INTO lessons (module_id, title, video_url, is_preview, order_index)
-           VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-          [moduleId, lesson.title, lesson.videoUrl, lesson.isPreview || false, lesson.orderIndex]
+          `INSERT INTO lessons (module_id, title, video_url, duration, is_preview, order_index)
+           VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+          [moduleId, lesson.title, lesson.videoUrl, lesson.duration || null, lesson.isPreview || false, lesson.orderIndex]
         );
         const lessonId = lessonRes.rows[0].id;
 
@@ -297,7 +297,7 @@ export async function getCourseComplete(id: string) {
 
   const modulesRaw = await queryMany<any>(`SELECT id, title, order_index as "orderIndex" FROM modules WHERE course_id = $1 ORDER BY order_index ASC`, [id]);
   const modules = await Promise.all(modulesRaw.map(async (mod) => {
-    const lessonsRaw = await queryMany<any>(`SELECT id, title, video_url as "videoUrl", is_preview as "isPreview", order_index as "orderIndex" FROM lessons WHERE module_id = $1 ORDER BY order_index ASC`, [mod.id]);
+    const lessonsRaw = await queryMany<any>(`SELECT id, title, video_url as "videoUrl", duration, is_preview as "isPreview", order_index as "orderIndex" FROM lessons WHERE module_id = $1 ORDER BY order_index ASC`, [mod.id]);
     const lessons = await Promise.all(lessonsRaw.map(async (les) => {
       const materialsRaw = await queryMany<any>(`SELECT material_title as "title", material_url as "url" FROM materials WHERE lesson_id = $1`, [les.id]);
       const quizzesRaw = await queryMany<any>(`SELECT id, title FROM quizzes WHERE lesson_id = $1`, [les.id]);
@@ -339,8 +339,8 @@ export async function updateCourseComplete(courseId: string, courseData: any, mo
 
       for (const lesson of mod.lessons || []) {
         const lessonRes = await client.query(
-          `INSERT INTO lessons (module_id, title, video_url, is_preview, order_index) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-          [moduleId, lesson.title, lesson.videoUrl, lesson.isPreview || false, lesson.orderIndex]
+          `INSERT INTO lessons (module_id, title, video_url, duration, is_preview, order_index) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+          [moduleId, lesson.title, lesson.videoUrl, lesson.duration || null, lesson.isPreview || false, lesson.orderIndex]
         );
         const lessonId = lessonRes.rows[0].id;
 
@@ -382,8 +382,13 @@ export async function deleteCourse(id: string) {
 
 export async function getCourseModules(courseId: string) {
   return await queryMany<any>(
-    `SELECT id, course_id as "courseId", title, order_index as "orderIndex"
-     FROM modules WHERE course_id = $1 ORDER BY order_index ASC`,
+    `SELECT m.id, m.course_id as "courseId", m.title, m.order_index as "orderIndex",
+            COUNT(l.id)::int as "lessonCount"
+     FROM modules m
+     LEFT JOIN lessons l ON m.id = l.module_id
+     WHERE m.course_id = $1 
+     GROUP BY m.id
+     ORDER BY m.order_index ASC`,
     [courseId]
   );
 }
@@ -394,7 +399,7 @@ export async function getCourseModules(courseId: string) {
 
 export async function getCourseLessons(moduleId: string) {
   return await queryMany<any>(
-    `SELECT id, module_id as "moduleId", title, video_url as "videoUrl", 
+    `SELECT id, module_id as "moduleId", title, video_url as "videoUrl", duration,
             is_preview as "isPreview", order_index as "orderIndex"
      FROM lessons WHERE module_id = $1 ORDER BY order_index ASC`,
     [moduleId]

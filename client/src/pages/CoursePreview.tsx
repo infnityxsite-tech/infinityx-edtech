@@ -214,11 +214,6 @@ export default function CoursePreview({ params }: PreviewRouteProps) {
                                                     <p className={`font-semibold ${lesson.isPreview ? "text-slate-900" : "text-slate-500"}`}>
                                                         {lIdx + 1}. {lesson.title}
                                                     </p>
-                                                    {lesson.materials && lesson.materials.length > 0 && (
-                                                        <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
-                                                            <BookOpen className="w-3 h-3" /> {lesson.materials.length} resources attachments
-                                                        </p>
-                                                    )}
                                                 </div>
                                             </div>
 
