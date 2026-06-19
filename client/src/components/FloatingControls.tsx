@@ -1,17 +1,25 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLocation } from "wouter";
 import { Globe } from "lucide-react";
 
 /**
- * Floating language toggle — pinned beautifully to the top right.
+ * Floating language toggle — repositions itself on the Learning Portal
+ * to avoid overlapping with the header and video player.
  */
 export default function FloatingControls() {
   const { lang, toggleLang } = useLanguage();
   const { theme } = useTheme();
+  const [location] = useLocation();
   const isLight = theme === "light";
+  const isLearningPage = location.startsWith("/learn/");
 
   return (
-    <div className="fixed top-24 right-5 z-[55] animate-fade-in group">
+    <div className={`fixed z-[55] animate-fade-in group ${
+      isLearningPage
+        ? "bottom-5 right-5 z-[25]"
+        : "top-24 right-5"
+    }`}>
       <button
         onClick={toggleLang}
         className={`flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-2xl shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-xl border ${

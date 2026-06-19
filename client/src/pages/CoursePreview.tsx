@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
@@ -36,7 +35,7 @@ export default function CoursePreview({ params }: PreviewRouteProps) {
         return null;
     }
 
-    const [activeVideo, setActiveVideo] = useState<string | null>(null);
+
 
     if (isLoading) {
         return (
@@ -107,9 +106,21 @@ export default function CoursePreview({ params }: PreviewRouteProps) {
         <div className="min-h-screen bg-slate-50 pb-20">
             <Navigation />
 
-            {/* PREVIEW HERO */}
-            <div className="bg-[#0b1120] text-white pt-28 pb-12 overflow-hidden border-b border-slate-800">
-                <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-10 items-center">
+            {/* PREVIEW HERO — 3-layer cinematic banner */}
+            <div className="relative text-white pt-28 pb-12 overflow-hidden border-b border-slate-800">
+                {/* Layer 1: Course banner image */}
+                {info.imageUrl && (
+                    <img
+                        src={info.imageUrl}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover object-center opacity-30 blur-sm scale-105"
+                        loading="lazy"
+                    />
+                )}
+                {/* Layer 2: Dark gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#0b1120]/90 via-[#0b1120]/85 to-[#0b1120]" />
+                {/* Layer 3: Content */}
+                <div className="relative z-10 max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-10 items-center">
                     <div className="md:col-span-2 space-y-6">
                         <div className="flex items-center gap-3">
                             <span className="px-3 py-1 bg-indigo-500/20 text-indigo-300 text-xs font-bold rounded border border-indigo-500/30 uppercase tracking-widest">
@@ -181,12 +192,6 @@ export default function CoursePreview({ params }: PreviewRouteProps) {
                         <Layers className="w-6 h-6 text-indigo-600" /> Curriculum Setup
                     </h2>
 
-                    {/* Active Video Player (if a free video was clicked) */}
-                    {activeVideo && (
-                        <div className="mb-8 rounded-2xl overflow-hidden bg-black shadow-2xl border border-slate-200 aspect-video relative">
-                            <iframe src={activeVideo} className="w-full h-full absolute inset-0" allowFullScreen allow="autoplay; encrypted-media"></iframe>
-                        </div>
-                    )}
 
                     <div className="space-y-4">
                         {modules.map((mod: any, mIdx: number) => (
@@ -201,7 +206,7 @@ export default function CoursePreview({ params }: PreviewRouteProps) {
                                             <div className="flex items-center gap-4">
                                                 {/* Status Icon */}
                                                 {lesson.isPreview ? (
-                                                    <button onClick={() => setActiveVideo(lesson.videoUrl)}
+                                                    <button onClick={() => navigate(`/learn/${info.id}?preview=${lesson.id}`)}
                                                         className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer group-hover:scale-110">
                                                         <PlayCircle className="w-6 h-6" />
                                                     </button>

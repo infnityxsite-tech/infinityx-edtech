@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
-import { useLocation, useParams, Link } from "wouter";
+import { useState, useEffect, useMemo } from "react";
+import { useLocation, useParams, Link, useSearch } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
     Loader2, PlayCircle, CheckCircle2, Lock, ChevronLeft, MonitorPlay,
     LogOut, FileText, Download, BookOpen, HelpCircle, X, Check, XCircle,
-    LayoutDashboard, Menu, Maximize2, StickyNote, Save
+    LayoutDashboard, Menu, Maximize2, StickyNote, Save, Eye, ArrowRight
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -205,16 +205,20 @@ export default function LearningPortal() {
     const [, navigate] = useLocation();
     const params = useParams();
     const courseId = params.courseId;
+    const searchString = useSearch();
+    const searchParams = useMemo(() => new URLSearchParams(searchString), [searchString]);
+    const previewLessonId = searchParams.get("preview");
 
     const [studentId, setStudentId] = useState<string | null>(null);
     const [deviceId, setDeviceId] = useState<string | null>(null);
     const [activeLesson, setActiveLesson] = useState<any | null>(null);
     const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false); // default closed on mobile
     const [activeMaterial, setActiveMaterial] = useState<{ title: string; url: string } | null>(null);
     const [quizKey, setQuizKey] = useState(0); // force quiz reset
     const [noteContent, setNoteContent] = useState("");
     const [noteSaving, setNoteSaving] = useState(false);
+    const [isGuestPreview, setIsGuestPreview] = useState(false);
 
     // Helper to make Google Drive links embeddable
     const getEmbedUrl = (url: string) => {
@@ -224,20 +228,29 @@ export default function LearningPortal() {
         return url;
     };
 
+    // Detect screen width for responsive sidebar default
+    useEffect(() => {
+        const isDesktop = window.innerWidth >= 1024;
+        setSidebarOpen(isDesktop);
+    }, []);
+
+    // Auth: allow guest preview mode if no studentId
     useEffect(() => {
         const id = localStorage.getItem("studentId");
-        if (!id || isNaN(Number(id))) { 
-            localStorage.removeItem("studentId");
-            localStorage.removeItem("studentToken");
-            toast.error("Invalid or expired session. Please sign in again."); 
-            navigate("/login"); 
-            return; 
+        if (!id || isNaN(Number(id))) {
+            // Guest mode — allowed for preview
+            setIsGuestPreview(true);
+            setStudentId(null);
+            return;
         }
         setStudentId(id);
+        setIsGuestPreview(false);
         let did = localStorage.getItem("deviceId");
         if (!did) { did = `dev_${Math.random().toString(36).substr(2, 9)}`; localStorage.setItem("deviceId", did); }
         setDeviceId(did);
     }, [navigate]);
+
+
 
     // Data queries
     const { data: enrollment, isLoading: loadEnroll } = trpc.admin.getEnrollment.useQuery(
@@ -255,16 +268,16 @@ export default function LearningPortal() {
 
     const completedIds = (completedLessons as any[]).map((c: any) => c.lessonId);
 
-    // Device session verification
+    // Device session verification (only for authenticated users)
     const verifyMutation = trpc.admin.verifyDeviceSession.useMutation({
         onError: (err) => { toast.error(err.message || "Device limit reached. Max 2 devices per account."); navigate("/dashboard"); }
     });
 
     useEffect(() => {
-        if (studentId && deviceId && courseId) {
+        if (studentId && deviceId && courseId && !isGuestPreview) {
             verifyMutation.mutate({ userId: studentId, deviceId, deviceName: navigator.userAgent.substring(0, 60) });
         }
-    }, [studentId, deviceId]);
+    }, [studentId, deviceId, isGuestPreview]);
 
     // Mark complete
     const progressUtils = trpc.useUtils();
@@ -325,8 +338,28 @@ export default function LearningPortal() {
     };
 
     const isEnrolled = !!enrollment;
-    const isLoading = loadEnroll || loadCourse || loadMods;
-    const studentName = localStorage.getItem("studentName") || "Student";
+    const isLoading = loadCourse || loadMods || (studentId ? loadEnroll : false);
+    const studentName = localStorage.getItem("studentName") || (isGuestPreview ? "Guest" : "Student");
+
+    // Auto-select preview lesson from ?preview= query param
+    const { data: courseCompleteData } = trpc.admin.getCourseComplete.useQuery(
+        { id: courseId! },
+        { enabled: !!previewLessonId && !!courseId }
+    );
+
+    useEffect(() => {
+        if (!previewLessonId || !courseCompleteData?.modules || activeLesson) return;
+        for (const mod of courseCompleteData.modules) {
+            const found = mod.lessons?.find((l: any) =>
+                String(l.id) === String(previewLessonId) && l.isPreview
+            );
+            if (found) {
+                setActiveLesson(found);
+                setActiveModuleId(mod.id);
+                break;
+            }
+        }
+    }, [previewLessonId, courseCompleteData, activeLesson]);
 
     // Calculate progress
     const totalLessonsCount = (modules as any[]).reduce((acc, mod: any) => acc + (mod.lessonCount || 0), 0);
@@ -354,25 +387,30 @@ export default function LearningPortal() {
         <div className="min-h-screen flex flex-col bg-slate-50">
 
             {/* TOP NAV */}
-            <header className="h-16 bg-white border-b border-slate-200 px-4 flex items-center justify-between sticky top-0 z-50 shadow-sm">
-                <div className="flex items-center gap-3">
+            <header className="h-14 md:h-16 bg-white border-b border-slate-200 px-3 md:px-4 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+                <div className="flex items-center gap-2 md:gap-3 min-w-0">
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-500"
+                        className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-500 flex-shrink-0"
                     >
                         <Menu className="w-5 h-5" />
                     </button>
-                    <Link href="/dashboard"
-                        className="hidden sm:flex items-center gap-1.5 text-slate-500 hover:text-indigo-600 transition-colors text-sm"
+                    <Link href={isGuestPreview ? `/courses/recorded/${courseId}/preview` : "/dashboard"}
+                        className="hidden sm:flex items-center gap-1.5 text-slate-500 hover:text-indigo-600 transition-colors text-sm flex-shrink-0"
                     >
                         <MonitorPlay className="w-5 h-5" />
                         <span className="font-bold">InfinityX</span>
                     </Link>
-                    <div className="h-5 w-px bg-slate-200 hidden sm:block" />
-                    <h1 className="font-semibold text-sm text-slate-800 truncate max-w-[200px] sm:max-w-sm">{(course as any).title}</h1>
+                    <div className="h-5 w-px bg-slate-200 hidden sm:block flex-shrink-0" />
+                    <h1 className="font-semibold text-sm text-slate-800 truncate max-w-[140px] sm:max-w-sm">{(course as any).title}</h1>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+                    {isGuestPreview && (
+                        <span className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
+                            <Eye className="w-3.5 h-3.5" /> Preview Mode
+                        </span>
+                    )}
                     {isEnrolled && (
                         <div className="hidden sm:flex items-center gap-2 bg-slate-100 rounded-full px-3 py-1">
                             <div className="h-1.5 w-24 bg-slate-300 rounded-full overflow-hidden">
@@ -381,46 +419,86 @@ export default function LearningPortal() {
                             <span className="text-xs font-bold text-slate-600">{progressPct}%</span>
                         </div>
                     )}
-                    <span className="text-xs text-slate-500 hidden md:block">{studentName}</span>
-                    <Button variant="ghost" size="sm" onClick={handleLogout} className="text-slate-500 hover:text-red-600 hover:bg-red-50 text-xs">
-                        <LogOut className="w-4 h-4" />
-                    </Button>
+                    {!isGuestPreview && (
+                        <>
+                            <span className="text-xs text-slate-500 hidden md:block">{studentName}</span>
+                            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-slate-500 hover:text-red-600 hover:bg-red-50 text-xs">
+                                <LogOut className="w-4 h-4" />
+                            </Button>
+                        </>
+                    )}
+                    {isGuestPreview && (
+                        <Button
+                            size="sm"
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs rounded-full px-3 md:px-4"
+                            onClick={() => navigate(`/login?redirect=/learn/${courseId}`)}
+                        >
+                            Sign In
+                        </Button>
+                    )}
                 </div>
             </header>
 
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden relative">
 
-                {/* SIDEBAR */}
+                {/* SIDEBAR BACKDROP (mobile only) */}
                 {sidebarOpen && (
-                    <aside className="w-80 bg-white border-r border-slate-200 flex flex-col overflow-hidden flex-shrink-0">
-                        <div className="p-4 border-b border-slate-100 bg-slate-50">
+                    <div
+                        className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+                        onClick={() => setSidebarOpen(false)}
+                    />
+                )}
+
+                {/* SIDEBAR — mobile drawer + desktop static */}
+                <aside className={`
+                    fixed inset-y-0 left-0 z-40 w-[280px] sm:w-80 bg-white border-r border-slate-200 flex flex-col overflow-hidden flex-shrink-0
+                    transform transition-transform duration-300 ease-in-out
+                    lg:relative lg:translate-x-0 lg:z-auto
+                    ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                    ${!sidebarOpen ? 'lg:-translate-x-full lg:hidden' : ''}
+                `}>
+                    {/* Close button (mobile) */}
+                    <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                        <div>
                             <p className="font-bold text-slate-800 text-sm">Course Content</p>
                             <p className="text-xs text-slate-500 mt-0.5">{(modules as any[]).length} modules</p>
                         </div>
-                        <div className="flex-1 overflow-y-auto">
-                            {(modules as any[]).map((mod: any, idx: number) => (
-                                <ModuleAccordion
-                                    key={mod.id}
-                                    module={mod}
-                                    index={idx}
-                                    isEnrolled={isEnrolled}
-                                    completedIds={completedIds}
-                                    activeLessonId={activeLesson?.id}
-                                    onSelect={(lesson: any) => { setActiveLesson(lesson); setActiveModuleId(mod.id); setQuizKey(k => k + 1); }}
-                                    defaultOpen={idx === 0}
-                                    onToggle={() => setActiveModuleId(activeModuleId === mod.id ? null : mod.id)}
-                                />
-                            ))}
-                        </div>
-                    </aside>
-                )}
+                        <button
+                            onClick={() => setSidebarOpen(false)}
+                            className="lg:hidden p-1 rounded-lg hover:bg-slate-200 text-slate-400"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto">
+                        {(modules as any[]).map((mod: any, idx: number) => (
+                            <ModuleAccordion
+                                key={mod.id}
+                                module={mod}
+                                index={idx}
+                                isEnrolled={isEnrolled}
+                                completedIds={completedIds}
+                                activeLessonId={activeLesson?.id}
+                                onSelect={(lesson: any) => {
+                                    setActiveLesson(lesson);
+                                    setActiveModuleId(mod.id);
+                                    setQuizKey(k => k + 1);
+                                    // Auto-close sidebar on mobile
+                                    if (window.innerWidth < 1024) setSidebarOpen(false);
+                                }}
+                                defaultOpen={idx === 0}
+                                onToggle={() => setActiveModuleId(activeModuleId === mod.id ? null : mod.id)}
+                            />
+                        ))}
+                    </div>
+                </aside>
 
                 {/* MAIN CONTENT */}
-                <main className="flex-1 overflow-y-auto">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden">
                     {activeLesson ? (
                         <div>
-                            {/* Video Player */}
-                            <div className="bg-black relative" style={{ paddingTop: "56.25%" }}>
+                            {/* Video Player — full-width responsive */}
+                            <div className="bg-black relative w-full" style={{ paddingTop: "56.25%" }}>
                                 {activeLesson.videoUrl ? (
                                     <iframe
                                         src={getEmbedUrl(activeLesson.videoUrl)}
@@ -437,15 +515,37 @@ export default function LearningPortal() {
                             </div>
 
                             {/* Lesson info */}
-                            <div className="max-w-3xl mx-auto px-6 py-8">
-                                <div className="flex items-start justify-between gap-4 mb-6">
+                            <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+                                {/* Guest Preview CTA banner */}
+                                {isGuestPreview && (
+                                    <div className="mb-6 p-4 bg-gradient-to-r from-indigo-50 to-violet-50 border border-indigo-100 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <Eye className="w-5 h-5 text-indigo-600" />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-slate-900 text-sm">You're in Preview Mode</p>
+                                                <p className="text-xs text-slate-500">Sign in and enroll to access all lessons, quizzes, and materials.</p>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs rounded-full px-4 flex-shrink-0"
+                                            onClick={() => navigate(`/apply?courseId=${courseId}`)}
+                                        >
+                                            Enroll Now <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                                        </Button>
+                                    </div>
+                                )}
+
+                                <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
                                     <div>
-                                        <h2 className="text-2xl font-bold text-slate-900">{activeLesson.title}</h2>
+                                        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">{activeLesson.title}</h2>
                                         {activeLesson.duration && (
                                             <p className="text-slate-400 text-sm mt-1">Duration: {activeLesson.duration}</p>
                                         )}
                                     </div>
-                                    {isEnrolled && (
+                                    {isEnrolled && !isGuestPreview && (
                                         <Button
                                             onClick={() => markComplete.mutate({ userId: studentId!, lessonId: String(activeLesson.id) })}
                                             disabled={completedIds.includes(activeLesson.id) || completedIds.includes(String(activeLesson.id)) || markComplete.isPending}
@@ -480,8 +580,8 @@ export default function LearningPortal() {
                                     </div>
                                 )}
 
-                                {/* Quiz section */}
-                                {isEnrolled && (
+                                {/* Quiz section — enrolled only */}
+                                {isEnrolled && !isGuestPreview && (
                                     <QuizViewer
                                         key={quizKey}
                                         lessonId={activeLesson.id}
@@ -489,8 +589,8 @@ export default function LearningPortal() {
                                     />
                                 )}
 
-                                {/* My Notes Section */}
-                                {isEnrolled && (
+                                {/* My Notes Section — enrolled only */}
+                                {isEnrolled && !isGuestPreview && (
                                     <div className="mt-8 border-t border-slate-100 pt-6">
                                         <div className="flex items-center justify-between mb-3">
                                             <h4 className="font-bold text-slate-800 flex items-center gap-2">
@@ -521,13 +621,34 @@ export default function LearningPortal() {
                         </div>
                     ) : (
                         // Welcome / empty state
-                        <div className="flex-1 flex items-center justify-center p-8 min-h-full">
+                        <div className="flex-1 flex items-center justify-center p-6 sm:p-8 min-h-full">
                             <div className="text-center max-w-md">
-                                <div className="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <MonitorPlay className="w-12 h-12 text-indigo-500" />
+                                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <MonitorPlay className="w-10 h-10 sm:w-12 sm:h-12 text-indigo-500" />
                                 </div>
-                                <h2 className="text-2xl font-bold text-slate-800 mb-3">{(course as any).title}</h2>
-                                {isEnrolled ? (
+                                <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-3">{(course as any).title}</h2>
+                                {isGuestPreview ? (
+                                    <>
+                                        <p className="text-slate-500 mb-6">You're previewing this course. Select a free lesson from the sidebar, or enroll to access all content.</p>
+                                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                            <Button
+                                                size="lg"
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-8"
+                                                onClick={() => navigate(`/apply?courseId=${courseId}`)}
+                                            >
+                                                Enroll Now
+                                            </Button>
+                                            <Button
+                                                size="lg"
+                                                variant="outline"
+                                                className="rounded-full px-8"
+                                                onClick={() => navigate(`/login?redirect=/learn/${courseId}`)}
+                                            >
+                                                Sign In
+                                            </Button>
+                                        </div>
+                                    </>
+                                ) : isEnrolled ? (
                                     <p className="text-slate-500">Select a lesson from the sidebar to start learning.</p>
                                 ) : (
                                     <>
