@@ -497,17 +497,17 @@ export default function LearningPortal() {
                 <main className="flex-1 overflow-y-auto overflow-x-hidden">
                     {activeLesson ? (
                         <div>
-                            {/* Video Player — full-width responsive */}
-                            <div className="bg-black relative w-full" style={{ paddingTop: "56.25%" }}>
+                            {/* Video Player — mobile-optimized */}
+                            <div className="bg-black w-full overflow-hidden">
                                 {activeLesson.videoUrl ? (
                                     <iframe
                                         src={getEmbedUrl(activeLesson.videoUrl)}
-                                        className="absolute inset-0 w-full h-full border-0"
-                                        allow="autoplay; fullscreen"
+                                        className="w-full aspect-video border-0 block"
+                                        allow="autoplay; fullscreen; encrypted-media"
                                         allowFullScreen
                                     />
                                 ) : (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 gap-3">
+                                    <div className="w-full aspect-video flex flex-col items-center justify-center text-slate-500 gap-3">
                                         <MonitorPlay className="w-16 h-16 opacity-20" />
                                         <p className="text-sm">No video for this lesson.</p>
                                     </div>
