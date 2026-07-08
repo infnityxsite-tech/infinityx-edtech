@@ -272,7 +272,15 @@ export default function LearningPortal() {
 
     // Device session verification (only for authenticated users)
     const verifyMutation = trpc.admin.verifyDeviceSession.useMutation({
-        onError: () => { setDeviceBlocked(true); }
+        onError: (err: any) => {
+            const isForbidden = err?.data?.code === "FORBIDDEN" || 
+                               err?.message?.includes("DEVICE_LIMIT_REACHED");
+            if (isForbidden) {
+                setDeviceBlocked(true);
+            } else {
+                console.warn("Device verification error (non-blocking):", err?.message);
+            }
+        }
     });
 
     useEffect(() => {

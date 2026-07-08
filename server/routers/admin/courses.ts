@@ -1,4 +1,5 @@
 import { publicProcedure, protectedProcedure } from "../../_core/trpc";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as db from "../../db";
 
@@ -190,11 +191,25 @@ export const coursesEndpoints = {
     verifyDeviceSession: publicProcedure
         .input(z.object({ userId: z.string(), deviceId: z.string(), deviceName: z.string() }))
         .mutation(async ({ input }) => {
-            const allowed = await db.verifyAndRegisterDeviceSession(input.userId, input.deviceId, input.deviceName);
-            if (!allowed) {
-                throw new Error("Device limit reached. Maximum 2 active devices allowed.");
+            try {
+                const allowed = await db.verifyAndRegisterDeviceSession(input.userId, input.deviceId, input.deviceName);
+                if (!allowed) {
+                    throw new TRPCError({
+                        code: "FORBIDDEN",
+                        message: "DEVICE_LIMIT_REACHED",
+                    });
+                }
+                return { success: true };
+            } catch (err: any) {
+                // Re-throw if it's already a TRPC FORBIDDEN error (device limit)
+                if (err?.code === "FORBIDDEN" || err?.message === "DEVICE_LIMIT_REACHED") {
+                    throw err;
+                }
+                // Any other error is a server/DB issue — log it and return success
+                // to avoid falsely blocking students due to DB errors
+                console.error("Device verification DB error (allowing access):", err?.message || err);
+                return { success: true };
             }
-            return { success: true };
         }),
 
     // STUDENT NOTES

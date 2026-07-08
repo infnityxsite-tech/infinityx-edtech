@@ -52,14 +52,20 @@ export default function StudentLogin() {
                     deviceName: getDeviceName()
                 });
             } catch (deviceErr: any) {
-                // Device limit reached — sign out and block
-                await auth.signOut();
-                toast.error(t(
-                    "Device limit reached. This account is already registered on 2 devices. Please contact support.",
-                    "تم الوصول إلى الحد الأقصى للأجهزة. هذا الحساب مسجل بالفعل على جهازين. يرجى التواصل مع الدعم.",
-                    "Device limit reached. This account is already registered on 2 devices. Please contact support."
-                ));
-                return;
+                // Only block if it's a real device-limit FORBIDDEN error
+                const isForbidden = deviceErr?.data?.code === "FORBIDDEN" || 
+                                   deviceErr?.message?.includes("DEVICE_LIMIT_REACHED");
+                if (isForbidden) {
+                    await auth.signOut();
+                    toast.error(t(
+                        "Device limit reached. This account is already registered on 2 devices. Please contact support.",
+                        "تم الوصول إلى الحد الأقصى للأجهزة. هذا الحساب مسجل بالفعل على جهازين. يرجى التواصل مع الدعم.",
+                        "Device limit reached. This account is already registered on 2 devices. Please contact support."
+                    ));
+                    return;
+                }
+                // Non-device error — proceed anyway, don't block login
+                console.warn("Device verification error (non-blocking):", deviceErr?.message);
             }
 
             localStorage.setItem("studentToken", user.uid);
@@ -120,14 +126,20 @@ export default function StudentLogin() {
                     deviceName: getDeviceName()
                 });
             } catch (deviceErr: any) {
-                // Device limit reached — sign out and block
-                await auth.signOut();
-                toast.error(t(
-                    "Device limit reached. This account is already registered on 2 devices. Please contact support.",
-                    "تم الوصول إلى الحد الأقصى للأجهزة. هذا الحساب مسجل بالفعل على جهازين. يرجى التواصل مع الدعم.",
-                    "Device limit reached. This account is already registered on 2 devices. Please contact support."
-                ));
-                return;
+                // Only block if it's a real device-limit FORBIDDEN error
+                const isForbidden = deviceErr?.data?.code === "FORBIDDEN" || 
+                                   deviceErr?.message?.includes("DEVICE_LIMIT_REACHED");
+                if (isForbidden) {
+                    await auth.signOut();
+                    toast.error(t(
+                        "Device limit reached. This account is already registered on 2 devices. Please contact support.",
+                        "تم الوصول إلى الحد الأقصى للأجهزة. هذا الحساب مسجل بالفعل على جهازين. يرجى التواصل مع الدعم.",
+                        "Device limit reached. This account is already registered on 2 devices. Please contact support."
+                    ));
+                    return;
+                }
+                // Non-device error — proceed anyway, don't block login
+                console.warn("Device verification error (non-blocking):", deviceErr?.message);
             }
 
             localStorage.setItem("studentToken", user.uid);

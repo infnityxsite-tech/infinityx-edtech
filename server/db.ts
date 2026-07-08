@@ -754,10 +754,46 @@ export async function enrollUser(userId: string, courseId: string) {
   );
 }
 
+// ==============================
+// 🔐 DEVICE SESSION COLUMN DETECTION
+// ==============================
+// Production DB may have old column names (student_id, device_fingerprint)
+// or new names (user_id, device_id). Auto-detect on first call.
+let _deviceCols: { userId: string; deviceId: string } | null = null;
+
+async function getDeviceColumns(): Promise<{ userId: string; deviceId: string }> {
+  if (_deviceCols) return _deviceCols;
+  try {
+    const result = await queryOne<any>(
+      `SELECT column_name FROM information_schema.columns 
+       WHERE table_name = 'device_sessions' AND column_name = 'student_id'`
+    );
+    if (result) {
+      // Old column names
+      const hasOldDevice = await queryOne<any>(
+        `SELECT column_name FROM information_schema.columns 
+         WHERE table_name = 'device_sessions' AND column_name = 'device_fingerprint'`
+      );
+      _deviceCols = { 
+        userId: 'student_id', 
+        deviceId: hasOldDevice ? 'device_fingerprint' : 'device_id' 
+      };
+    } else {
+      _deviceCols = { userId: 'user_id', deviceId: 'device_id' };
+    }
+  } catch {
+    _deviceCols = { userId: 'user_id', deviceId: 'device_id' };
+  }
+  console.log(`📱 Device sessions using columns: ${_deviceCols.userId}, ${_deviceCols.deviceId}`);
+  return _deviceCols;
+}
+
 export async function verifyAndRegisterDeviceSession(userId: string, deviceId: string, deviceName: string): Promise<boolean> {
+  const cols = await getDeviceColumns();
+  
   // 1. Check if this device is already registered for this user
   const existing = await queryOne<any>(
-    `SELECT id FROM device_sessions WHERE user_id = $1 AND device_id = $2`,
+    `SELECT id FROM device_sessions WHERE ${cols.userId} = $1 AND ${cols.deviceId} = $2`,
     [userId, deviceId]
   );
 
@@ -771,11 +807,10 @@ export async function verifyAndRegisterDeviceSession(userId: string, deviceId: s
   }
 
   // 2. Atomic INSERT with count check — prevents race condition
-  //    Only inserts if current device count for this user is < 2
   const result = await queryOne<any>(
-    `INSERT INTO device_sessions (user_id, device_id, device_name)
+    `INSERT INTO device_sessions (${cols.userId}, ${cols.deviceId}, device_name)
      SELECT $1, $2, $3
-     WHERE (SELECT COUNT(*) FROM device_sessions WHERE user_id = $1) < 2
+     WHERE (SELECT COUNT(*) FROM device_sessions WHERE ${cols.userId} = $1) < 2
      RETURNING id`,
     [userId, deviceId, deviceName]
   );
@@ -785,6 +820,22 @@ export async function verifyAndRegisterDeviceSession(userId: string, deviceId: s
   }
 
   return false; // Denied: Already 2 devices registered
+}
+
+export async function clearUserDevices(userId: string) {
+  const cols = await getDeviceColumns();
+  await query(`DELETE FROM device_sessions WHERE ${cols.userId} = $1`, [userId]);
+}
+
+/** Get all registered devices for a user (for admin display) */
+export async function getUserDevices(userId: string) {
+  const cols = await getDeviceColumns();
+  return await queryMany<any>(
+    `SELECT id, ${cols.deviceId} as "deviceId", device_name as "deviceName", 
+            last_active as "lastActive", created_at as "createdAt"
+     FROM device_sessions WHERE ${cols.userId} = $1 ORDER BY last_active DESC`,
+    [userId]
+  );
 }
 
 // ==============================
@@ -879,20 +930,6 @@ export async function getEnrolledStudents(courseId: string) {
          WHERE e.course_id = $1`,
     [courseId]
   )
-}
-
-export async function clearUserDevices(userId: string) {
-  await query(`DELETE FROM device_sessions WHERE user_id = $1`, [userId]);
-}
-
-/** Get all registered devices for a user (for admin display) */
-export async function getUserDevices(userId: string) {
-  return await queryMany<any>(
-    `SELECT id, device_id as "deviceId", device_name as "deviceName", 
-            last_active as "lastActive", created_at as "createdAt"
-     FROM device_sessions WHERE user_id = $1 ORDER BY last_active DESC`,
-    [userId]
-  );
 }
 
 export async function deleteStudent(userId: string) {

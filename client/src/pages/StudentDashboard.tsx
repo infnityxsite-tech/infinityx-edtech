@@ -53,8 +53,16 @@ export default function StudentDashboard() {
         verifyDeviceMutation.mutate(
             { userId: studentId, deviceId: getDeviceId(), deviceName: getDeviceName() },
             {
-                onError: () => {
-                    setDeviceBlocked(true);
+                onError: (err: any) => {
+                    // Only block if server returned FORBIDDEN (actual device limit)
+                    const isForbidden = err?.data?.code === "FORBIDDEN" || 
+                                       err?.message?.includes("DEVICE_LIMIT_REACHED");
+                    if (isForbidden) {
+                        setDeviceBlocked(true);
+                    } else {
+                        // Generic server error — don't block, just log
+                        console.warn("Device verification error (non-blocking):", err?.message);
+                    }
                 }
             }
         );
