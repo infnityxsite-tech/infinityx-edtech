@@ -105,6 +105,9 @@ export default function Contact() {
                     <a href={siteInfo.whatsapp} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1 mt-1">
                       <MessageCircle className="w-3 h-3" /> {t("Chat on WhatsApp", "تحدث عبر الواتساب", "Chat on WhatsApp")}
                     </a>
+                    <a href="https://chat.whatsapp.com/EagO7iuBsfM1zlTQSKGLfL" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1 mt-1 ml-0 block">
+                      <MessageCircle className="w-3 h-3" /> {t("Join WhatsApp Community", "انضم لمجتمع الواتساب", "Join Community")}
+                    </a>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">

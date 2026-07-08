@@ -6,9 +6,13 @@ import { toast } from "sonner";
 import {
     Loader2, PlayCircle, CheckCircle2, Lock, ChevronLeft, MonitorPlay,
     LogOut, FileText, Download, BookOpen, HelpCircle, X, Check, XCircle,
-    LayoutDashboard, Menu, Maximize2, StickyNote, Save, Eye, ArrowRight
+    LayoutDashboard, Menu, Maximize2, StickyNote, Save, Eye, ArrowRight,
+    ShieldAlert, Mail, Phone
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import AIAssistantDrawer from "@/components/AIAssistantDrawer";
+import { getDeviceId, getDeviceName } from "@/lib/deviceId";
+import { auth } from "@/lib/firebase";
 
 // ─── QUIZ VIEWER ──────────────────────────────────────────────────────────────
 
@@ -210,7 +214,6 @@ export default function LearningPortal() {
     const previewLessonId = searchParams.get("preview");
 
     const [studentId, setStudentId] = useState<string | null>(null);
-    const [deviceId, setDeviceId] = useState<string | null>(null);
     const [activeLesson, setActiveLesson] = useState<any | null>(null);
     const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false); // default closed on mobile
@@ -219,6 +222,8 @@ export default function LearningPortal() {
     const [noteContent, setNoteContent] = useState("");
     const [noteSaving, setNoteSaving] = useState(false);
     const [isGuestPreview, setIsGuestPreview] = useState(false);
+    const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
+    const [deviceBlocked, setDeviceBlocked] = useState(false);
 
     // Helper to make Google Drive links embeddable
     const getEmbedUrl = (url: string) => {
@@ -245,9 +250,6 @@ export default function LearningPortal() {
         }
         setStudentId(id);
         setIsGuestPreview(false);
-        let did = localStorage.getItem("deviceId");
-        if (!did) { did = `dev_${Math.random().toString(36).substr(2, 9)}`; localStorage.setItem("deviceId", did); }
-        setDeviceId(did);
     }, [navigate]);
 
 
@@ -270,14 +272,14 @@ export default function LearningPortal() {
 
     // Device session verification (only for authenticated users)
     const verifyMutation = trpc.admin.verifyDeviceSession.useMutation({
-        onError: (err) => { toast.error(err.message || "Device limit reached. Max 2 devices per account."); navigate("/dashboard"); }
+        onError: () => { setDeviceBlocked(true); }
     });
 
     useEffect(() => {
-        if (studentId && deviceId && courseId && !isGuestPreview) {
-            verifyMutation.mutate({ userId: studentId, deviceId, deviceName: navigator.userAgent.substring(0, 60) });
+        if (studentId && courseId && !isGuestPreview) {
+            verifyMutation.mutate({ userId: studentId, deviceId: getDeviceId(), deviceName: getDeviceName() });
         }
-    }, [studentId, deviceId, isGuestPreview]);
+    }, [studentId, isGuestPreview]);
 
     // Mark complete
     const progressUtils = trpc.useUtils();
@@ -369,6 +371,44 @@ export default function LearningPortal() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
                 <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    if (deviceBlocked) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-red-950/20 to-slate-900 flex items-center justify-center p-6">
+                <div className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center space-y-6">
+                    <div className="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto">
+                        <ShieldAlert className="w-10 h-10 text-red-400" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-white mb-2">Device Limit Reached</h2>
+                        <h3 className="text-lg font-semibold text-white/60 mb-4" dir="rtl">تم الوصول إلى الحد الأقصى للأجهزة</h3>
+                        <p className="text-sm text-slate-300 leading-relaxed">
+                            This account is already registered on the maximum number of authorized devices (2).
+                            To access your account from this device, please contact support.
+                        </p>
+                        <p className="text-sm text-slate-400 leading-relaxed mt-2" dir="rtl">
+                            هذا الحساب مسجل بالفعل على الحد الأقصى من الأجهزة المصرح بها (2).
+                            للوصول من هذا الجهاز، يرجى التواصل مع الدعم.
+                        </p>
+                    </div>
+                    <div className="space-y-3 pt-2">
+                        <a href="mailto:support@infx.space"
+                            className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-colors font-medium text-sm">
+                            <Mail className="w-4 h-4" /> support@infx.space
+                        </a>
+                        <a href="https://wa.me/201100135225" target="_blank" rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20 transition-colors font-medium text-sm">
+                            <Phone className="w-4 h-4" /> WhatsApp Support
+                        </a>
+                        <button onClick={() => { auth.signOut(); localStorage.removeItem('studentId'); localStorage.removeItem('studentToken'); navigate('/login'); }}
+                            className="w-full py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-colors font-medium text-sm">
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -695,6 +735,29 @@ export default function LearningPortal() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* AI Assignment Assistant */}
+            {activeLesson && studentId && enrollment && (
+              <>
+                <button
+                  onClick={() => setAiDrawerOpen(true)}
+                  className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-110 transition-all flex items-center justify-center group"
+                  title="AI Assignment Assistant"
+                >
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-none stroke-current stroke-2 group-hover:rotate-12 transition-transform">
+                    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+                  </svg>
+                </button>
+                <AIAssistantDrawer
+                  open={aiDrawerOpen}
+                  onClose={() => setAiDrawerOpen(false)}
+                  lessonId={activeLesson.id}
+                  lessonTitle={activeLesson.title || "Lesson"}
+                  studentId={studentId}
+                  isEnrolled={!!enrollment}
+                />
+              </>
+            )}
         </div>
     );
 }

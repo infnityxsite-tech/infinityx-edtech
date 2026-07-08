@@ -595,3 +595,71 @@ CREATE TABLE IF NOT EXISTS consultation_leads (
 CREATE INDEX idx_consultation_leads_status ON consultation_leads(status);
 CREATE INDEX idx_consultation_leads_email ON consultation_leads(email);
 CREATE TRIGGER update_consultation_leads_updated_at BEFORE UPDATE ON consultation_leads FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==========================================
+-- AI AUTO-GRADING: COURSE ASSIGNMENTS
+-- ==========================================
+CREATE TABLE IF NOT EXISTS course_assignments (
+  id SERIAL PRIMARY KEY,
+  lesson_id INTEGER REFERENCES course_lessons(id) ON DELETE CASCADE,
+  instructions TEXT,                     -- Visible to student
+  rubric TEXT,                           -- Hidden from student, used by AI
+  max_score INTEGER DEFAULT 100,
+  allowed_file_types VARCHAR(255) DEFAULT '.txt,.py,.ipynb,.csv,.pdf',
+  max_file_size_mb INTEGER DEFAULT 5,
+  max_attempts INTEGER DEFAULT 3,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(lesson_id)
+);
+
+CREATE INDEX idx_course_assignments_lesson ON course_assignments(lesson_id);
+CREATE TRIGGER update_course_assignments_updated_at BEFORE UPDATE ON course_assignments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==========================================
+-- AI AUTO-GRADING: STUDENT SUBMISSIONS
+-- ==========================================
+CREATE TABLE IF NOT EXISTS student_submissions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  assignment_id INTEGER REFERENCES course_assignments(id) ON DELETE CASCADE,
+  file_url TEXT NOT NULL,                -- Storage path / S3 URL
+  file_name VARCHAR(255),
+  file_size_bytes INTEGER,
+  file_mime_type VARCHAR(100),
+  status VARCHAR(50) DEFAULT 'uploaded', -- uploaded, processing, completed, failed
+  attempt_number INTEGER DEFAULT 1,
+  submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_student_submissions_user ON student_submissions(user_id);
+CREATE INDEX idx_student_submissions_assignment ON student_submissions(assignment_id);
+CREATE INDEX idx_student_submissions_status ON student_submissions(status);
+CREATE TRIGGER update_student_submissions_updated_at BEFORE UPDATE ON student_submissions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==========================================
+-- AI AUTO-GRADING: GRADING RESULTS
+-- ==========================================
+CREATE TABLE IF NOT EXISTS grading_results (
+  id SERIAL PRIMARY KEY,
+  submission_id INTEGER REFERENCES student_submissions(id) ON DELETE CASCADE,
+  score INTEGER,
+  max_score INTEGER DEFAULT 100,
+  percentage DECIMAL(5, 2),
+  status VARCHAR(50) DEFAULT 'pass',     -- pass, fail, review
+  summary TEXT,
+  feedback_json JSONB,                   -- { strengths: [], weaknesses: [], suggestions: [], rubricBreakdown: [] }
+  provider_used VARCHAR(50),             -- groq, gemini, deepseek
+  model_used VARCHAR(100),
+  prompt_tokens INTEGER,
+  completion_tokens INTEGER,
+  evaluated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(submission_id)
+);
+
+CREATE INDEX idx_grading_results_submission ON grading_results(submission_id);
+CREATE TRIGGER update_grading_results_updated_at BEFORE UPDATE ON grading_results FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

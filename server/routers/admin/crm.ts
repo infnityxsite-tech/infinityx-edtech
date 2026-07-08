@@ -15,6 +15,12 @@ export const crmEndpoints = {
             return { success: true };
         }),
 
+    getUserDevices: protectedProcedure
+        .input(z.object({ userId: z.string() }))
+        .query(async ({ input }) => {
+            return await db.getUserDevices(input.userId);
+        }),
+
     deleteStudent: protectedProcedure
         .input(z.object({ userId: z.string() }))
         .mutation(async ({ input }) => {

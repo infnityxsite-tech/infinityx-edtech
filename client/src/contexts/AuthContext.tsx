@@ -6,7 +6,8 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../lib/firebase';
-import { registerDevice } from '../lib/firestore';
+// Device registration is now handled server-side via PostgreSQL (verifyDeviceSession tRPC)
+// Firestore registerDevice has been removed for security.
 
 export const isMockFirebase = () => {
     const key = import.meta.env.VITE_FIREBASE_API_KEY || "dummy_api_key";
@@ -19,10 +20,7 @@ export const signInWithGoogle = async () => {
         
         const mockEmail = `mock_${Math.random().toString(36).substring(7)}@test.com`;
         const numericUid = Math.floor(Math.random() * 90000000) + 10000000;
-        const mockUid = String(numericUid); // Keep it string, but numeric
-        
-        const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
-        localStorage.setItem('deviceId', deviceId);
+        const mockUid = String(numericUid);
         
         return { uid: mockUid, email: mockEmail, displayName: "Mock Local Student", emailVerified: true };
     }
@@ -31,6 +29,7 @@ export const signInWithGoogle = async () => {
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
 
+        // Sync to Firestore for legacy compatibility (optional — can be removed later)
         const studentRef = doc(db, 'students', user.email || '');
         const studentSnapshot = await getDoc(studentRef);
 
@@ -46,16 +45,8 @@ export const signInWithGoogle = async () => {
             });
         }
 
-        const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
-        localStorage.setItem('deviceId', deviceId);
-
-        const deviceAllowed = await registerDevice(user.email || '', deviceId);
-
-        if (!deviceAllowed) {
-            await auth.signOut();
-            throw new Error("Maximum device limit reached (2 devices).");
-        }
-
+        // Device limit is now checked SERVER-SIDE after syncGoogleStudent
+        // in StudentLogin.tsx via verifyDeviceSession tRPC call.
         return user;
     } catch (error: any) {
         console.error("Firebase Google Auth Error:", error.code, error.message);
@@ -94,8 +85,6 @@ export const loginUser = async (email: string, pass: string) => {
         
         const numericUid = Math.floor(Math.random() * 90000000) + 10000000;
         const mockUid = String(numericUid);
-        const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
-        localStorage.setItem('deviceId', deviceId);
         
         return { uid: mockUid, email: email, displayName: "Mock Local Student", emailVerified: true };
     }
@@ -108,15 +97,7 @@ export const loginUser = async (email: string, pass: string) => {
         throw new Error("Please verify your email before logging in.");
     }
 
-    const deviceId = localStorage.getItem('deviceId') || crypto.randomUUID();
-    localStorage.setItem('deviceId', deviceId);
-
-    const deviceAllowed = await registerDevice(user.email || '', deviceId);
-
-    if (!deviceAllowed) {
-        await auth.signOut();
-        throw new Error("Security Error: Maximum device limit reached (2 devices).");
-    }
-
+    // Device limit is now checked SERVER-SIDE after syncGoogleStudent
+    // in StudentLogin.tsx via verifyDeviceSession tRPC call.
     return user;
 };

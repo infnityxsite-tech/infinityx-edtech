@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import {
   Loader2, Plus, Edit2, Trash2, ChevronRight, ChevronLeft,
   BookOpen, Video, FileText, HelpCircle, Check, X,
-  MoreVertical, Copy, Download, Search
+  MoreVertical, Copy, Download, Search, ChevronUp, ChevronDown
 } from "lucide-react";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
@@ -27,7 +27,8 @@ import {
 interface Material { title: string; url: string }
 interface QuizOption { text: string }
 interface QuizBlock { id: string; question: string; options: QuizOption[]; correctIndex: number; orderIndex: number }
-interface LessonBlock { id: string; title: string; videoUrl: string; materials: Material[]; duration: string; isPreview: boolean; orderIndex: number; quizzes: QuizBlock[] }
+interface AssignmentBlock { enableGrading: boolean; instructions: string; rubric: string; maxScore: number; allowedFileTypes: string; maxFileSizeMb: number; maxAttempts: number; }
+interface LessonBlock { id: string; title: string; videoUrl: string; materials: Material[]; duration: string; isPreview: boolean; orderIndex: number; quizzes: QuizBlock[]; assignment: AssignmentBlock }
 interface ModuleBlock { id: string; title: string; orderIndex: number; lessons: LessonBlock[] }
 interface CourseFormData {
   title: string; description: string; imageUrl: string; duration: string; level: string;
@@ -43,8 +44,9 @@ const makeQuiz = (): QuizBlock => ({
   options: [{ text: "" }, { text: "" }, { text: "" }, { text: "" }],
   correctIndex: 0, orderIndex: 0
 });
+const makeAssignment = (): AssignmentBlock => ({ enableGrading: false, instructions: '', rubric: '', maxScore: 100, allowedFileTypes: '.txt,.py,.ipynb,.csv,.pdf', maxFileSizeMb: 5, maxAttempts: 3 });
 const makeLesson = (): LessonBlock => ({
-  id: uid(), title: "", videoUrl: "", materials: [], duration: "", isPreview: false, orderIndex: 0, quizzes: []
+  id: uid(), title: "", videoUrl: "", materials: [], duration: "", isPreview: false, orderIndex: 0, quizzes: [], assignment: makeAssignment()
 });
 const makeModule = (): ModuleBlock => ({
   id: uid(), title: "", orderIndex: 0, lessons: [makeLesson()]
@@ -339,8 +341,9 @@ function MaterialBuilder({ materials, onChange }: { materials: Material[]; onCha
 
 // ─── LESSON BUILDER ───────────────────────────────────────────────────────────
 
-function LessonBuilder({ lesson, index, onChange, onRemove, onDuplicate }: {
+function LessonBuilder({ lesson, index, onChange, onRemove, onDuplicate, onMoveUp, onMoveDown, isFirst, isLast }: {
   lesson: LessonBlock; index: number; onChange: (l: LessonBlock) => void; onRemove: () => void; onDuplicate: () => void;
+  onMoveUp?: () => void; onMoveDown?: () => void; isFirst?: boolean; isLast?: boolean;
 }) {
   const [expanded, setExpanded] = useState(index === 0);
   const set = (patch: Partial<LessonBlock>) => onChange({ ...lesson, ...patch });
@@ -366,6 +369,17 @@ function LessonBuilder({ lesson, index, onChange, onRemove, onDuplicate }: {
           <span className="font-medium text-slate-800 text-sm">{lesson.title || `Lesson ${index + 1}`}</span>
         </div>
         <div className="flex items-center gap-1">
+          {/* Move Up/Down controls */}
+          <button type="button" onClick={e => { e.stopPropagation(); onMoveUp?.(); }} disabled={isFirst}
+            className={`p-1 rounded transition-colors ${isFirst ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+            aria-label="Move lesson up" title="Move up">
+            <ChevronUp className="w-3.5 h-3.5" />
+          </button>
+          <button type="button" onClick={e => { e.stopPropagation(); onMoveDown?.(); }} disabled={isLast}
+            className={`p-1 rounded transition-colors ${isLast ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+            aria-label="Move lesson down" title="Move down">
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
           {/* More actions menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -437,6 +451,57 @@ function LessonBuilder({ lesson, index, onChange, onRemove, onDuplicate }: {
             </label>
           </div>
           <QuizBuilder quizzes={lesson.quizzes} onChange={quizzes => set({ quizzes })} />
+
+          {/* AI Grading Assignment Config */}
+          <div className="border-t border-slate-100 pt-3 mt-3">
+            <div className="flex items-center gap-2 mb-2">
+              <input type="checkbox" id={`grading-${lesson.id}`} checked={lesson.assignment.enableGrading}
+                onChange={e => set({ assignment: { ...lesson.assignment, enableGrading: e.target.checked } })}
+                className="accent-violet-600" />
+              <label htmlFor={`grading-${lesson.id}`} className="text-xs text-slate-600 font-medium cursor-pointer flex items-center gap-1.5">
+                🤖 Enable AI Auto-Grading for this lesson
+              </label>
+            </div>
+            {lesson.assignment.enableGrading && (
+              <div className="space-y-3 ml-5 mt-2 bg-violet-50/50 border border-violet-100 rounded-xl p-4">
+                <div>
+                  <Label className="text-xs text-violet-700 font-semibold">Submission Instructions (visible to students)</Label>
+                  <textarea value={lesson.assignment.instructions}
+                    onChange={e => set({ assignment: { ...lesson.assignment, instructions: e.target.value } })}
+                    placeholder="Describe what students should submit. e.g. 'Upload your Python notebook with the completed analysis...'"
+                    className="w-full mt-1 p-2.5 text-sm border border-violet-200 rounded-lg bg-white focus:ring-2 focus:ring-violet-300 focus:border-violet-400 resize-y min-h-[60px]" />
+                </div>
+                <div>
+                  <Label className="text-xs text-violet-700 font-semibold">AI Grading Rubric (hidden from students — used by AI evaluator)</Label>
+                  <textarea value={lesson.assignment.rubric}
+                    onChange={e => set({ assignment: { ...lesson.assignment, rubric: e.target.value } })}
+                    placeholder="Define the grading criteria. e.g. 'Check if the student used pandas for data loading (20pts), matplotlib for visualization (30pts)...'"
+                    className="w-full mt-1 p-2.5 text-sm border border-violet-200 rounded-lg bg-white focus:ring-2 focus:ring-violet-300 focus:border-violet-400 resize-y min-h-[80px]" />
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <Label className="text-xs text-violet-700 font-semibold">Max Score</Label>
+                    <Input type="number" value={lesson.assignment.maxScore}
+                      onChange={e => set({ assignment: { ...lesson.assignment, maxScore: Number(e.target.value) || 100 } })}
+                      className="mt-1 h-8 text-sm" />
+                  </div>
+                  <div className="flex-1">
+                    <Label className="text-xs text-violet-700 font-semibold">Max Attempts</Label>
+                    <Input type="number" value={lesson.assignment.maxAttempts}
+                      onChange={e => set({ assignment: { ...lesson.assignment, maxAttempts: Number(e.target.value) || 3 } })}
+                      className="mt-1 h-8 text-sm" />
+                  </div>
+                  <div className="flex-1">
+                    <Label className="text-xs text-violet-700 font-semibold">Allowed Types</Label>
+                    <Input value={lesson.assignment.allowedFileTypes}
+                      onChange={e => set({ assignment: { ...lesson.assignment, allowedFileTypes: e.target.value } })}
+                      placeholder=".txt,.py,.ipynb"
+                      className="mt-1 h-8 text-sm" />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -445,9 +510,10 @@ function LessonBuilder({ lesson, index, onChange, onRemove, onDuplicate }: {
 
 // ─── MODULE BUILDER ───────────────────────────────────────────────────────────
 
-function ModuleBuilder({ module, index, onChange, onRemove, onDuplicate, onImportLesson }: {
+function ModuleBuilder({ module, index, onChange, onRemove, onDuplicate, onImportLesson, onMoveUp, onMoveDown, isFirst, isLast }: {
   module: ModuleBlock; index: number; onChange: (m: ModuleBlock) => void; onRemove: () => void;
   onDuplicate: () => void; onImportLesson: () => void;
+  onMoveUp?: () => void; onMoveDown?: () => void; isFirst?: boolean; isLast?: boolean;
 }) {
   const [deleteTarget, setDeleteTarget] = useState<{ type: string; title: string; id: string; childSummary?: string } | null>(null);
   const set = (patch: Partial<ModuleBlock>) => onChange({ ...module, ...patch });
@@ -491,6 +557,19 @@ function ModuleBuilder({ module, index, onChange, onRemove, onDuplicate, onImpor
   return (
     <div className="bg-gradient-to-br from-slate-50 to-indigo-50/30 border border-slate-200 rounded-2xl p-5 space-y-4 group/module">
       <div className="flex items-center gap-3">
+        {/* Module Move Up/Down */}
+        <div className="flex flex-col gap-0.5 flex-shrink-0">
+          <button type="button" onClick={onMoveUp} disabled={isFirst}
+            className={`p-0.5 rounded transition-colors ${isFirst ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+            aria-label="Move module up" title="Move module up">
+            <ChevronUp className="w-4 h-4" />
+          </button>
+          <button type="button" onClick={onMoveDown} disabled={isLast}
+            className={`p-0.5 rounded transition-colors ${isLast ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+            aria-label="Move module down" title="Move module down">
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        </div>
         <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-sm flex items-center justify-center flex-shrink-0">
           M{index + 1}
         </div>
@@ -533,6 +612,20 @@ function ModuleBuilder({ module, index, onChange, onRemove, onDuplicate, onImpor
             onChange={(l) => updateLesson(lesson.id, l)}
             onRemove={() => requestDeleteLesson(lesson)}
             onDuplicate={() => duplicateLesson(lesson)}
+            onMoveUp={() => {
+              if (li === 0) return;
+              const arr = [...module.lessons];
+              [arr[li - 1], arr[li]] = [arr[li], arr[li - 1]];
+              set({ lessons: arr });
+            }}
+            onMoveDown={() => {
+              if (li === module.lessons.length - 1) return;
+              const arr = [...module.lessons];
+              [arr[li], arr[li + 1]] = [arr[li + 1], arr[li]];
+              set({ lessons: arr });
+            }}
+            isFirst={li === 0}
+            isLast={li === module.lessons.length - 1}
           />
         ))}
         <div className="flex gap-2">
@@ -620,6 +713,15 @@ export default function CoursesManager() {
             duration: l.duration || "",
             isPreview: l.isPreview || false,
             orderIndex: l.orderIndex || 0,
+            assignment: l.assignment && l.assignment.isActive ? {
+              enableGrading: true,
+              instructions: l.assignment.instructions || '',
+              rubric: l.assignment.rubric || '',
+              maxScore: l.assignment.maxScore || 100,
+              allowedFileTypes: l.assignment.allowedFileTypes || '.txt,.py,.ipynb,.csv,.pdf',
+              maxFileSizeMb: l.assignment.maxFileSizeMb || 5,
+              maxAttempts: l.assignment.maxAttempts || 3,
+            } : makeAssignment(),
             quizzes: (l.quizzes || []).flatMap((q: any) =>
               Array.isArray(q.questions) ? q.questions.map((questionData: any, qi: number) => {
                 const opts = [
@@ -665,6 +767,15 @@ export default function CoursesManager() {
       duration: l.duration.trim() || undefined,
       isPreview: l.isPreview,
       orderIndex: li,
+      assignment: l.assignment.enableGrading ? {
+        enableGrading: true,
+        instructions: l.assignment.instructions,
+        rubric: l.assignment.rubric,
+        maxScore: l.assignment.maxScore,
+        allowedFileTypes: l.assignment.allowedFileTypes,
+        maxFileSizeMb: l.assignment.maxFileSizeMb,
+        maxAttempts: l.assignment.maxAttempts,
+      } : undefined,
       quizzes: l.quizzes.length > 0 ? [{
         title: `${l.title.trim() || 'Lesson'} Quiz`,
         questions: l.quizzes.filter(q => q.question.trim()).map(q => {
@@ -1077,6 +1188,24 @@ export default function CoursesManager() {
                         }
                         setImportLessonTarget({ moduleId: mod.id });
                       }}
+                      onMoveUp={() => {
+                        if (mi === 0) return;
+                        setModules(prev => {
+                          const arr = [...prev];
+                          [arr[mi - 1], arr[mi]] = [arr[mi], arr[mi - 1]];
+                          return arr;
+                        });
+                      }}
+                      onMoveDown={() => {
+                        if (mi === modules.length - 1) return;
+                        setModules(prev => {
+                          const arr = [...prev];
+                          [arr[mi], arr[mi + 1]] = [arr[mi + 1], arr[mi]];
+                          return arr;
+                        });
+                      }}
+                      isFirst={mi === 0}
+                      isLast={mi === modules.length - 1}
                     />
                   ))}
                 </div>

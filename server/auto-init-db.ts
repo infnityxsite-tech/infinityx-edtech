@@ -696,6 +696,121 @@ async function runMigrations(): Promise<void> {
       console.error('❌ Migration 12 error:', error);
     }
   }
+
+  try {
+    // Migration 13: AI Auto-Grading Tables
+    await query(`
+      CREATE TABLE IF NOT EXISTS course_assignments (
+        id SERIAL PRIMARY KEY,
+        lesson_id INTEGER REFERENCES course_lessons(id) ON DELETE CASCADE,
+        instructions TEXT,
+        rubric TEXT,
+        max_score INTEGER DEFAULT 100,
+        allowed_file_types VARCHAR(255) DEFAULT '.txt,.py,.ipynb,.csv,.pdf',
+        max_file_size_mb INTEGER DEFAULT 5,
+        max_attempts INTEGER DEFAULT 3,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(lesson_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS student_submissions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        assignment_id INTEGER REFERENCES course_assignments(id) ON DELETE CASCADE,
+        file_url TEXT NOT NULL,
+        file_name VARCHAR(255),
+        file_size_bytes INTEGER,
+        file_mime_type VARCHAR(100),
+        status VARCHAR(50) DEFAULT 'uploaded',
+        attempt_number INTEGER DEFAULT 1,
+        submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS grading_results (
+        id SERIAL PRIMARY KEY,
+        submission_id INTEGER REFERENCES student_submissions(id) ON DELETE CASCADE,
+        score INTEGER,
+        max_score INTEGER DEFAULT 100,
+        percentage DECIMAL(5, 2),
+        status VARCHAR(50) DEFAULT 'pass',
+        summary TEXT,
+        feedback_json JSONB,
+        provider_used VARCHAR(50),
+        model_used VARCHAR(100),
+        prompt_tokens INTEGER,
+        completion_tokens INTEGER,
+        evaluated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(submission_id)
+      );
+    `);
+
+    // Add indexes
+    try { await query(`CREATE INDEX IF NOT EXISTS idx_course_assignments_lesson ON course_assignments(lesson_id)`); } catch(e) {}
+    try { await query(`CREATE INDEX IF NOT EXISTS idx_student_submissions_user ON student_submissions(user_id)`); } catch(e) {}
+    try { await query(`CREATE INDEX IF NOT EXISTS idx_student_submissions_assignment ON student_submissions(assignment_id)`); } catch(e) {}
+    try { await query(`CREATE INDEX IF NOT EXISTS idx_student_submissions_status ON student_submissions(status)`); } catch(e) {}
+    try { await query(`CREATE INDEX IF NOT EXISTS idx_grading_results_submission ON grading_results(submission_id)`); } catch(e) {}
+
+    // Add triggers
+    const gradingTables = ['course_assignments', 'student_submissions', 'grading_results'];
+    for (const table of gradingTables) {
+      try {
+        const result = await queryOne(`SELECT 1 FROM pg_trigger WHERE tgname = 'update_${table}_updated_at'`);
+        if (!result) {
+          await query(`CREATE TRIGGER update_${table}_updated_at BEFORE UPDATE ON ${table} FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()`);
+        }
+      } catch (e) {}
+    }
+
+    console.log('✅ Migration 13: Added AI auto-grading tables');
+  } catch (error: any) {
+    if (error.code === '42P07' || error.message?.includes('already exists')) {
+      console.log('ℹ️  Migration 13: AI auto-grading tables already exist');
+    } else {
+      console.error('❌ Migration 13 error:', error);
+    }
+  }
+
+  try {
+    // Migration 14: Device Sessions — ensure columns match query expectations
+    // Some production databases may have been created with different column names.
+    // This migration safely renames columns if they exist with old names,
+    // and adds an index for fast device lookups.
+
+    // Check if old column names exist and rename them
+    await query(`
+      DO $$
+      BEGIN
+        -- Rename student_id → user_id if old name exists
+        IF EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'device_sessions' AND column_name = 'student_id') 
+           AND NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'device_sessions' AND column_name = 'user_id') THEN
+          ALTER TABLE device_sessions RENAME COLUMN student_id TO user_id;
+        END IF;
+
+        -- Rename device_fingerprint → device_id if old name exists
+        IF EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'device_sessions' AND column_name = 'device_fingerprint') 
+           AND NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'device_sessions' AND column_name = 'device_id') THEN
+          ALTER TABLE device_sessions RENAME COLUMN device_fingerprint TO device_id;
+        END IF;
+      END $$;
+    `);
+
+    // Ensure index exists for fast user device lookups
+    await query(`CREATE INDEX IF NOT EXISTS idx_device_sessions_user_id ON device_sessions(user_id)`);
+
+    console.log('✅ Migration 14: Device sessions columns and indexes verified');
+  } catch (error: any) {
+    console.error('❌ Migration 14 error:', error);
+  }
 }
 
 /**

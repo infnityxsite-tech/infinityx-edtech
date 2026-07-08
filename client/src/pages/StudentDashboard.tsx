@@ -4,12 +4,13 @@ import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, BookOpen, GraduationCap, Trophy, ChevronRight, Sparkles, Award, Calendar, Link as LinkIcon } from "lucide-react";
+import { Loader2, BookOpen, GraduationCap, Trophy, ChevronRight, Sparkles, Award, Calendar, Link as LinkIcon, ShieldAlert, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { EnrolledCourseCard } from "@/components/Cards/EnrolledCourseCard";
 import { AvailableCourseCard } from "@/components/Cards/AvailableCourseCard";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { getDeviceId, getDeviceName } from "@/lib/deviceId";
 
 export default function StudentDashboard() {
     const [, navigate] = useLocation();
@@ -17,6 +18,9 @@ export default function StudentDashboard() {
     const [studentName, setStudentName] = useState<string>("");
     const [studentEmail, setStudentEmail] = useState<string | null>(null);
     const [authLoading, setAuthLoading] = useState(true);
+    const [deviceBlocked, setDeviceBlocked] = useState(false);
+
+    const verifyDeviceMutation = trpc.admin.verifyDeviceSession.useMutation();
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -42,6 +46,19 @@ export default function StudentDashboard() {
 
         return () => unsubscribe();
     }, [navigate]);
+
+    // Device verification — runs after studentId is resolved
+    useEffect(() => {
+        if (!studentId) return;
+        verifyDeviceMutation.mutate(
+            { userId: studentId, deviceId: getDeviceId(), deviceName: getDeviceName() },
+            {
+                onError: () => {
+                    setDeviceBlocked(true);
+                }
+            }
+        );
+    }, [studentId]);
 
     const { data: enrolledCourses = [], isLoading: isLoadingEnrolled } = trpc.admin.getEnrolledCourses.useQuery(
         { userId: studentId! },
@@ -77,6 +94,43 @@ export default function StudentDashboard() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-50">
             <Navigation />
+
+            {/* Device Limit Blocking Screen */}
+            {deviceBlocked && (
+                <div className="fixed inset-0 z-[100] bg-gradient-to-br from-slate-900 via-red-950/20 to-slate-900 flex items-center justify-center p-6">
+                    <div className="max-w-md w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center space-y-6">
+                        <div className="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto">
+                            <ShieldAlert className="w-10 h-10 text-red-400" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-2">Device Limit Reached</h2>
+                            <h3 className="text-lg font-semibold text-white/60 mb-4" dir="rtl">تم الوصول إلى الحد الأقصى للأجهزة</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">
+                                This account is already registered on the maximum number of authorized devices (2).
+                                To access your account from this device, please contact support to reset your devices.
+                            </p>
+                            <p className="text-sm text-slate-400 leading-relaxed mt-2" dir="rtl">
+                                هذا الحساب مسجل بالفعل على الحد الأقصى من الأجهزة المصرح بها (2).
+                                للوصول من هذا الجهاز، يرجى التواصل مع الدعم لإعادة تعيين أجهزتك.
+                            </p>
+                        </div>
+                        <div className="space-y-3 pt-2">
+                            <a href="mailto:support@infx.space"
+                                className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-colors font-medium text-sm">
+                                <Mail className="w-4 h-4" /> support@infx.space
+                            </a>
+                            <a href="https://wa.me/201100135225" target="_blank" rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500/20 transition-colors font-medium text-sm">
+                                <Phone className="w-4 h-4" /> WhatsApp Support
+                            </a>
+                            <button onClick={() => { auth.signOut(); localStorage.removeItem('studentId'); localStorage.removeItem('studentToken'); navigate('/login'); }}
+                                className="w-full py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-colors font-medium text-sm">
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <main className="pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6">
 

@@ -2,8 +2,10 @@ import "dotenv/config";
 import express from "express";
 import uploadRouter from "../routes/upload";
 import certificatesRouter from "../routes/certificates";
+import submissionsRouter from "../routes/submissions";
 import { createServer } from "http";
 import net from "net";
+import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -60,7 +62,9 @@ async function startServer() {
   // File upload route
   app.use("/api/upload", uploadRouter);
   app.use("/api/certificates", certificatesRouter);
+  app.use("/api/submissions", submissionsRouter);
   app.use("/uploads", express.static("uploads"));
+  app.use("/submissions", express.static(path.join("public", "submissions")));
 
   // tRPC API
   app.use(

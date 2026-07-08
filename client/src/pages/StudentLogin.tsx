@@ -10,6 +10,8 @@ import { loginUser, registerUser, signInWithGoogle } from "@/contexts/AuthContex
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { trpc } from "@/lib/trpc";
+import { getDeviceId, getDeviceName } from "@/lib/deviceId";
+import { auth } from "@/lib/firebase";
 
 export default function StudentLogin() {
     const [, navigate] = useLocation();
@@ -26,6 +28,7 @@ export default function StudentLogin() {
     const [isGoogleLoading, setGoogleLoading] = useState(false);
 
     const syncGoogleMutation = trpc.admin.syncGoogleStudent.useMutation();
+    const verifyDeviceMutation = trpc.admin.verifyDeviceSession.useMutation();
 
     const handleGoogleLogin = async () => {
         setGoogleLoading(true);
@@ -39,14 +42,34 @@ export default function StudentLogin() {
                 email: user.email || ""
             });
 
+            const studentDbId = String(pgResponse.user.id);
+
+            // SERVER-SIDE device verification (PostgreSQL)
+            try {
+                await verifyDeviceMutation.mutateAsync({
+                    userId: studentDbId,
+                    deviceId: getDeviceId(),
+                    deviceName: getDeviceName()
+                });
+            } catch (deviceErr: any) {
+                // Device limit reached — sign out and block
+                await auth.signOut();
+                toast.error(t(
+                    "Device limit reached. This account is already registered on 2 devices. Please contact support.",
+                    "تم الوصول إلى الحد الأقصى للأجهزة. هذا الحساب مسجل بالفعل على جهازين. يرجى التواصل مع الدعم.",
+                    "Device limit reached. This account is already registered on 2 devices. Please contact support."
+                ));
+                return;
+            }
+
             localStorage.setItem("studentToken", user.uid);
-            localStorage.setItem("studentId", String(pgResponse.user.id));
+            localStorage.setItem("studentId", studentDbId);
             localStorage.setItem("studentName", user.displayName || "");
-            toast.success("Logged in with Google successfully! 🎉");
+            toast.success(t("Logged in with Google successfully! 🎉", "تم تسجيل الدخول بنجاح! 🎉", "Logged in with Google successfully! 🎉"));
             navigate("/dashboard");
         } catch (error: any) {
-            if (error.message?.includes("device limit reached") || error.message?.includes("Maximum device limit")) {
-                toast.error("Security Error: Maximum device limit reached (2 devices).");
+            if (error.message?.includes("device limit reached") || error.message?.includes("Maximum device limit") || error.message?.includes("Device limit")) {
+                // Already handled above
             } else {
                 toast.error(error.message || "Failed to sign in with Google.");
             }
@@ -75,7 +98,7 @@ export default function StudentLogin() {
     };
 
     const handleLoginSubmit = async () => {
-        if (!email || !password) return toast.error("Please fill in all fields");
+        if (!email || !password) return toast.error(t("Please fill in all fields", "يرجى ملء جميع الحقول", "Please fill in all fields"));
         setIsLoading(true);
         try {
             const user = await loginUser(email, password);
@@ -87,18 +110,38 @@ export default function StudentLogin() {
                 email: user.email || email
             });
 
+            const studentDbId = String(pgResponse.user.id);
+
+            // SERVER-SIDE device verification (PostgreSQL)
+            try {
+                await verifyDeviceMutation.mutateAsync({
+                    userId: studentDbId,
+                    deviceId: getDeviceId(),
+                    deviceName: getDeviceName()
+                });
+            } catch (deviceErr: any) {
+                // Device limit reached — sign out and block
+                await auth.signOut();
+                toast.error(t(
+                    "Device limit reached. This account is already registered on 2 devices. Please contact support.",
+                    "تم الوصول إلى الحد الأقصى للأجهزة. هذا الحساب مسجل بالفعل على جهازين. يرجى التواصل مع الدعم.",
+                    "Device limit reached. This account is already registered on 2 devices. Please contact support."
+                ));
+                return;
+            }
+
             localStorage.setItem("studentToken", user.uid);
-            localStorage.setItem("studentId", String(pgResponse.user.id));
+            localStorage.setItem("studentId", studentDbId);
             localStorage.setItem("studentName", user.displayName || "");
-            toast.success("Welcome back! 🎉");
+            toast.success(t("Welcome back! 🎉", "مرحباً بعودتك! 🎉", "Welcome back! 🎉"));
             navigate("/dashboard");
         } catch (error: any) {
             if (error.message?.includes("email before logging")) {
-                toast.error("Please verify your email inbox/spam folder before logging in.");
-            } else if (error.message?.includes("device limit reached") || error.message?.includes("Maximum device limit")) {
-                toast.error("Security Error: Maximum device limit reached (2 devices).");
+                toast.error(t("Please verify your email inbox/spam folder before logging in.", "يرجى التحقق من بريدك الإلكتروني قبل تسجيل الدخول.", "Please verify your email inbox/spam folder before logging in."));
+            } else if (error.message?.includes("device limit reached") || error.message?.includes("Maximum device limit") || error.message?.includes("Device limit")) {
+                // Already handled above
             } else {
-                toast.error(error.message || "Invalid credentials.");
+                toast.error(error.message || t("Invalid credentials.", "بيانات غير صحيحة.", "Invalid credentials."));
             }
         } finally {
             setIsLoading(false);

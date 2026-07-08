@@ -305,7 +305,12 @@ export async function getCourseComplete(id: string) {
         const questionsRaw = await queryMany<any>(`SELECT question, option_a as "optionA", option_b as "optionB", option_c as "optionC", option_d as "optionD", correct_answer as "correctAnswer" FROM quiz_questions WHERE quiz_id = $1`, [quiz.id]);
         return { ...quiz, questions: questionsRaw };
       }));
-      return { ...les, materials: materialsRaw, quizzes };
+      const assignment = await queryOne<any>(
+        `SELECT id, instructions, rubric, max_score as "maxScore", allowed_file_types as "allowedFileTypes",
+                max_file_size_mb as "maxFileSizeMb", max_attempts as "maxAttempts", is_active as "isActive"
+         FROM course_assignments WHERE lesson_id = $1`, [les.id]
+      );
+      return { ...les, materials: materialsRaw, quizzes, assignment: assignment || null };
     }));
     return { ...mod, lessons };
   }));
@@ -401,6 +406,26 @@ export async function updateCourseComplete(courseId: string, courseData: any, mo
               [quizId, q.question, q.optionA, q.optionB, q.optionC, q.optionD, q.correctAnswer]
             );
           }
+        }
+
+        // Assignment: upsert if grading is enabled, delete if disabled
+        if (lesson.assignment && lesson.assignment.enableGrading) {
+          await client.query(
+            `INSERT INTO course_assignments (lesson_id, instructions, rubric, max_score, allowed_file_types, max_file_size_mb, max_attempts, is_active)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+             ON CONFLICT (lesson_id)
+             DO UPDATE SET instructions = $2, rubric = $3, max_score = $4, allowed_file_types = $5,
+                           max_file_size_mb = $6, max_attempts = $7, is_active = true, updated_at = CURRENT_TIMESTAMP`,
+            [lessonId, lesson.assignment.instructions || '', lesson.assignment.rubric || '',
+             lesson.assignment.maxScore || 100, lesson.assignment.allowedFileTypes || '.txt,.py,.ipynb,.csv,.pdf',
+             lesson.assignment.maxFileSizeMb || 5, lesson.assignment.maxAttempts || 3]
+          );
+        } else {
+          // If grading was disabled, deactivate (don't delete to preserve submission history)
+          await client.query(
+            `UPDATE course_assignments SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE lesson_id = $1`,
+            [lessonId]
+          );
         }
       }
 
@@ -616,6 +641,101 @@ export async function getLessonMaterials(lessonId: string) {
 }
 
 // ==============================
+// 🤖 AI AUTO-GRADING OPERATIONS
+// ==============================
+
+export async function upsertAssignment(lessonId: string, data: {
+  instructions?: string; rubric?: string; maxScore?: number;
+  allowedFileTypes?: string; maxFileSizeMb?: number; maxAttempts?: number; isActive?: boolean;
+}) {
+  return await queryOne<any>(
+    `INSERT INTO course_assignments (lesson_id, instructions, rubric, max_score, allowed_file_types, max_file_size_mb, max_attempts, is_active)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     ON CONFLICT (lesson_id)
+     DO UPDATE SET instructions = $2, rubric = $3, max_score = $4, allowed_file_types = $5,
+                   max_file_size_mb = $6, max_attempts = $7, is_active = $8, updated_at = CURRENT_TIMESTAMP
+     RETURNING id, lesson_id as "lessonId", instructions, rubric, max_score as "maxScore",
+               allowed_file_types as "allowedFileTypes", max_file_size_mb as "maxFileSizeMb",
+               max_attempts as "maxAttempts", is_active as "isActive"`,
+    [lessonId, data.instructions || '', data.rubric || '', data.maxScore || 100,
+     data.allowedFileTypes || '.txt,.py,.ipynb,.csv,.pdf', data.maxFileSizeMb || 5,
+     data.maxAttempts || 3, data.isActive !== false]
+  );
+}
+
+export async function getAssignmentByLessonId(lessonId: string) {
+  return await queryOne<any>(
+    `SELECT id, lesson_id as "lessonId", instructions, rubric, max_score as "maxScore",
+            allowed_file_types as "allowedFileTypes", max_file_size_mb as "maxFileSizeMb",
+            max_attempts as "maxAttempts", is_active as "isActive"
+     FROM course_assignments WHERE lesson_id = $1`,
+    [lessonId]
+  );
+}
+
+export async function deleteAssignment(lessonId: string) {
+  await query(`DELETE FROM course_assignments WHERE lesson_id = $1`, [lessonId]);
+}
+
+export async function createSubmission(data: {
+  userId: string; assignmentId: number; fileUrl: string;
+  fileName?: string; fileSizeBytes?: number; fileMimeType?: string; attemptNumber?: number;
+}) {
+  return await queryOne<any>(
+    `INSERT INTO student_submissions (user_id, assignment_id, file_url, file_name, file_size_bytes, file_mime_type, attempt_number)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING id, user_id as "userId", assignment_id as "assignmentId", file_url as "fileUrl",
+               file_name as "fileName", status, attempt_number as "attemptNumber", submitted_at as "submittedAt"`,
+    [data.userId, data.assignmentId, data.fileUrl, data.fileName || '', data.fileSizeBytes || 0, data.fileMimeType || '', data.attemptNumber || 1]
+  );
+}
+
+export async function updateSubmissionStatus(submissionId: number, status: string) {
+  await query(`UPDATE student_submissions SET status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`, [submissionId, status]);
+}
+
+export async function getSubmissionsByAssignment(userId: string, assignmentId: number) {
+  return await queryMany<any>(
+    `SELECT s.id, s.file_url as "fileUrl", s.file_name as "fileName", s.status, s.attempt_number as "attemptNumber",
+            s.submitted_at as "submittedAt",
+            g.score, g.max_score as "maxScore", g.percentage, g.summary, g.feedback_json as "feedbackJson",
+            g.provider_used as "providerUsed", g.status as "gradingStatus"
+     FROM student_submissions s
+     LEFT JOIN grading_results g ON g.submission_id = s.id
+     WHERE s.user_id = $1 AND s.assignment_id = $2
+     ORDER BY s.submitted_at DESC`,
+    [userId, assignmentId]
+  );
+}
+
+export async function getSubmissionCount(userId: string, assignmentId: number) {
+  const result = await queryOne<any>(
+    `SELECT COUNT(*)::int as count FROM student_submissions WHERE user_id = $1 AND assignment_id = $2`,
+    [userId, assignmentId]
+  );
+  return result?.count || 0;
+}
+
+export async function createGradingResult(data: {
+  submissionId: number; score: number; maxScore: number; percentage: number;
+  status: string; summary: string; feedbackJson: any; providerUsed: string;
+  modelUsed: string; promptTokens?: number; completionTokens?: number;
+}) {
+  return await queryOne<any>(
+    `INSERT INTO grading_results (submission_id, score, max_score, percentage, status, summary, feedback_json, provider_used, model_used, prompt_tokens, completion_tokens)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+     ON CONFLICT (submission_id)
+     DO UPDATE SET score = $2, max_score = $3, percentage = $4, status = $5, summary = $6,
+                   feedback_json = $7, provider_used = $8, model_used = $9,
+                   prompt_tokens = $10, completion_tokens = $11, updated_at = CURRENT_TIMESTAMP
+     RETURNING id, submission_id as "submissionId", score, percentage, summary, feedback_json as "feedbackJson"`,
+    [data.submissionId, data.score, data.maxScore, data.percentage, data.status,
+     data.summary, JSON.stringify(data.feedbackJson), data.providerUsed, data.modelUsed,
+     data.promptTokens || 0, data.completionTokens || 0]
+  );
+}
+
+// ==============================
 // 🔒 ENROLLMENTS & SESSIONS 
 // ==============================
 
@@ -635,30 +755,36 @@ export async function enrollUser(userId: string, courseId: string) {
 }
 
 export async function verifyAndRegisterDeviceSession(userId: string, deviceId: string, deviceName: string): Promise<boolean> {
-  const sessions = await queryMany<any>(
-    `SELECT id, device_fingerprint as "deviceId" FROM device_sessions WHERE student_id = $1 ORDER BY last_active DESC`,
-    [userId]
+  // 1. Check if this device is already registered for this user
+  const existing = await queryOne<any>(
+    `SELECT id FROM device_sessions WHERE user_id = $1 AND device_id = $2`,
+    [userId, deviceId]
   );
 
-  const existingSession = sessions.find(s => s.deviceId === deviceId);
-
-  if (existingSession) {
+  if (existing) {
+    // Device recognized — update last_active
     await query(
-      `UPDATE device_sessions SET last_active = CURRENT_TIMESTAMP WHERE id = $1`,
-      [existingSession.id]
+      `UPDATE device_sessions SET last_active = CURRENT_TIMESTAMP, device_name = $2 WHERE id = $1`,
+      [existing.id, deviceName]
     );
     return true;
   }
 
-  if (sessions.length >= 2) {
-    return false; // Denied: Already 2 devices registered
+  // 2. Atomic INSERT with count check — prevents race condition
+  //    Only inserts if current device count for this user is < 2
+  const result = await queryOne<any>(
+    `INSERT INTO device_sessions (user_id, device_id, device_name)
+     SELECT $1, $2, $3
+     WHERE (SELECT COUNT(*) FROM device_sessions WHERE user_id = $1) < 2
+     RETURNING id`,
+    [userId, deviceId, deviceName]
+  );
+
+  if (result) {
+    return true; // Successfully registered
   }
 
-  await query(
-    `INSERT INTO device_sessions (student_id, device_fingerprint) VALUES ($1, $2)`,
-    [userId, deviceId]
-  );
-  return true;
+  return false; // Denied: Already 2 devices registered
 }
 
 // ==============================
@@ -756,7 +882,17 @@ export async function getEnrolledStudents(courseId: string) {
 }
 
 export async function clearUserDevices(userId: string) {
-  await query(`DELETE FROM device_sessions WHERE student_id = $1`, [userId]);
+  await query(`DELETE FROM device_sessions WHERE user_id = $1`, [userId]);
+}
+
+/** Get all registered devices for a user (for admin display) */
+export async function getUserDevices(userId: string) {
+  return await queryMany<any>(
+    `SELECT id, device_id as "deviceId", device_name as "deviceName", 
+            last_active as "lastActive", created_at as "createdAt"
+     FROM device_sessions WHERE user_id = $1 ORDER BY last_active DESC`,
+    [userId]
+  );
 }
 
 export async function deleteStudent(userId: string) {

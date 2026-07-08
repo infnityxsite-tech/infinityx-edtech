@@ -249,4 +249,52 @@ export const coursesEndpoints = {
             await db.deleteCertificate(input.id);
             return { success: true };
         }),
+
+    // ─── AI AUTO-GRADING ─────────────────────────────────────────────────
+    upsertAssignment: protectedProcedure
+        .input(z.object({
+            lessonId: z.union([z.string(), z.number()]).transform(String),
+            instructions: z.string().optional(),
+            rubric: z.string().optional(),
+            maxScore: z.number().optional(),
+            allowedFileTypes: z.string().optional(),
+            maxFileSizeMb: z.number().optional(),
+            maxAttempts: z.number().optional(),
+            isActive: z.boolean().optional(),
+        }))
+        .mutation(async ({ input }) => {
+            const { lessonId, ...data } = input;
+            return await db.upsertAssignment(lessonId, data);
+        }),
+
+    getAssignment: publicProcedure
+        .input(z.object({ lessonId: z.union([z.string(), z.number()]).transform(String) }))
+        .query(async ({ input }) => {
+            return await db.getAssignmentByLessonId(input.lessonId);
+        }),
+
+    deleteAssignment: protectedProcedure
+        .input(z.object({ lessonId: z.union([z.string(), z.number()]).transform(String) }))
+        .mutation(async ({ input }) => {
+            await db.deleteAssignment(input.lessonId);
+            return { success: true };
+        }),
+
+    getSubmissions: publicProcedure
+        .input(z.object({
+            userId: z.string(),
+            assignmentId: z.number(),
+        }))
+        .query(async ({ input }) => {
+            return await db.getSubmissionsByAssignment(input.userId, input.assignmentId);
+        }),
+
+    getSubmissionCount: publicProcedure
+        .input(z.object({
+            userId: z.string(),
+            assignmentId: z.number(),
+        }))
+        .query(async ({ input }) => {
+            return await db.getSubmissionCount(input.userId, input.assignmentId);
+        }),
 };
