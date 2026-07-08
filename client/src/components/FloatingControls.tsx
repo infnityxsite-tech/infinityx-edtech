@@ -17,7 +17,7 @@ export default function FloatingControls() {
   return (
     <div className={`fixed z-[55] animate-fade-in group ${
       isLearningPage
-        ? "bottom-5 right-5 z-[25]"
+        ? "bottom-5 left-5 z-[25]"
         : "top-24 right-5"
     }`}>
       <button

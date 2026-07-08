@@ -285,7 +285,23 @@ export const coursesEndpoints = {
     getAssignment: publicProcedure
         .input(z.object({ lessonId: z.union([z.string(), z.number()]).transform(String) }))
         .query(async ({ input }) => {
-            return await db.getAssignmentByLessonId(input.lessonId);
+            let assignment = await db.getAssignmentByLessonId(input.lessonId);
+            
+            // If no explicit assignment exists, auto-create a default one 
+            // so students can always upload lesson materials for AI grading
+            if (!assignment) {
+                assignment = await db.upsertAssignment(input.lessonId, {
+                    instructions: "Please upload your assignment or relevant materials for this lesson. The AI Assistant will review and evaluate your work based on the core concepts covered in the lesson.",
+                    rubric: "1. Completeness: Does the submission address all aspects of the lesson?\n2. Correctness: Are the concepts applied correctly?\n3. Clarity: Is the work clear and well-presented?",
+                    maxScore: 100,
+                    allowedFileTypes: ".txt,.pdf,.py,.ipynb,.csv,.docx,.doc,.jpg,.jpeg,.png",
+                    maxFileSizeMb: 15,
+                    maxAttempts: 10,
+                    isActive: true
+                });
+            }
+            
+            return assignment;
         }),
 
     deleteAssignment: protectedProcedure
