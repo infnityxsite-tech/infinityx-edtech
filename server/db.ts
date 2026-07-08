@@ -788,6 +788,36 @@ async function getDeviceColumns(): Promise<{ userId: string; deviceId: string }>
   return _deviceCols;
 }
 
+export async function registerUserDevice(userId: string, deviceId: string, deviceName: string) {
+  try {
+    const { userId: userCol, deviceId: deviceCol } = await getDeviceColumns();
+    try {
+      await query(
+        `INSERT INTO device_sessions (${userCol}, ${deviceCol}, device_name) 
+         VALUES ($1, $2, $3)
+         ON CONFLICT (${userCol}, ${deviceCol}) 
+         DO UPDATE SET last_active = CURRENT_TIMESTAMP`,
+        [userId, deviceId, deviceName]
+      );
+    } catch (err: any) {
+      // Fallback: If device_name column does not exist (legacy DB schema), retry without it
+      if (err.code === '42703') {
+        await query(
+          `INSERT INTO device_sessions (${userCol}, ${deviceCol}) 
+           VALUES ($1, $2)
+           ON CONFLICT (${userCol}, ${deviceCol}) 
+           DO UPDATE SET last_active = CURRENT_TIMESTAMP`,
+          [userId, deviceId]
+        );
+      } else {
+        throw err;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to register user device:", err);
+  }
+}
+
 export async function verifyAndRegisterDeviceSession(userId: string, deviceId: string, deviceName: string): Promise<boolean> {
   const cols = await getDeviceColumns();
   
@@ -798,22 +828,48 @@ export async function verifyAndRegisterDeviceSession(userId: string, deviceId: s
   );
 
   if (existing) {
-    // Device recognized — update last_active
-    await query(
-      `UPDATE device_sessions SET last_active = CURRENT_TIMESTAMP, device_name = $2 WHERE id = $1`,
-      [existing.id, deviceName]
-    );
+    try {
+      // Device recognized — update last_active
+      await query(
+        `UPDATE device_sessions SET last_active = CURRENT_TIMESTAMP, device_name = $2 WHERE id = $1`,
+        [existing.id, deviceName]
+      );
+    } catch (err: any) {
+      if (err.code === '42703') {
+        await query(
+          `UPDATE device_sessions SET last_active = CURRENT_TIMESTAMP WHERE id = $1`,
+          [existing.id]
+        );
+      } else {
+        throw err;
+      }
+    }
     return true;
   }
 
   // 2. Atomic INSERT with count check — prevents race condition
-  const result = await queryOne<any>(
-    `INSERT INTO device_sessions (${cols.userId}, ${cols.deviceId}, device_name)
-     SELECT $1, $2, $3
-     WHERE (SELECT COUNT(*) FROM device_sessions WHERE ${cols.userId} = $1) < 2
-     RETURNING id`,
-    [userId, deviceId, deviceName]
-  );
+  let result;
+  try {
+    result = await queryOne<any>(
+      `INSERT INTO device_sessions (${cols.userId}, ${cols.deviceId}, device_name)
+       SELECT $1, $2, $3
+       WHERE (SELECT COUNT(*) FROM device_sessions WHERE ${cols.userId} = $1) < 2
+       RETURNING id`,
+      [userId, deviceId, deviceName]
+    );
+  } catch (err: any) {
+    if (err.code === '42703') {
+      result = await queryOne<any>(
+        `INSERT INTO device_sessions (${cols.userId}, ${cols.deviceId})
+         SELECT $1, $2
+         WHERE (SELECT COUNT(*) FROM device_sessions WHERE ${cols.userId} = $1) < 2
+         RETURNING id`,
+        [userId, deviceId]
+      );
+    } else {
+      throw err;
+    }
+  }
 
   if (result) {
     return true; // Successfully registered

@@ -702,7 +702,7 @@ async function runMigrations(): Promise<void> {
     await query(`
       CREATE TABLE IF NOT EXISTS course_assignments (
         id SERIAL PRIMARY KEY,
-        lesson_id INTEGER REFERENCES course_lessons(id) ON DELETE CASCADE,
+        lesson_id INTEGER,
         instructions TEXT,
         rubric TEXT,
         max_score INTEGER DEFAULT 100,
@@ -714,6 +714,9 @@ async function runMigrations(): Promise<void> {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(lesson_id)
       );
+
+      -- Drop the foreign key constraint if it exists to allow assigning legacy lessons (from 'lessons' table)
+      ALTER TABLE course_assignments DROP CONSTRAINT IF EXISTS course_assignments_lesson_id_fkey;
 
       CREATE TABLE IF NOT EXISTS student_submissions (
         id SERIAL PRIMARY KEY,
