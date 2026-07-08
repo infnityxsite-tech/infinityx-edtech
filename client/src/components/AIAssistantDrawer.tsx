@@ -247,7 +247,7 @@ export default function AIAssistantDrawer({
 
   if (!open) return null;
 
-  const hasAssignment = assignment && assignment.isActive;
+  const hasAssignment = !!assignment;
   const latestSubmission = (submissions as SubmissionResult[])?.[0];
   const isProcessing = latestSubmission?.status === "processing" || latestSubmission?.status === "uploaded";
   const submissionCount = (submissions as SubmissionResult[]).length;
