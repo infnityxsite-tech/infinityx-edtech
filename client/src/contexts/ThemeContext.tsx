@@ -16,27 +16,19 @@ const ThemeContext = createContext<ThemeContextType>({
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { data: defaults } = trpc.admin.getSiteDefaults.useQuery(undefined, { staleTime: 1000 * 60 * 5 });
 
-  // Read the cached server default (populated by this provider on first API response)
-  const cachedServerDefault = (localStorage.getItem("infx-site-default-theme") as Theme) || "light";
-
   const [theme, setTheme] = useState<Theme>(() => {
-    // Only trust localStorage if the user manually chose a theme
+    // Light mode is ALWAYS the default.
+    // Only use dark if user EXPLICITLY toggled the theme switch.
     if (localStorage.getItem("infx-theme-manual") === "true") {
-      return (localStorage.getItem("infx-theme") as Theme) || cachedServerDefault;
+      return (localStorage.getItem("infx-theme") as Theme) === "dark" ? "dark" : "light";
     }
-    // Use cached server default — matches what the FOUC script already applied
-    return cachedServerDefault;
+    return "light";
   });
 
-  // Cache server default and apply if user hasn't manually chosen a preference
+  // Cache server default for admin reference, but never auto-switch the active theme
   useEffect(() => {
     if (defaults?.defaultTheme) {
-      // Always cache for the FOUC script on next page load
       localStorage.setItem("infx-site-default-theme", defaults.defaultTheme);
-      // Only change the active theme if user hasn't manually chosen
-      if (localStorage.getItem("infx-theme-manual") !== "true") {
-        setTheme(defaults.defaultTheme as Theme);
-      }
     }
   }, [defaults]);
 

@@ -54,15 +54,15 @@
 <body>
   <script>
     // FOUC prevention: apply theme before React hydration
+    // Light mode is ALWAYS the default. Only use dark if user explicitly chose it.
     (function(){
-      var serverDefault = localStorage.getItem('infx-site-default-theme') || 'light';
-      var m = localStorage.getItem('infx-theme-manual') === 'true';
-      var t = m ? (localStorage.getItem('infx-theme') || serverDefault) : serverDefault;
+      var manual = localStorage.getItem('infx-theme-manual') === 'true';
+      var saved  = localStorage.getItem('infx-theme');
+      var t = (manual && saved === 'dark') ? 'dark' : 'light';
       var r = document.documentElement;
       r.setAttribute('data-theme', t);
       r.classList.add(t === 'light' ? 'light-mode' : 'dark-mode');
-      if (t === 'dark') r.style.backgroundColor = '#020617';
-      else r.style.backgroundColor = '#f0f4f8';
+      r.style.backgroundColor = t === 'dark' ? '#020617' : '#f0f4f8';
     })();
   </script>
   <div id="root"></div>
