@@ -9,7 +9,7 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: "dark",
+  theme: "light",
   toggleTheme: () => {},
 });
 
@@ -17,7 +17,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { data: defaults } = trpc.admin.getSiteDefaults.useQuery(undefined, { staleTime: 1000 * 60 * 5 });
 
   // Read the cached server default (populated by this provider on first API response)
-  const cachedServerDefault = (localStorage.getItem("infx-site-default-theme") as Theme) || "dark";
+  const cachedServerDefault = (localStorage.getItem("infx-site-default-theme") as Theme) || "light";
 
   const [theme, setTheme] = useState<Theme>(() => {
     // Only trust localStorage if the user manually chose a theme

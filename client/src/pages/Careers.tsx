@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
 import {
@@ -18,7 +19,11 @@ import {
   ArrowRight, 
   Sparkles,
   Globe,
-  Zap
+  Zap,
+  ChevronDown,
+  DollarSign,
+  FileText,
+  ListChecks
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import Footer from "@/components/Footer";
@@ -31,6 +36,11 @@ export default function Careers() {
   const { t, isRTL } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
+  const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
+
+  const toggleExpand = (jobId: string) => {
+    setExpandedJobId(prev => prev === jobId ? null : jobId);
+  };
 
   return (
     <div className={`min-h-screen font-sans ${isLight ? 'bg-[#f0f4f8] text-slate-900' : 'bg-[#0a0e1a] text-white'}`} dir={isRTL ? 'rtl' : 'ltr'}>
@@ -143,51 +153,147 @@ export default function Careers() {
           </div>
         ) : (
           <div className="space-y-4">
-            {jobs.map((job: any) => (
-              <div 
-                key={job.id}
-                className={`group backdrop-blur-xl rounded-xl border p-6 hover:border-emerald-500/30 hover:shadow-lg transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6 ${isLight ? 'bg-white border-slate-200 hover:shadow-emerald-900/5' : 'bg-[#0d1225]/80 border-white/[0.06] hover:shadow-emerald-900/10'}`}
-              >
-                <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                        <h3 className={`text-xl font-bold group-hover:text-emerald-400 transition-colors ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                            {job.title}
-                        </h3>
-                        {job.type && (
-                            <Badge variant="secondary" className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-normal">
-                                {job.type}
-                            </Badge>
+            {jobs.map((job: any) => {
+              const isExpanded = expandedJobId === job.id;
+              return (
+                <div 
+                  key={job.id}
+                  className={`group backdrop-blur-xl rounded-xl border transition-all duration-300 ${isLight ? 'bg-white border-slate-200 hover:shadow-emerald-900/5' : 'bg-[#0d1225]/80 border-white/[0.06] hover:shadow-emerald-900/10'} ${isExpanded ? 'border-emerald-500/40 shadow-lg' : 'hover:border-emerald-500/30 hover:shadow-lg'}`}
+                >
+                  {/* Collapsed header – always visible */}
+                  <div 
+                    className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 cursor-pointer select-none"
+                    onClick={() => toggleExpand(job.id)}
+                  >
+                    <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                            <h3 className={`text-xl font-bold group-hover:text-emerald-400 transition-colors ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                                {job.title}
+                            </h3>
+                            {job.type && (
+                                <Badge variant="secondary" className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-normal">
+                                    {job.type}
+                                </Badge>
+                            )}
+                        </div>
+                        
+                        {/* Show truncated description only when collapsed */}
+                        {!isExpanded && (
+                          <p className="text-slate-400 text-sm line-clamp-2 mb-4 max-w-2xl">
+                              {job.description || t("Join our team to help build the next generation of education technology.", "انضم لفريقنا لبناء الجيل القادم من تكنولوجيا التعليم.", "Join our team.")}
+                          </p>
                         )}
-                    </div>
-                    
-                    <p className="text-slate-400 text-sm line-clamp-2 mb-4 max-w-2xl">
-                        {job.description || "Join our team to help build the next generation of education technology."}
-                    </p>
 
-                    <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
-                        {job.location && (
+                        <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
+                            {job.location && (
+                                <div className="flex items-center gap-1.5">
+                                    <MapPin className="w-3.5 h-3.5" />
+                                    {job.location}
+                                </div>
+                            )}
                             <div className="flex items-center gap-1.5">
-                                <MapPin className="w-3.5 h-3.5" />
-                                {job.location}
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>{t("Posted Recently", "نُشر مؤخراً", "Posted Recently")}</span>
                             </div>
-                        )}
-                        <div className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>{t("Posted Recently", "نُشر مؤخراً", "Posted Recently")}</span>
                         </div>
                     </div>
-                </div>
 
-                <div className="shrink-0">
-                    <Button 
-                        onClick={() => navigate(`/careers/apply`)}
-                        className="w-full md:w-auto bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-medium px-6 py-2 h-10 transition-colors rounded-xl shadow-lg shadow-emerald-500/20"
-                    >
-                        {t("Apply Now", "قدّم الآن", "Apply Now")}
-                    </Button>
+                    <div className="shrink-0 flex items-center gap-3">
+                        <Button 
+                            variant="ghost"
+                            size="sm"
+                            className={`rounded-lg transition-colors ${isLight ? 'text-slate-500 hover:text-emerald-600 hover:bg-emerald-50' : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-900/20'}`}
+                            onClick={(e) => { e.stopPropagation(); toggleExpand(job.id); }}
+                        >
+                            {isExpanded ? t("Hide Details", "إخفاء التفاصيل", "Hide Details") : t("View Details", "عرض التفاصيل", "View Details")}
+                            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isRTL ? 'mr-1.5' : 'ml-1.5'} ${isExpanded ? 'rotate-180' : ''}`} />
+                        </Button>
+                    </div>
+                  </div>
+
+                  {/* Expanded details */}
+                  <div 
+                    className="overflow-hidden transition-all duration-400 ease-in-out"
+                    style={{
+                      maxHeight: isExpanded ? '2000px' : '0px',
+                      opacity: isExpanded ? 1 : 0,
+                    }}
+                  >
+                    <div className={`px-6 pb-6 space-y-6 border-t ${isLight ? 'border-slate-100' : 'border-white/[0.06]'}`}>
+                      <div className="pt-6 space-y-6">
+                        {/* Job Description */}
+                        {job.description && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isLight ? 'bg-blue-50 text-blue-600' : 'bg-blue-500/10 text-blue-400'}`}>
+                                <FileText className="w-4 h-4" />
+                              </div>
+                              <h4 className={`font-semibold text-base ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                                {t("Job Description", "وصف الوظيفة", "Job Description")}
+                              </h4>
+                            </div>
+                            <p className={`text-sm leading-relaxed whitespace-pre-line ${isRTL ? 'mr-10' : 'ml-10'} ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                              {job.description}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Requirements */}
+                        {job.requirements && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isLight ? 'bg-purple-50 text-purple-600' : 'bg-purple-500/10 text-purple-400'}`}>
+                                <ListChecks className="w-4 h-4" />
+                              </div>
+                              <h4 className={`font-semibold text-base ${isLight ? 'text-slate-800' : 'text-white'}`}>
+                                {t("Requirements", "المتطلبات", "Requirements")}
+                              </h4>
+                            </div>
+                            <p className={`text-sm leading-relaxed whitespace-pre-line ${isRTL ? 'mr-10' : 'ml-10'} ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                              {job.requirements}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Salary & Job Type */}
+                        {(job.salary || job.type) && (
+                          <div className={`flex flex-wrap gap-4 ${isRTL ? 'mr-10' : 'ml-10'}`}>
+                            {job.salary && (
+                              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium ${isLight ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                                <DollarSign className="w-4 h-4" />
+                                {job.salary}
+                              </div>
+                            )}
+                            {job.type && (
+                              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium ${isLight ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
+                                <Briefcase className="w-4 h-4" />
+                                {job.type}
+                              </div>
+                            )}
+                            {job.location && (
+                              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium ${isLight ? 'bg-slate-100 text-slate-700 border border-slate-200' : 'bg-white/[0.04] text-slate-400 border border-white/[0.06]'}`}>
+                                <MapPin className="w-4 h-4" />
+                                {job.location}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Apply button inside expanded area */}
+                        <div className={`${isRTL ? 'mr-10' : 'ml-10'} pt-2`}>
+                          <Button 
+                              onClick={() => navigate(`/careers/apply`)}
+                              className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-medium px-8 py-2 h-11 transition-colors rounded-xl shadow-lg shadow-emerald-500/20"
+                          >
+                              {t("Apply Now", "قدّم الآن", "Apply Now")} <ArrowRight className={`w-4 h-4 ${isRTL ? 'mr-2 rotate-180' : 'ml-2'}`} />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

@@ -7,7 +7,7 @@ export const settingsEndpoints = {
         const settings = await db.getSiteSettings();
         return {
             defaultLanguage: settings.default_language || 'en',
-            defaultTheme: settings.default_theme || 'dark',
+            defaultTheme: settings.default_theme || 'light',
         };
     }),
 
