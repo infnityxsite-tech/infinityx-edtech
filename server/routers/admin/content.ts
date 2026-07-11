@@ -155,6 +155,12 @@ export const contentEndpoints = {
 
     // BLOGS
     getBlogPosts: publicProcedure.query(() => db.getBlogPosts()),
+    getBlogPostById: publicProcedure
+        .input(z.object({ id: z.union([z.string(), z.number()]).transform(String) }))
+        .query(async ({ input }) => {
+            const post = await db.getBlogPostById(input.id);
+            return post ?? null;
+        }),
     createBlogPost: protectedProcedure
         .input(z.object({
             title: z.string(), author: z.string(), content: z.string(),

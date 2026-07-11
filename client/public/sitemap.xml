@@ -82,14 +82,6 @@
   </url>
 
   <!-- ═══ PROGRAMS ═══ -->
-  <!--
-    NOTE: /programs/:category pages (space, ai, software, security) are intentionally
-    excluded from the sitemap. These pages are thin landing pages that render a
-    "No Programs Yet" state when no DB programs exist for that category, making them
-    low-quality/unpredictable content. They are accessible via internal navigation
-    from /programs but should not be submitted to Google as standalone indexable pages
-    until they consistently contain substantial unique content.
-  -->
   <url>
     <loc>https://infx.space/programs</loc>
     <changefreq>weekly</changefreq>
@@ -97,6 +89,18 @@
   </url>
 
   <!-- ═══ BLOG ═══ -->
+  <!--
+    NOTE: Individual /blog/:id URLs are intentionally NOT hardcoded here.
+    Hardcoding blog IDs risks listing deleted posts as valid URLs, and
+    cannot stay in sync with database additions without a build step.
+
+    The dynamic sitemap at https://infx.space/sitemap.xml (served by the
+    Express backend at runtime) queries the blog_posts table and includes
+    all actual existing post IDs with accurate lastmod dates.
+
+    If you are submitting to Google Search Console, submit the dynamic
+    sitemap URL rather than this static file.
+  -->
   <url>
     <loc>https://infx.space/blog</loc>
     <changefreq>daily</changefreq>
