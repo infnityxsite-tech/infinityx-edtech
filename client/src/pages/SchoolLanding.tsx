@@ -8,6 +8,7 @@ import {
   ChevronDown, ChevronRight, Loader2, Layers
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useSEO } from "@/hooks/useSEO";
 
 // === SCHOOL META ===
 const schoolMeta: Record<string, { title: string; titleAr: string; description: string; color: string; icon: any; gradient: string }> = {
@@ -37,6 +38,25 @@ const schoolMeta: Record<string, { title: string; titleAr: string; description: 
   },
 };
 
+const CATEGORY_SEO: Record<string, { title: string; description: string }> = {
+  space: {
+    title: "School of Space Technology — Programs",
+    description: "Explore our Space Technology programs: Autonomous Systems, Satellite Data Analysis, and Earth Observation AI. The region's premier space tech curriculum.",
+  },
+  ai: {
+    title: "School of AI & Data Science — Programs",
+    description: "Master AI, Machine Learning, Computer Vision, and Predictive Analytics with structured learning paths from beginner to expert.",
+  },
+  software: {
+    title: "School of Software Engineering — Programs",
+    description: "Build scalable, robust systems with our Full-Stack, Cloud Architecture, and Microservices engineering programs.",
+  },
+  security: {
+    title: "School of Cybersecurity — Programs",
+    description: "Learn ethical hacking, penetration testing, and SOC analysis. Defend against tomorrow's threats with our Cybersecurity programs.",
+  },
+};
+
 export default function SchoolLanding() {
   const [, params] = useRoute("/programs/:category");
   const category = params?.category || "space";
@@ -50,6 +70,13 @@ export default function SchoolLanding() {
   const programs = (allPrograms as any[]).filter((p: any) => p.category === category);
 
   const [expandedProgram, setExpandedProgram] = useState<string | null>(null);
+
+  const seoMeta = CATEGORY_SEO[category] || CATEGORY_SEO.space;
+  useSEO({
+    title: seoMeta.title,
+    description: seoMeta.description,
+    canonical: `https://infx.space/programs/${category}`,
+  });
 
   return (
     <div className={`min-h-screen bg-[#0a0e1a] text-white ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>

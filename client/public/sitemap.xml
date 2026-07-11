@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- ═══ HOMEPAGE ═══ -->
+  <url>
+    <loc>https://infx.space/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- ═══ CORE PAGES ═══ -->
+  <url>
+    <loc>https://infx.space/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://infx.space/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://infx.space/consultation</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://infx.space/careers</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ═══ SOLUTIONS ═══ -->
+  <url>
+    <loc>https://infx.space/solutions</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ═══ ACADEMY — School deep-dive pages (rich static content) ═══ -->
+  <url>
+    <loc>https://infx.space/academy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infx.space/academy/ai-and-data-science</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infx.space/academy/cybersecurity</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infx.space/academy/full-stack-solutions</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infx.space/academy/space-solutions</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ═══ COURSES ═══ -->
+  <url>
+    <loc>https://infx.space/courses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://infx.space/courses/live</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://infx.space/courses/recorded</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ═══ PROGRAMS ═══ -->
+  <!--
+    NOTE: /programs/:category pages (space, ai, software, security) are intentionally
+    excluded from the sitemap. These pages are thin landing pages that render a
+    "No Programs Yet" state when no DB programs exist for that category, making them
+    low-quality/unpredictable content. They are accessible via internal navigation
+    from /programs but should not be submitted to Google as standalone indexable pages
+    until they consistently contain substantial unique content.
+  -->
+  <url>
+    <loc>https://infx.space/programs</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ═══ BLOG ═══ -->
+  <url>
+    <loc>https://infx.space/blog</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>

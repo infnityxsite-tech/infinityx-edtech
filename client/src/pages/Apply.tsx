@@ -34,12 +34,22 @@ import { useLocation } from "wouter";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Apply() {
   const [location, navigate] = useLocation();
   const { t, isRTL } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
+
+  // noindex: this is a transactional application form, not a search-indexable content page
+  // Allow crawl (no robots.txt Disallow) so Googlebot can read this directive
+  useSEO({
+    title: "Apply — Join the Next Cohort",
+    description: "Apply to Infinity X Academy programs and courses. Fill out the student application form to reserve your spot.",
+    canonical: "https://infx.space/apply",
+    robots: "noindex, follow",
+  });
   
   // 1️⃣ جلب قائمة الكورسات والبرامج من قاعدة البيانات (لعمل الـ Dropdown)
   const { data: courses = [], isLoading: isLoadingCourses } = trpc.admin.getCourses.useQuery();

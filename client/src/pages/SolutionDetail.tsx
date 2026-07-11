@@ -10,6 +10,7 @@ import { trpc } from "@/lib/trpc";
 import { ArrowLeft, ArrowRight, CheckCircle, Cpu, BarChart3, Database, Cloud, Loader2, Target, Package, ChevronDown, Globe, Layers, Zap, Eye, Brain, Code, TrendingUp, Shield, Clock, AlertTriangle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useSEO } from "@/hooks/useSEO";
 
 const IconMap: any = { Eye, Database, Cloud, BarChart3, Brain, Code, Cpu, Layers, Zap, Target };
 
@@ -24,6 +25,16 @@ export default function SolutionDetail() {
 
   const { data: solution, isLoading } = trpc.admin.getSolutionBySlug.useQuery({ slug }, { staleTime: 1000 * 60 * 5 });
   const { data: hubData } = trpc.admin.getSolutionsHub.useQuery(undefined, { staleTime: 1000 * 60 * 5 });
+
+  // SEO: inject per-solution title, description, canonical, and OG tags
+  useSEO({
+    title: solution?.title ? `${solution.title} — AI Solutions` : isLoading ? "Loading Solution..." : "Solution Not Found",
+    description: solution?.description
+      ? solution.description.slice(0, 155)
+      : `Enterprise-grade ${slug.replace(/-/g, " ")} solutions by Infinity X — AI, Computer Vision, and custom software for MENA businesses.`,
+    canonical: `https://infx.space/solutions/${slug}`,
+    robots: solution ? "index, follow" : "noindex, follow",
+  });
 
   if (isLoading) return (<div className={`min-h-screen flex items-center justify-center ${isLight ? 'bg-[#f8fafc]' : 'bg-[#020617]'}`}><Loader2 className="w-10 h-10 animate-spin text-cyan-500" /></div>);
   if (!solution) return (<div className={`min-h-screen flex items-center justify-center ${isLight ? 'bg-[#f8fafc]' : 'bg-[#020617]'}`}><div className="text-center"><h1 className={`text-4xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>Solution Not Found</h1><Link href="/solutions"><Button className="bg-cyan-600 text-white">Back to Solutions</Button></Link></div></div>);

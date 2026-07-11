@@ -2,9 +2,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Home, Rocket } from "lucide-react";
 import { useLocation } from "wouter";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function NotFound() {
   const [, setLocation] = useLocation();
+
+  // Inject noindex so Googlebot doesn't index soft 404 pages
+  // (Vercel's SPA catch-all returns HTTP 200 for all unknown routes)
+  useSEO({
+    title: "Page Not Found",
+    description: "The page you are looking for does not exist or has been moved.",
+    canonical: "https://infx.space/404",
+    robots: "noindex, follow",
+  });
 
   const handleGoHome = () => {
     setLocation("/");

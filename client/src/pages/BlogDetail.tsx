@@ -7,6 +7,7 @@ import { Link, useRoute } from "wouter";
 import { Streamdown } from "streamdown";
 import { VideoEmbed } from "@/components/VideoEmbed";
 import React, { useMemo } from "react";
+import { useSEO } from "@/hooks/useSEO";
 
 const customComponents = {
   p: (props: any) => {
@@ -27,6 +28,19 @@ export default function BlogDetail() {
 
   const { data: posts = [], isLoading } = trpc.admin.getBlogPosts.useQuery();
   const post = posts.find((p: any) => String(p.id) === String(postId));
+
+  // Derive description from content (first 160 chars of plain text)
+  const postExcerpt = useMemo(() => {
+    if (!post?.content) return "";
+    return post.content.replace(/[#*`>\[\]()!]/g, "").slice(0, 155).trim() + "...";
+  }, [post?.content]);
+
+  useSEO({
+    title: post?.title ? `${post.title} — Infinity X Blog` : isLoading ? "Loading... — Infinity X Blog" : "Post Not Found — Infinity X Blog",
+    description: post ? (postExcerpt || post.title) : "The article you are looking for does not exist or has been removed.",
+    canonical: `https://infx.space/blog/${postId}`,
+    robots: post ? "index, follow" : "noindex, follow",
+  });
 
   const processedContent = useMemo(() => {
     if (!post?.content) return "";

@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Private / auth / admin routes
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /login
+Disallow: /dashboard
+Disallow: /learn/
+Disallow: /verify
+Disallow: /certificates/
+Disallow: /api/
+
+# NOTE: /apply is intentionally NOT disallowed here.
+# The page contains <meta name="robots" content="noindex, follow"> in its HTML,
+# which is the correct way to prevent indexing while allowing Googlebot to read
+# the noindex directive. robots.txt Disallow would prevent Google from reading
+# the noindex tag itself, leading to continued unwanted indexing attempts.
+
+Sitemap: https://infx.space/sitemap.xml

@@ -11,6 +11,7 @@ import ValueProposition from "@/components/academy/ValueProposition";
 import { schoolsData } from "@/components/academy/schoolData";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function SchoolDeepDive() {
   const [, params] = useRoute("/academy/:school");
@@ -19,6 +20,21 @@ export default function SchoolDeepDive() {
   const { isRTL, t } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === "light";
+
+  useSEO(
+    school
+      ? {
+          title: `${school.title} — Infinity X Academy`,
+          description: school.subtitle,
+          canonical: `https://infx.space/academy/${slug}`,
+        }
+      : {
+          title: "School Not Found — Infinity X Academy",
+          description: "The academy school you are looking for does not exist.",
+          canonical: `https://infx.space/academy/${slug}`,
+          robots: "noindex, follow",
+        }
+  );
 
   if (!school) {
     return (
