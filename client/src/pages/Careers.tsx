@@ -70,38 +70,28 @@ export default function Careers() {
   }, [expandedJobId]);
 
   return (
-    <div className={`min-h-screen font-sans ${isLight ? 'bg-[#f0f4f8] text-slate-900' : 'bg-[#0a0e1a] text-white'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`ix-page min-h-screen font-sans ${isLight ? 'bg-[#F5F4EF] text-[#1F2925]' : 'bg-[#07111b] text-white'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <Navigation />
 
       {/* 🏛️ HERO SECTION */}
-      <section className={`relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden ${isLight ? '' : 'bg-[#0b1120] text-white'}`}>
-        {/* Tech Grid Background Pattern */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none" 
-             style={{ 
-               backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', 
-               backgroundSize: '40px 40px' 
-             }}>
-        </div>
-        
-        {/* Radial Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl bg-emerald-600/20 blur-[120px] rounded-full pointer-events-none"></div>
-
+      <section className={`relative pt-12 sm:pt-16 pb-14 border-b border-[#D8DDD8]/60 overflow-hidden`}>
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 text-center z-10">
-          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4 md:mb-6 ${isLight ? 'bg-emerald-100 border border-emerald-200 text-emerald-700' : 'bg-emerald-900/40 border border-emerald-700/50 text-emerald-300'}`}>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4 md:mb-6 bg-[#E4EBE6] border border-[#D8DDD8] text-[#52735F]">
             <Sparkles className="w-3.5 h-3.5" />
             <span>{t("We are hiring!", "نحن نوظف!", "We are hiring!")}</span>
           </div>
           
-          <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 md:mb-6 leading-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-            {t("Build the Future of ", "صمّم مستقبل ", "Build the Future of ")}<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">{t("AI Systems.", "أنظمة الذكاء الاصطناعي.", "AI Systems.")}</span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 md:mb-6 leading-tight text-[#1F2925]">
+            {t("Build the Future of ", "صمّم مستقبل ", "Build the Future of ")}
+            <span className="text-[#52735F]">{t("AI Systems.", "أنظمة الذكاء الاصطناعي.", "AI Systems.")}</span>
           </h1>
           
-          <p className={`text-base md:text-xl max-w-2xl mx-auto mb-6 md:mb-8 leading-relaxed font-light ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+          <p className="text-base md:text-xl max-w-2xl mx-auto mb-6 md:mb-8 leading-relaxed font-light text-[#5E6862]">
             {t("Join a team of engineers, architects, and AI specialists building production-grade systems for enterprises across the MENA region.", "انضم إلى فريق من المهندسين والمعماريين المتخصصين في بناء أنظمة ذكاء اصطناعي على مستوى الإنتاج للمؤسسات في منطقة الشرق الأوسط.", "Join our team.")}
           </p>
 
           <div className="flex justify-center gap-4">
-            <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 font-semibold rounded-full px-6 md:px-8 min-h-[44px]" onClick={() => {
+            <Button size="lg" className="bg-[#52735F] text-white hover:bg-[#43614F] font-semibold rounded-full px-6 md:px-8 min-h-[44px]" onClick={() => {
                 document.getElementById('open-roles')?.scrollIntoView({ behavior: 'smooth' });
             }}>
                 {t("View Open Roles", "عرض الوظائف المتاحة", "View Open Roles")}

@@ -167,16 +167,11 @@ export default function StudentLogin() {
     };
 
     return (
-        <div className={`min-h-screen ${isLight ? 'bg-[#f0f4f8] text-slate-900' : 'bg-[#060a14] text-white'} flex flex-col justify-center py-12 px-6 lg:px-8 relative overflow-hidden`} dir={isRTL ? 'rtl' : 'ltr'}>
-            {/* Background effects */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[200px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[200px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-
+        <div className={`min-h-screen ${isLight ? 'bg-[#F5F4EF] text-[#1F2925]' : 'bg-[#07111b] text-white'} flex flex-col justify-center py-12 px-6 lg:px-8 relative overflow-hidden`} dir={isRTL ? 'rtl' : 'ltr'}>
             {/* Back to home */}
             <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 mb-6">
                 <Link href="/">
-                    <button className={`flex items-center gap-1.5 text-sm transition-colors ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-slate-500 hover:text-white'}`}>
+                    <button className={`flex items-center gap-1.5 text-sm font-semibold transition-colors ${isLight ? 'text-[#5E6862] hover:text-[#1F2925]' : 'text-slate-400 hover:text-white'}`}>
                         <ArrowLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} /> {t("Back to site", "العودة للموقع", "Back to site")}
                     </button>
                 </Link>
@@ -185,10 +180,10 @@ export default function StudentLogin() {
             <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
                 <Link href="/">
                     <div className="flex justify-center items-center gap-2.5 cursor-pointer mb-8 group">
-                        <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-2  rounded-xl shadow-lg shadow-cyan-500/20">
+                        <div className="bg-[#52735F] p-2 rounded-xl shadow-md shadow-[#52735F]/20">
                             <GraduationCap className="w-7 h-7 text-white" />
                         </div>
-                        <span className={`text-2xl font-extrabold bg-clip-text text-transparent ${isLight ? 'bg-gradient-to-r from-slate-900 to-cyan-600' : 'bg-gradient-to-r from-white to-cyan-400'}`}>
+                        <span className={`text-2xl font-extrabold ${isLight ? 'text-[#1F2925]' : 'text-white'}`}>
                             InfinityX
                         </span>
                     </div>
@@ -196,15 +191,15 @@ export default function StudentLogin() {
             </div>
 
             <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-                <div className={`${isLight ? 'bg-white border-slate-200' : 'bg-[#0d1225]/80 border-white/[0.06]'} backdrop-blur-xl border rounded-2xl shadow-2xl shadow-black/40 overflow-hidden`}>
+                <div className={`${isLight ? 'bg-white border-[#D8DDD8]' : 'bg-[#0d1225]/80 border-white/[0.06]'} border rounded-2xl shadow-xl shadow-black/5 overflow-hidden`}>
                     {/* Header */}
                     <div className="px-8 pt-8 pb-4 text-center">
-                        <h2 className={`text-xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                        <h2 className={`text-xl font-bold ${isLight ? 'text-[#1F2925]' : 'text-white'}`}>
                             {isLogin 
                                 ? t("Welcome Back", "مرحباً بعودتك", "Welcome Back") 
                                 : t("Create Account", "إنشاء حساب", "Create Account")}
                         </h2>
-                        <p className={`text-sm mt-1 ${isLight ? 'text-slate-600' : 'text-slate-500'}`}>
+                        <p className={`text-sm mt-1 ${isLight ? 'text-[#5E6862]' : 'text-slate-400'}`}>
                             {isLogin
                                 ? t("Enter your credentials to access your courses.", "أدخل بياناتك للوصول إلى دوراتك.", "Enter your credentials to access your courses.")
                                 : t("Join InfinityX and start your tech journey.", "انضم إلى إنفينيتي إكس وابدأ رحلتك التقنية.", "Join InfinityX and start your tech journey.")}
@@ -216,40 +211,40 @@ export default function StudentLogin() {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             {!isLogin && (
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="name" className={`text-xs font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>{t("Full Name", "الاسم الكامل", "Full Name")}</Label>
+                                    <Label htmlFor="name" className={`text-xs font-semibold ${isLight ? 'text-[#1F2925]' : 'text-slate-400'}`}>{t("Full Name", "الاسم الكامل", "Full Name")}</Label>
                                     <Input
                                         id="name" type="text" value={name}
                                         onChange={e => setName(e.target.value)}
                                         placeholder={t("Ahmed Hassan", "أحمد حسن", "Ahmed Hassan")}
-                                        className={`h-11 border focus:ring-cyan-500/30 focus:border-cyan-500/40 rounded-xl ${isLight ? 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
+                                        className={`h-11 border focus:ring-[#52735F]/20 focus:border-[#52735F] rounded-xl ${isLight ? 'bg-[#F5F4EF] border-[#D8DDD8] text-[#1F2925] placeholder:text-[#7B847F]' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
                                     />
                                 </div>
                             )}
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="email" className={`text-xs font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>{t("Email address", "البريد الإلكتروني", "Email address")}</Label>
+                                <Label htmlFor="email" className={`text-xs font-semibold ${isLight ? 'text-[#1F2925]' : 'text-slate-400'}`}>{t("Email address", "البريد الإلكتروني", "Email address")}</Label>
                                 <Input
                                     id="email" type="email" value={email}
                                     onChange={e => setEmail(e.target.value)}
                                     placeholder="student@example.com"
-                                    className={`h-11 border focus:ring-cyan-500/30 focus:border-cyan-500/40 rounded-xl ${isLight ? 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
+                                    className={`h-11 border focus:ring-[#52735F]/20 focus:border-[#52735F] rounded-xl ${isLight ? 'bg-[#F5F4EF] border-[#D8DDD8] text-[#1F2925] placeholder:text-[#7B847F]' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="password" className={`text-xs font-semibold ${isLight ? 'text-slate-700' : 'text-slate-400'}`}>{t("Password", "كلمة المرور", "Password")}</Label>
+                                <Label htmlFor="password" className={`text-xs font-semibold ${isLight ? 'text-[#1F2925]' : 'text-slate-400'}`}>{t("Password", "كلمة المرور", "Password")}</Label>
                                 <Input
                                     id="password" type="password" value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className={`h-11 border focus:ring-cyan-500/30 focus:border-cyan-500/40 rounded-xl ${isLight ? 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
+                                    className={`h-11 border focus:ring-[#52735F]/20 focus:border-[#52735F] rounded-xl ${isLight ? 'bg-[#F5F4EF] border-[#D8DDD8] text-[#1F2925] placeholder:text-[#7B847F]' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
                                 />
                             </div>
 
                             <div className="pt-2 flex flex-col gap-3">
                                 <Button
                                     type="submit"
-                                    className="w-full h-11 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20 text-sm font-semibold rounded-xl"
+                                    className="w-full h-11 bg-[#52735F] hover:bg-[#43614F] text-white shadow-md shadow-[#52735F]/20 text-sm font-semibold rounded-xl"
                                     disabled={isLoading || isGoogleLoading}
                                 >
                                     {isLoading ? (
@@ -258,9 +253,9 @@ export default function StudentLogin() {
                                 </Button>
 
                                 <div className="relative flex items-center py-2">
-                                    <div className="flex-grow border-t border-slate-200 dark:border-white/[0.06]"></div>
-                                    <span className="flex-shrink-0 mx-4 text-xs font-medium text-slate-500 uppercase tracking-widest">{t("Or continue with", "أو تابع باستخدام", "Or continue with")}</span>
-                                    <div className="flex-grow border-t border-slate-200 dark:border-white/[0.06]"></div>
+                                    <div className="flex-grow border-t border-[#D8DDD8] dark:border-white/[0.06]"></div>
+                                    <span className="flex-shrink-0 mx-4 text-xs font-medium text-[#7B847F] uppercase tracking-widest">{t("Or continue with", "أو تابع باستخدام", "Or continue with")}</span>
+                                    <div className="flex-grow border-t border-[#D8DDD8] dark:border-white/[0.06]"></div>
                                 </div>
 
                                 <Button
@@ -268,7 +263,7 @@ export default function StudentLogin() {
                                     onClick={handleGoogleLogin}
                                     disabled={isGoogleLoading || isLoading}
                                     variant="outline"
-                                    className={`w-full h-11 border font-medium flex items-center justify-center gap-2 transition-all rounded-xl ${isLight ? 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700' : 'bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] text-slate-300'}`}
+                                    className={`w-full h-11 border font-medium flex items-center justify-center gap-2 transition-all rounded-xl ${isLight ? 'bg-white border-[#D8DDD8] hover:bg-[#EAEDEA] text-[#1F2925]' : 'bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] text-slate-300'}`}
                                 >
                                     {isGoogleLoading ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -287,13 +282,13 @@ export default function StudentLogin() {
                     </div>
 
                     {/* Footer toggle */}
-                    <div className={`px-8 py-5 border-t text-center ${isLight ? 'border-slate-200 bg-slate-50' : 'border-white/[0.04] bg-white/[0.02]'}`}>
-                        <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-slate-500'}`}>
+                    <div className={`px-8 py-5 border-t text-center ${isLight ? 'border-[#D8DDD8] bg-[#EAEDEA]/50' : 'border-white/[0.04] bg-white/[0.02]'}`}>
+                        <p className={`text-sm ${isLight ? 'text-[#5E6862]' : 'text-slate-500'}`}>
                             {isLogin ? t("Don't have an account?", "ليس لديك حساب؟", "Don't have an account?") : t("Already have an account?", "هل لديك حساب بالفعل؟", "Already have an account?")}
                             <button
                                 type="button"
                                 onClick={() => setIsLogin(!isLogin)}
-                                className={`mx-1.5 font-semibold transition-colors ${isLight ? 'text-cyan-600 hover:text-cyan-700' : 'text-cyan-400 hover:text-cyan-300'}`}
+                                className={`mx-1.5 font-semibold transition-colors ${isLight ? 'text-[#52735F] hover:text-[#43614F]' : 'text-cyan-400 hover:text-cyan-300'}`}
                             >
                                 {isLogin ? t("Register now", "سجل الآن", "Register now") : t("Sign in instead", "سجل الدخول بدلاً من ذلك", "Sign in instead")}
                             </button>
