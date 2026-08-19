@@ -34,7 +34,7 @@ export default function Solutions() {
           <div className="ix-shell">
             <div className="grid gap-10 lg:grid-cols-[.85fr_1.15fr] lg:items-end">
               <div>
-                <p className="ix-eyebrow text-[#52735F]">{copy("Infinity X / solution desk", "إنفينيتي إكس / مكتب الحلول")}</p>
+                <p className="ix-eyebrow text-[#6453C2]">{copy("Infinity X / solution desk", "إنفينيتي إكس / مكتب الحلول")}</p>
                 <h1 className="ix-display mt-6 max-w-3xl text-5xl font-bold text-[#1F2925] sm:text-7xl">
                   {copy("Find the system behind the problem.", "اعثر على النظام خلف المشكلة.")}
                 </h1>
@@ -47,15 +47,15 @@ export default function Solutions() {
               </div>
               <div className="grid grid-cols-3 border border-[#D8DDD8] bg-white shadow-sm">
                 <div className="border-e border-[#D8DDD8] p-5">
-                  <p className="text-3xl font-bold text-[#52735F]">{services.length || "—"}</p>
+                  <p className="text-3xl font-bold text-[#6453C2]">{services.length || "—"}</p>
                   <p className="mt-2 text-[10px] uppercase tracking-[.15em] text-[#7B847F]">{copy("Capabilities", "قدرات")}</p>
                 </div>
                 <div className="border-e border-[#D8DDD8] bg-[#EAEDEA] p-5">
-                  <p className="text-3xl font-bold text-[#52735F]">04</p>
+                  <p className="text-3xl font-bold text-[#6453C2]">04</p>
                   <p className="mt-2 text-[10px] uppercase tracking-[.15em] text-[#5E6862]">{copy("System layers", "طبقات النظام")}</p>
                 </div>
                 <div className="p-5">
-                  <p className="text-3xl font-bold text-[#52735F]">01</p>
+                  <p className="text-3xl font-bold text-[#6453C2]">01</p>
                   <p className="mt-2 text-[10px] uppercase tracking-[.15em] text-[#7B847F]">{copy("Operating partner", "شريك تشغيلي")}</p>
                 </div>
               </div>
@@ -96,13 +96,13 @@ export default function Solutions() {
 
             {isLoading ? (
               <div className="grid min-h-[420px] place-items-center">
-                <Loader2 className="h-7 w-7 animate-spin text-[#52735F]" />
+                <Loader2 className="h-7 w-7 animate-spin text-[#6453C2]" />
               </div>
             ) : (
               <div className="grid overflow-hidden border border-[#D8DDD8] bg-white shadow-sm lg:grid-cols-[.38fr_1fr]" style={{ borderColor: "var(--ix-border)" }}>
                 {/* Service selector list */}
                 <div className="bg-[#EAEDEA] p-3 text-[#1F2925] border-b lg:border-b-0 lg:border-e border-[#D8DDD8]">
-                  <p className="px-4 pb-3 pt-3 text-[10px] font-bold uppercase tracking-[.18em] text-[#52735F]">
+                  <p className="px-4 pb-3 pt-3 text-[10px] font-bold uppercase tracking-[.18em] text-[#6453C2]">
                     {copy("Select a system", "اختر نظاماً")}
                   </p>
                   <div className="grid gap-1">
@@ -115,22 +115,22 @@ export default function Solutions() {
                           onClick={() => setSelectedId(service.id)}
                           className={`group grid grid-cols-[36px_1fr_20px] items-center gap-3 rounded-md px-4 py-3.5 text-start transition-all ${
                             active
-                              ? "bg-[#52735F] text-white shadow-sm"
+                              ? "bg-[#6453C2] text-white shadow-sm"
                               : "text-[#5E6862] hover:bg-white hover:text-[#1F2925]"
                           }`}
                         >
-                          <span className={`text-xs font-bold ${active ? "text-[#B8D4C2]" : "text-[#7B847F]"}`}>
+                          <span className={`text-xs font-bold ${active ? "text-[#C8BFF5]" : "text-[#7B847F]"}`}>
                             {String(index + 1).padStart(2, "0")}
                           </span>
                           <span className="text-sm font-bold leading-5">{t(service.title, service.title_ar, service.title)}</span>
-                          <ChevronDown className={`h-4 w-4 -rotate-90 transition-transform ${active ? "text-[#B8D4C2]" : "text-[#7B847F]"} ${isRTL ? "rotate-90" : ""}`} />
+                          <ChevronDown className={`h-4 w-4 -rotate-90 transition-transform ${active ? "text-[#C8BFF5]" : "text-[#7B847F]"} ${isRTL ? "rotate-90" : ""}`} />
                         </button>
                       );
                     })}
                   </div>
                   <Link
                     href="/consultation"
-                    className="mt-5 flex items-center justify-between border-t border-[#D8DDD8] px-4 py-4 text-sm font-bold text-[#52735F] hover:text-[#43614F]"
+                    className="mt-5 flex items-center justify-between border-t border-[#D8DDD8] px-4 py-4 text-sm font-bold text-[#6453C2] hover:text-[#5342AE]"
                   >
                     {copy("Not sure where to start?", "لست متأكداً من أين تبدأ؟")}
                     <ArrowUpRight className="h-4 w-4" />
@@ -139,10 +139,11 @@ export default function Solutions() {
 
                 {/* Detail panel */}
                 <div className="grid gap-0 lg:grid-cols-[.92fr_1.08fr]">
-                  {/* Hero image — uses ServiceImage for DB-first resolution */}
+                  {/* Hero image — uses ServiceImage with unique key for instant re-render */}
                   <div className="relative min-h-[320px] overflow-hidden bg-[#EAEDEA]">
                     {selected && (
                       <ServiceImage
+                        key={selected.id || selected.slug}
                         service={selected}
                         className="absolute inset-0 h-full w-full object-cover"
                         loading="eager"
@@ -151,7 +152,7 @@ export default function Solutions() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1F2925]/85 via-transparent to-transparent" />
                     <div className="absolute bottom-6 left-6 right-6 text-white">
-                      <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#B8D4C2]">
+                      <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#C8BFF5]">
                         {copy("System profile", "ملف النظام")}
                       </p>
                       <p className="mt-2 text-2xl font-bold">
@@ -191,15 +192,15 @@ export default function Solutions() {
                           </p>
                           <ul className="mt-3 space-y-2 text-sm" style={{ color: "var(--ix-text-secondary)" }}>
                             <li className="flex gap-2">
-                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#52735F]" />
+                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#6453C2]" />
                               {selected?.deliverableCount || 0} {copy("defined deliverables", "مخرجات محددة")}
                             </li>
                             <li className="flex gap-2">
-                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#52735F]" />
+                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#6453C2]" />
                               {selected?.useCaseCount || 0} {copy("operational use cases", "حالات استخدام تشغيلية")}
                             </li>
                             <li className="flex gap-2">
-                              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#52735F]" />
+                              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#6453C2]" />
                               {copy("Designed for ownership", "مصمم للملكية")}
                             </li>
                           </ul>
@@ -236,22 +237,22 @@ export default function Solutions() {
             </div>
             <div className="mt-12 grid gap-6 md:grid-cols-4">
               <div className="bg-white border border-[#D8DDD8] p-6 shadow-sm">
-                <Play className="h-5 w-5 text-[#52735F]" />
+                <Play className="h-5 w-5 text-[#6453C2]" />
                 <p className="mt-8 text-lg font-bold text-[#1F2925]">{copy("Frame", "حدد")}</p>
                 <p className="mt-2 text-sm leading-6" style={{ color: "var(--ix-text-secondary)" }}>{copy("Decision, constraint, evidence.", "القرار والقيد والدليل.")}</p>
               </div>
               <div className="bg-white border border-[#D8DDD8] p-6 shadow-sm">
-                <Play className="h-5 w-5 text-[#52735F]" />
+                <Play className="h-5 w-5 text-[#6453C2]" />
                 <p className="mt-8 text-lg font-bold text-[#1F2925]">{copy("Shape", "صمم")}</p>
                 <p className="mt-2 text-sm leading-6" style={{ color: "var(--ix-text-secondary)" }}>{copy("Data, model, experience.", "البيانات والنموذج والتجربة.")}</p>
               </div>
               <div className="bg-white border border-[#D8DDD8] p-6 shadow-sm">
-                <Play className="h-5 w-5 text-[#52735F]" />
+                <Play className="h-5 w-5 text-[#6453C2]" />
                 <p className="mt-8 text-lg font-bold text-[#1F2925]">{copy("Deploy", "انشر")}</p>
                 <p className="mt-2 text-sm leading-6" style={{ color: "var(--ix-text-secondary)" }}>{copy("Controls, integration, adoption.", "الضوابط والتكامل والتبني.")}</p>
               </div>
               <div className="bg-white border border-[#D8DDD8] p-6 shadow-sm">
-                <Play className="h-5 w-5 text-[#52735F]" />
+                <Play className="h-5 w-5 text-[#6453C2]" />
                 <p className="mt-8 text-lg font-bold text-[#1F2925]">{copy("Transfer", "انقل")}</p>
                 <p className="mt-2 text-sm leading-6" style={{ color: "var(--ix-text-secondary)" }}>{copy("Ownership, monitoring, improvement.", "الملكية والمراقبة والتحسين.")}</p>
               </div>

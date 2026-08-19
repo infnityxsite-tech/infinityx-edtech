@@ -88,7 +88,7 @@ export default function Programs() {
         <section className="bg-[#F5F4EF] text-[#1F2925] border-b border-[#D8DDD8]/60">
           <div className="ix-shell grid gap-10 py-12 sm:py-16 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <p className="ix-eyebrow text-[#52735F]">{copy("Infinity X / program desk", "إنفينيتي إكس / مكتب البرامج")}</p>
+              <p className="ix-eyebrow text-[#6453C2]">{copy("Infinity X / program desk", "إنفينيتي إكس / مكتب البرامج")}</p>
               <h1 className="ix-display mt-6 max-w-4xl text-5xl font-bold text-[#1F2925] sm:text-7xl">
                 {copy("Choose the work you want to be ready for.", "اختر العمل الذي تريد أن تكون مستعداً له.")}
               </h1>
@@ -101,19 +101,19 @@ export default function Programs() {
             </div>
             <div className="grid grid-cols-2 border border-[#D8DDD8] bg-white shadow-sm sm:grid-cols-4 lg:grid-cols-2">
               <div className="border-e border-b border-[#D8DDD8] p-5">
-                <p className="text-3xl font-bold text-[#52735F]">{all.length || "—"}</p>
+                <p className="text-3xl font-bold text-[#6453C2]">{all.length || "—"}</p>
                 <p className="mt-2 text-[10px] uppercase tracking-[.15em] text-[#7B847F]">{copy("Programs", "برامج")}</p>
               </div>
               <div className="border-b border-[#D8DDD8] bg-[#EAEDEA] p-5">
-                <p className="text-3xl font-bold text-[#52735F]">{disciplines.length || "—"}</p>
+                <p className="text-3xl font-bold text-[#6453C2]">{disciplines.length || "—"}</p>
                 <p className="mt-2 text-[10px] uppercase tracking-[.15em] text-[#5E6862]">{copy("Disciplines", "تخصصات")}</p>
               </div>
               <div className="border-e border-[#D8DDD8] p-5">
-                <p className="text-3xl font-bold text-[#52735F]">{formats.length || "—"}</p>
+                <p className="text-3xl font-bold text-[#6453C2]">{formats.length || "—"}</p>
                 <p className="mt-2 text-[10px] uppercase tracking-[.15em] text-[#7B847F]">{copy("Formats", "أنماط")}</p>
               </div>
               <div className="p-5">
-                <p className="text-3xl font-bold text-[#52735F]">01</p>
+                <p className="text-3xl font-bold text-[#6453C2]">01</p>
                 <p className="mt-2 text-[10px] uppercase tracking-[.15em] text-[#7B847F]">{copy("Student portal", "بوابة طالب")}</p>
               </div>
             </div>
@@ -131,7 +131,7 @@ export default function Programs() {
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder={copy("Search programs", "ابحث عن البرامج")}
                   aria-label={copy("Search programs", "ابحث عن البرامج")}
-                  className={`h-11 w-full border bg-white px-10 text-sm outline-none transition-all focus:border-[#52735F] focus:ring-2 focus:ring-[#52735F]/15 ${
+                  className={`h-11 w-full border bg-white px-10 text-sm outline-none transition-all focus:border-[#6453C2] focus:ring-2 focus:ring-[#6453C2]/15 ${
                     isRTL ? "pr-10" : "pl-10"
                   }`}
                   style={{ borderColor: "var(--ix-border)" }}
@@ -143,7 +143,7 @@ export default function Programs() {
               </Link>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-[#52735F]" />
+              <SlidersHorizontal className="h-4 w-4 text-[#6453C2]" />
               <span className="text-xs font-bold text-[#7B847F]">{copy("Filter", "تصفية")}</span>
               {["All", ...disciplines].map((item) => (
                 <button
@@ -152,7 +152,7 @@ export default function Programs() {
                   onClick={() => setDiscipline(item)}
                   className={`border px-3 py-1.5 text-xs font-bold transition-all rounded-sm ${
                     discipline === item
-                      ? "border-[#52735F] bg-[#52735F] text-white shadow-sm"
+                      ? "border-[#6453C2] bg-[#6453C2] text-white shadow-sm"
                       : "border-[#D8DDD8] bg-white text-[#5E6862] hover:bg-[#EAEDEA]"
                   }`}
                 >
@@ -168,7 +168,7 @@ export default function Programs() {
                       onClick={() => setFormat(item)}
                       className={`border px-3 py-1.5 text-xs font-bold transition-all rounded-sm ${
                         format === item
-                          ? "border-[#52735F] bg-[#52735F] text-white shadow-sm"
+                          ? "border-[#6453C2] bg-[#6453C2] text-white shadow-sm"
                           : "border-[#D8DDD8] bg-white text-[#5E6862] hover:bg-[#EAEDEA]"
                       }`}
                     >
@@ -186,7 +186,7 @@ export default function Programs() {
           <div className="ix-shell">
             {isLoading ? (
               <div className="grid min-h-[420px] place-items-center">
-                <Loader2 className="h-8 w-8 animate-spin text-[#52735F]" />
+                <Loader2 className="h-8 w-8 animate-spin text-[#6453C2]" />
               </div>
             ) : filtered.length === 0 ? (
               <div className="border-y py-20 text-center" style={{ borderColor: "var(--ix-border)" }}>
@@ -244,7 +244,7 @@ export default function Programs() {
                       >
                         <div className="flex items-center justify-between gap-4">
                           <p className="ix-kicker">{program.category || copy("Program", "برنامج")}</p>
-                          <span className="text-xs font-bold text-[#52735F]">{String(index + 2).padStart(2, "0")}</span>
+                          <span className="text-xs font-bold text-[#6453C2]">{String(index + 2).padStart(2, "0")}</span>
                         </div>
                         <h2 className="mt-5 text-2xl font-bold tracking-[-.035em] text-[#1F2925]">
                           {copy(program.title, program.titleAr || program.title_ar || program.title)}

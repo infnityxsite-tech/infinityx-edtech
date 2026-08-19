@@ -40,7 +40,7 @@ export default function Courses() {
       <main>
         <section className="mx-auto max-w-7xl px-6 pb-16 pt-12 sm:pt-16 lg:px-8 lg:pb-20">
           <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[.16em] text-[#52735F]">
+            <p className="text-xs font-bold uppercase tracking-[.16em] text-[#6453C2]">
               {t("Infinity X Academy", "أكاديمية إنفينيتي إكس", "Infinity X Academy")}
             </p>
             <h1 className="mt-6 text-5xl font-extrabold tracking-[-.065em] text-[#1F2925] sm:text-6xl">
@@ -61,14 +61,14 @@ export default function Courses() {
             <Link
               key={format.href}
               href={format.href}
-              className="group min-h-[340px] rounded-lg border border-[#D8DDD8] bg-white p-8 shadow-sm transition-all hover:border-[#52735F] hover:shadow-md sm:p-10"
+              className="group min-h-[340px] rounded-lg border border-[#D8DDD8] bg-white p-8 shadow-sm transition-all hover:border-[#6453C2] hover:shadow-md sm:p-10"
             >
-              <format.icon className="h-8 w-8 text-[#52735F]" />
-              <h2 className="mt-12 max-w-sm text-3xl font-extrabold tracking-[-.045em] text-[#1F2925] group-hover:text-[#52735F] transition-colors">
+              <format.icon className="h-8 w-8 text-[#6453C2]" />
+              <h2 className="mt-12 max-w-sm text-3xl font-extrabold tracking-[-.045em] text-[#1F2925] group-hover:text-[#6453C2] transition-colors">
                 {format.title}
               </h2>
               <p className="mt-4 max-w-sm text-sm leading-7 text-[#5E6862]">{format.description}</p>
-              <span className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#52735F]">
+              <span className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#6453C2]">
                 {format.label}
                 <ArrowRight className={`h-4 w-4 transition-transform group-hover:translate-x-1 ${isRTL ? "rotate-180" : ""}`} />
               </span>
@@ -78,7 +78,7 @@ export default function Courses() {
 
         <section className="border-y border-[#D8DDD8] bg-[#EAEDEA] py-14">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <Link href="/programs" className="inline-flex items-center gap-2 text-sm font-bold text-[#52735F] hover:text-[#43614F]">
+            <Link href="/programs" className="inline-flex items-center gap-2 text-sm font-bold text-[#6453C2] hover:text-[#5342AE]">
               {t("Looking for a longer program? Explore Academy programs.", "تبحث عن برنامج أطول؟ استكشف برامج الأكاديمية.", "Looking for a longer program? Explore Academy programs.")}
               <ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} />
             </Link>

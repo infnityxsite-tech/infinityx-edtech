@@ -1,3 +1,6 @@
+import { useMemo, useState } from "react";
+import { Link, useRoute } from "wouter";
+import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ServiceImage from "@/components/ServiceImage";
@@ -5,24 +8,31 @@ import ProposalGenerator from "@/components/solutions/ProposalGenerator";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSEO } from "@/hooks/useSEO";
-import { trpc } from "@/lib/trpc";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Check, CircleGauge, Database, Loader2, UsersRound, X } from "lucide-react";
-import { useState } from "react";
-import { Link, useRoute } from "wouter";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Check, Compass, Eye, Layers, Loader2, ShieldCheck, Sparkles, X } from "lucide-react";
+
+type DetailTab = "problem" | "system" | "ownership";
 
 export default function SolutionDetail() {
-  const { t, isRTL } = useLanguage();
   const [, params] = useRoute("/solutions/:slug");
   const slug = params?.slug || "";
+  const { t, isRTL } = useLanguage();
+  const [tab, setTab] = useState<DetailTab>("problem");
   const [proposalOpen, setProposalOpen] = useState(false);
-  const [tab, setTab] = useState("problem");
-  const { data: solution, isLoading } = trpc.admin.getSolutionBySlug.useQuery({ slug }, { staleTime: 1000 * 60 * 5 });
-  const { data: hubData } = trpc.admin.getSolutionsHub.useQuery(undefined, { staleTime: 1000 * 60 * 5 });
   const copy = (en: string, ar: string) => t(en, ar, en);
-  const text = (en: string | undefined, ar: string | undefined, fallback = "") => t(en, ar, fallback || en || "");
+  const text = (en?: string, ar?: string, fallback = "") => t(en || fallback, ar || en || fallback, fallback || en || "");
+
+  const { data: solutionData, isLoading } = trpc.admin.getSolutionBySlug.useQuery({ slug }, { enabled: Boolean(slug) });
+  const { data: hubData } = trpc.admin.getSolutionsHub.useQuery(undefined, { staleTime: 1000 * 60 * 5 });
+
+  const solution = solutionData?.service as any;
+  const techStack = (solutionData?.techStack || []) as any[];
+  const deliverables = (solutionData?.deliverables || []) as any[];
+  const useCases = (solutionData?.useCases || []) as any[];
+  const relatedServices = (solutionData?.relatedServices || []) as any[];
+
   useSEO({
-    title: solution?.title ? `${solution.title} | Infinity X Solutions` : "Solution | Infinity X Solutions",
-    description: solution?.description || "Enterprise AI systems designed around real operations.",
+    title: solution?.title ? `${solution.title} | Infinity X Solutions` : "Solution Profile | Infinity X",
+    description: solution?.description || "Production-grade enterprise AI capability designed around operational constraints.",
     canonical: `https://infx.space/solutions/${slug}`,
     robots: isLoading ? undefined : solution ? "index, follow" : "noindex, follow",
   });
@@ -30,51 +40,79 @@ export default function SolutionDetail() {
   if (isLoading) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#F5F4EF] text-[#1F2925]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#52735F]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#6453C2]" />
       </div>
     );
   }
 
   if (!solution) {
     return (
-      <div className="grid min-h-screen place-items-center bg-[#F5F4EF] px-6 text-center text-[#1F2925]">
+      <div className={`ix-page grid min-h-screen place-items-center px-6 text-center ${isRTL ? "rtl" : "ltr"}`} dir={isRTL ? "rtl" : "ltr"}>
         <div>
-          <h1 className="ix-display text-4xl font-bold">{copy("Solution not found.", "الحل غير موجود.")}</h1>
-          <Link href="/solutions" className="ix-button ix-button-primary mt-7">
-            {copy("View solutions", "عرض الحلول")}
+          <Compass className="mx-auto h-10 w-10 text-[#6453C2]" />
+          <h1 className="ix-display mt-6 text-4xl font-bold">{copy("System profile not found.", "ملف النظام غير موجود.")}</h1>
+          <p className="mx-auto mt-4 max-w-md text-sm leading-7" style={{ color: "var(--ix-text-secondary)" }}>
+            {copy("This capability profile may have moved. Explore all enterprise systems.", "قد يكون تم نقل هذا الملف. استكشف جميع أنظمة المؤسسات.")}
+          </p>
+          <Link href="/solutions" className="ix-button ix-button-primary mt-8">
+            {copy("Explore solutions", "استكشف الحلول")}
+            <ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} />
           </Link>
         </div>
       </div>
     );
   }
 
-  const relatedServices = (hubData?.allServices || []).filter((item: any) => item.id !== solution.id).slice(0, 3);
-  const systemSteps = [
-    { icon: CircleGauge, title: copy("Frame", "حدد"), detail: copy("Define the decision, workflow, risk, and evidence before selecting the technology.", "حدد القرار وسير العمل والمخاطر والأدلة قبل اختيار التقنية.") },
-    { icon: Database, title: copy("Shape", "صمم"), detail: copy("Connect data, models, interfaces, and controls into one usable operating system.", "اربط البيانات والنماذج والواجهات والضوابط في نظام تشغيلي قابل للاستخدام.") },
-    { icon: UsersRound, title: copy("Transfer", "انقل"), detail: copy("Plan the handoff, monitoring, and team capability required to keep it useful.", "خطط للتسليم والمراقبة وقدرات الفريق اللازمة ليستمر النظام مفيداً.") },
+  const tabs: Array<{ id: DetailTab; label: string }> = [
+    { id: "problem", label: copy("01 · The Constraint", "01 · القيد") },
+    { id: "system", label: copy("02 · The System Shape", "02 · شكل النظام") },
+    { id: "ownership", label: copy("03 · Handover & Operations", "03 · التسليم والتشغيل") },
   ];
 
-  const tabs = [
-    { id: "problem", label: copy("The problem", "المشكلة") },
-    { id: "system", label: copy("The system", "النظام") },
-    { id: "ownership", label: copy("Ownership", "الملكية") },
-  ];
-
-  const activeTabContent: Record<string, { title: string; detail: string }> = {
+  const activeTabContent = {
     problem: {
-      title: copy("Make the constraint visible.", "اجعل القيد مرئياً."),
-      detail: text(solution.problem_statement || solution.description, solution.problem_statement_ar || solution.description_ar, copy("The opportunity starts with the operational problem, not the model.", "تبدأ الفرصة من المشكلة التشغيلية، وليس من النموذج.")),
+      title: copy("Operating challenge", "التحدي التشغيلي"),
+      detail: text(
+        solution.problem_statement,
+        solution.problem_statement_ar,
+        copy("Where the current operation slows down, creates risk, or loses signal.", "أين يتباطأ التشغيل الحالي أو تنشأ المخاطر أو تُفقد الإشارات.")
+      ),
     },
     system: {
-      title: copy("Design the system around the work.", "صمم النظام حول العمل."),
-      detail: text(solution.description, solution.description_ar, copy("Data, decisions, interfaces, and controls belong in one operating shape.", "البيانات والقرارات والواجهات والضوابط تنتمي إلى شكل تشغيلي واحد.")),
+      title: copy("System focus", "تركيز النظام"),
+      detail: text(
+        solution.target_audience,
+        solution.target_audience_ar,
+        copy("How the system ingests signal, applies logic, and interfaces with the team.", "كيف يستقبل النظام الإشارات ويطبق المنطق ويتكامل مع الفريق.")
+      ),
     },
     ownership: {
-      title: copy("Leave capability behind.", "اترك قدرة مستمرة."),
-      detail: copy("The handoff includes documentation, monitoring, ownership, and room to improve after launch.", "يشمل التسليم التوثيق والمراقبة والملكية ومساحة للتحسين بعد الإطلاق."),
+      title: copy("Handover & monitoring", "التسليم والمراقبة"),
+      detail: text(
+        solution.integration_details,
+        solution.integration_details_ar,
+        copy("What the engineering team provides to verify, monitor, and transfer ownership.", "ما يقدمه الفريق الهندسي للتحقق والمراقبة ونقل الملكية.")
+      ),
     },
   };
+
+  const systemSteps = [
+    {
+      icon: Eye,
+      title: copy("Map the constraint", "تحديد القيد"),
+      detail: copy("Identify the signal, decision, or manual bottleneck that needs to change.", "تحديد الإشارة أو القرار أو عنق الزجاجة اليدوي الذي يحتاج إلى تغيير."),
+    },
+    {
+      icon: Layers,
+      title: copy("Structure the system", "هيكلة النظام"),
+      detail: copy("Deploy the models, interfaces, and controls required for production.", "نشر النماذج والواجهات والضوابط المطلوبة لبيئة الإنتاج."),
+    },
+    {
+      icon: ShieldCheck,
+      title: copy("Transfer ownership", "نقل الملكية"),
+      detail: copy("Equip internal teams with documentation, pipelines, and operating controls.", "تزويد الفرق الداخلية بالتوثيق وخطوط العمل وضوابط التشغيل."),
+    },
+  ];
 
   return (
     <div className={`ix-page ${isRTL ? "rtl" : "ltr"}`} dir={isRTL ? "rtl" : "ltr"}>
@@ -89,7 +127,7 @@ export default function SolutionDetail() {
             </Link>
             <div className="mt-8 grid gap-10 lg:grid-cols-[.85fr_1.15fr] lg:items-end">
               <div>
-                <p className="ix-eyebrow text-[#52735F]">
+                <p className="ix-eyebrow text-[#6453C2]">
                   {text(solution.category_name, solution.category_name, copy("Enterprise capability", "قدرة للمؤسسات"))}
                 </p>
                 <h1 className="ix-display mt-6 max-w-3xl text-5xl font-bold text-[#1F2925] sm:text-7xl">
@@ -107,7 +145,7 @@ export default function SolutionDetail() {
                     {copy("Request a project proposal", "اطلب مقترح مشروع")}
                     <ArrowUpRight className="h-4 w-4" />
                   </Button>
-                  <a href="#system" className="ix-button ix-button-secondary h-12">
+                  <a href="#system" className="ix-button ix-button-secondary h-12 bg-white">
                     {copy("See the system shape", "شاهد شكل النظام")}
                     <ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} />
                   </a>
@@ -116,11 +154,11 @@ export default function SolutionDetail() {
 
               {/* Service Hero Image */}
               <div className="relative overflow-hidden rounded-lg border border-[#D8DDD8] bg-white shadow-lg">
-                <ServiceImage service={solution} className="aspect-[4/3] h-full w-full object-cover" loading="eager" fetchPriority="high" />
+                <ServiceImage key={solution.id || solution.slug} service={solution} className="aspect-[4/3] h-full w-full object-cover" loading="eager" fetchPriority="high" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1F2925]/80 via-transparent to-transparent" />
                 <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-4 text-white">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#B8D4C2]">{copy("System profile", "ملف النظام")}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#C8BFF5]">{copy("System profile", "ملف النظام")}</p>
                     <p className="mt-1 text-xl font-bold">{copy("Signal → decision → action", "إشارة ← قرار ← إجراء")}</p>
                   </div>
                   <span className="hidden border border-white/30 px-3 py-1.5 text-xs font-bold sm:block">LIVE / 01</span>
@@ -135,8 +173,8 @@ export default function SolutionDetail() {
           <div className="ix-shell grid gap-0 sm:grid-cols-3">
             {systemSteps.map(({ icon: Icon, title, detail }, index) => (
               <div key={title} className="border-b p-6 sm:border-b-0 sm:border-e sm:last:border-e-0 sm:p-8" style={{ borderColor: "var(--ix-border)" }}>
-                <Icon className="h-5 w-5 text-[#52735F]" />
-                <p className="mt-8 text-xs font-bold text-[#52735F]">0{index + 1}</p>
+                <Icon className="h-5 w-5 text-[#6453C2]" />
+                <p className="mt-8 text-xs font-bold text-[#6453C2]">0{index + 1}</p>
                 <h3 className="mt-3 text-xl font-bold text-[#1F2925]">{title}</h3>
                 <p className="mt-3 text-sm leading-7 text-[#5E6862]">{detail}</p>
               </div>
@@ -167,7 +205,7 @@ export default function SolutionDetail() {
                     key={item.id}
                     onClick={() => setTab(item.id)}
                     className={`border-e px-4 py-4 text-sm font-bold last:border-e-0 sm:px-6 transition-all ${
-                      tab === item.id ? "bg-[#52735F] text-white shadow-sm" : "text-[#5E6862] hover:bg-white/80 hover:text-[#1F2925]"
+                      tab === item.id ? "bg-[#6453C2] text-white shadow-sm" : "text-[#5E6862] hover:bg-white/80 hover:text-[#1F2925]"
                     }`}
                     style={{ borderColor: "var(--ix-border)" }}
                   >
@@ -181,7 +219,7 @@ export default function SolutionDetail() {
                   <h3 className="mt-4 text-3xl font-bold text-[#1F2925]">{activeTabContent[tab].title}</h3>
                   <p className="mt-4 max-w-xl text-lg leading-8 text-[#5E6862]">{activeTabContent[tab].detail}</p>
                 </div>
-                <div className="grid h-20 w-20 place-items-center rounded-full border-4 border-[#E4EBE6] bg-[#F5F4EF] text-center text-xs font-bold text-[#52735F]">
+                <div className="grid h-20 w-20 place-items-center rounded-full border-4 border-[#EFEBFA] bg-[#F5F4EF] text-center text-xs font-bold text-[#6453C2]">
                   <span>
                     {tab === "problem" ? "01" : tab === "system" ? "02" : "03"}
                     <br />/ 03
@@ -211,8 +249,8 @@ export default function SolutionDetail() {
                 ].map(([title, detail], index) => (
                   <article key={title} className="border-b p-6 sm:p-8 sm:[&:nth-child(odd)]:border-e" style={{ borderColor: "var(--ix-border)" }}>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-[#52735F]">0{index + 1}</span>
-                      <Check className="h-4 w-4 text-[#52735F]" />
+                      <span className="text-sm font-bold text-[#6453C2]">0{index + 1}</span>
+                      <Check className="h-4 w-4 text-[#6453C2]" />
                     </div>
                     <h3 className="mt-8 text-xl font-bold text-[#1F2925]">{title}</h3>
                     <p className="mt-3 text-sm leading-7 text-[#5E6862]">{detail}</p>
@@ -245,9 +283,9 @@ export default function SolutionDetail() {
                     className="group border-b p-6 sm:border-e sm:p-8 sm:last:border-e-0 transition-colors hover:bg-[#EAEDEA]/60"
                     style={{ borderColor: "var(--ix-border)" }}
                   >
-                    <p className="text-xs font-bold text-[#52735F]">0{index + 1}</p>
-                    <h3 className="mt-8 text-xl font-bold text-[#1F2925] group-hover:text-[#52735F]">{text(item.title, item.title_ar, item.title)}</h3>
-                    <ArrowRight className={`mt-6 h-4 w-4 text-[#52735F] transition-transform group-hover:translate-x-1 ${isRTL ? "rotate-180 group-hover:-translate-x-1" : ""}`} />
+                    <p className="text-xs font-bold text-[#6453C2]">0{index + 1}</p>
+                    <h3 className="mt-8 text-xl font-bold text-[#1F2925] group-hover:text-[#6453C2]">{text(item.title, item.title_ar, item.title)}</h3>
+                    <ArrowRight className={`mt-6 h-4 w-4 text-[#6453C2] transition-transform group-hover:translate-x-1 ${isRTL ? "rotate-180 group-hover:-translate-x-1" : ""}`} />
                   </Link>
                 ))}
               </div>
@@ -259,7 +297,7 @@ export default function SolutionDetail() {
         <section className="border-t bg-[#EAEDEA]" style={{ borderColor: "var(--ix-border)" }}>
           <div className="ix-shell grid gap-8 py-16 lg:grid-cols-[1.25fr_.75fr] lg:items-end">
             <div>
-              <p className="ix-eyebrow text-[#52735F]">{copy("Next step", "الخطوة التالية")}</p>
+              <p className="ix-eyebrow text-[#6453C2]">{copy("Next step", "الخطوة التالية")}</p>
               <h2 className="ix-display mt-5 max-w-3xl text-4xl font-bold text-[#1F2925] sm:text-6xl">
                 {copy("Bring the operating problem. We’ll define the engineering plan.", "أحضر المشكلة التشغيلية. وسنحدد خطة الهندسة.")}
               </h2>

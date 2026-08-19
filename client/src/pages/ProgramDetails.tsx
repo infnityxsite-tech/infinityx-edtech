@@ -29,7 +29,7 @@ export default function ProgramDetails() {
   if (isLoading) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#F5F4EF] text-[#1F2925]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#52735F]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#6453C2]" />
       </div>
     );
   }
@@ -38,7 +38,7 @@ export default function ProgramDetails() {
     return (
       <div className={`ix-page grid min-h-screen place-items-center bg-[#F5F4EF] px-6 text-center text-[#1F2925] ${isRTL ? "rtl" : "ltr"}`} dir={isRTL ? "rtl" : "ltr"}>
         <div>
-          <Award className="mx-auto h-10 w-10 text-[#52735F]" />
+          <Award className="mx-auto h-10 w-10 text-[#6453C2]" />
           <h1 className="ix-display mt-6 text-4xl font-bold">{copy("Program not found.", "البرنامج غير موجود.")}</h1>
           <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[#5E6862]">
             {copy("This program may no longer be available. Explore the current Academy offering.", "قد لا يكون هذا البرنامج متاحاً حالياً. استكشف عروض الأكاديمية الحالية.")}
@@ -71,7 +71,7 @@ export default function ProgramDetails() {
                 <ArrowLeft className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} />
                 {copy("All programs", "كل البرامج")}
               </Link>
-              <p className="ix-eyebrow mt-8 text-[#52735F]">{copy("Infinity X Academy program", "برنامج أكاديمية إنفينيتي إكس")}</p>
+              <p className="ix-eyebrow mt-8 text-[#6453C2]">{copy("Infinity X Academy program", "برنامج أكاديمية إنفينيتي إكس")}</p>
               <h1 className="ix-display mt-6 max-w-3xl text-5xl font-bold text-[#1F2925] sm:text-6xl">{copy(program.title, program.titleAr, program.title)}</h1>
               <p className="mt-7 max-w-2xl text-lg leading-8 text-[#5E6862]">{copy(program.description, program.descriptionAr, program.description)}</p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -90,10 +90,10 @@ export default function ProgramDetails() {
               {program.imageUrl ? (
                 <img src={program.imageUrl} alt={copy(program.title, program.titleAr, program.title)} className="absolute inset-0 h-full w-full object-cover" loading="eager" />
               ) : (
-                <div className="absolute inset-0 bg-[#EAEDEA] bg-[linear-gradient(135deg,rgba(82,115,95,.15)_1px,transparent_1px),linear-gradient(45deg,rgba(31,41,37,.08)_1px,transparent_1px)] bg-[size:30px_30px]" />
+                <div className="absolute inset-0 bg-[#EAEDEA] bg-[linear-gradient(135deg,rgba(100,83,194,.15)_1px,transparent_1px),linear-gradient(45deg,rgba(31,41,37,.08)_1px,transparent_1px)] bg-[size:30px_30px]" />
               )}
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#1F2925]/85 via-[#1F2925]/50 to-transparent p-7 pt-20 text-white">
-                <p className="ix-eyebrow text-[#B8D4C2]">{copy("Project-based learning", "تعلم قائم على المشاريع")}</p>
+                <p className="ix-eyebrow text-[#C8BFF5]">{copy("Project-based learning", "تعلم قائم على المشاريع")}</p>
                 <p className="mt-2 max-w-md text-2xl font-bold tracking-[-.035em]">
                   {copy("A structured path from guided practice to applied work.", "مسار منظم من الممارسة الموجهة إلى العمل التطبيقي.")}
                 </p>
@@ -109,7 +109,7 @@ export default function ProgramDetails() {
               {facts.map(({ label, value, icon: Icon }) => (
                 <div key={label} className="border-b p-6 lg:border-e lg:last:border-e-0" style={{ borderColor: "var(--ix-border)" }}>
                   <dt className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.15em] text-[#7B847F]">
-                    <Icon className="h-3.5 w-3.5 text-[#52735F]" />
+                    <Icon className="h-3.5 w-3.5 text-[#6453C2]" />
                     {label}
                   </dt>
                   <dd className="mt-3 text-sm font-bold leading-6 text-[#1F2925]">{value}</dd>
@@ -173,7 +173,7 @@ export default function ProgramDetails() {
                   <details key={module.id} open={index === 0} className="group border-b border-[#D8DDD8] last:border-b-0">
                     <summary className="flex list-none items-center justify-between gap-5 py-6 marker:content-none cursor-pointer">
                       <div className="grid gap-3 sm:grid-cols-[58px_1fr]">
-                        <span className="text-sm font-bold text-[#52735F]">{String(index + 1).padStart(2, "0")}</span>
+                        <span className="text-sm font-bold text-[#6453C2]">{String(index + 1).padStart(2, "0")}</span>
                         <div>
                           <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#7B847F]">
                             {copy("Module", "وحدة")} {index + 1}
@@ -183,7 +183,7 @@ export default function ProgramDetails() {
                           {module.description && <p className="mt-2 max-w-xl text-sm leading-6 text-[#5E6862]">{copy(module.description, module.descriptionAr, module.description)}</p>}
                         </div>
                       </div>
-                      <ChevronDown className="h-5 w-5 shrink-0 text-[#52735F] transition-transform group-open:rotate-180" />
+                      <ChevronDown className="h-5 w-5 shrink-0 text-[#6453C2] transition-transform group-open:rotate-180" />
                     </summary>
                     <div className="pb-7 ps-0 sm:ps-[58px]">
                       <div className="border-s border-[#D8DDD8] ps-5">
@@ -220,7 +220,7 @@ export default function ProgramDetails() {
         <section className="border-t bg-[#EAEDEA]" style={{ borderColor: "var(--ix-border)" }}>
           <div className="ix-shell grid gap-8 py-16 sm:grid-cols-[1.35fr_.65fr] sm:items-end">
             <div>
-              <p className="ix-eyebrow text-[#52735F]">{copy("Application", "التقديم")}</p>
+              <p className="ix-eyebrow text-[#6453C2]">{copy("Application", "التقديم")}</p>
               <h2 className="ix-display mt-5 max-w-2xl text-4xl font-bold text-[#1F2925]">{copy("Ready to turn interest into practical work?", "هل أنت مستعد لتحويل الاهتمام إلى عمل عملي؟")}</h2>
               <p className="mt-4 max-w-xl text-sm leading-7 text-[#5E6862]">{copy("Submit your details and the admissions team will review your application.", "أرسل بياناتك وسيراجع فريق القبول طلبك.")}</p>
             </div>

@@ -28,7 +28,7 @@ export default function About() {
   if (isLoading) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#F5F4EF] text-[#1F2925]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#52735F]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#6453C2]" />
       </div>
     );
   }
@@ -41,7 +41,7 @@ export default function About() {
         <section className="bg-[#F5F4EF] text-[#1F2925] border-b border-[#D8DDD8]/60">
           <div className="ix-shell grid min-h-[600px] gap-10 py-12 sm:py-16 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <p className="ix-eyebrow text-[#52735F]">{copy("Infinity X / company", "إنفينيتي إكس / الشركة")}</p>
+              <p className="ix-eyebrow text-[#6453C2]">{copy("Infinity X / company", "إنفينيتي إكس / الشركة")}</p>
               <h1 className="ix-display mt-6 max-w-4xl text-5xl font-bold text-[#1F2925] sm:text-7xl">
                 {copy("We build the capability behind the system.", "نبني القدرة خلف النظام.")}
               </h1>
@@ -60,22 +60,22 @@ export default function About() {
             {/* 4-Box Pillars */}
             <div className="grid w-full max-w-md grid-cols-2 border border-[#D8DDD8] bg-white shadow-sm">
               <div className="border-e border-b border-[#D8DDD8] p-6">
-                <ScanLine className="h-5 w-5 text-[#52735F]" />
+                <ScanLine className="h-5 w-5 text-[#6453C2]" />
                 <p className="mt-10 text-xl font-bold text-[#1F2925]">{copy("Build", "ابنِ")}</p>
                 <p className="mt-2 text-sm leading-6 text-[#5E6862]">{copy("The system around the operation.", "النظام حول العملية.")}</p>
               </div>
               <div className="border-b border-[#D8DDD8] bg-[#EAEDEA]/60 p-6">
-                <Workflow className="h-5 w-5 text-[#52735F]" />
+                <Workflow className="h-5 w-5 text-[#6453C2]" />
                 <p className="mt-10 text-xl font-bold text-[#1F2925]">{copy("Embed", "رسّخ")}</p>
                 <p className="mt-2 text-sm leading-6 text-[#5E6862]">{copy("The workflow people actually use.", "سير العمل الذي يستخدمه الناس فعلاً.")}</p>
               </div>
               <div className="border-e border-[#D8DDD8] bg-[#EAEDEA]/60 p-6">
-                <ShieldCheck className="h-5 w-5 text-[#52735F]" />
+                <ShieldCheck className="h-5 w-5 text-[#6453C2]" />
                 <p className="mt-10 text-xl font-bold text-[#1F2925]">{copy("Transfer", "انقل")}</p>
                 <p className="mt-2 text-sm leading-6 text-[#5E6862]">{copy("The capability that remains after launch.", "القدرة التي تبقى بعد الإطلاق.")}</p>
               </div>
               <div className="p-6">
-                <p className="text-3xl font-bold text-[#52735F]">∞</p>
+                <p className="text-3xl font-bold text-[#6453C2]">∞</p>
                 <p className="mt-10 text-xl font-bold text-[#1F2925]">{copy("Improve", "حسّن")}</p>
                 <p className="mt-2 text-sm leading-6 text-[#5E6862]">{copy("The room to keep making it better.", "المساحة لمواصلة التحسين.")}</p>
               </div>
@@ -118,21 +118,21 @@ export default function About() {
             </div>
             <div className="mt-12 grid gap-6 md:grid-cols-3">
               <div className="bg-white border border-[#D8DDD8] p-8 shadow-sm">
-                <p className="text-4xl font-bold text-[#52735F]">01</p>
+                <p className="text-4xl font-bold text-[#6453C2]">01</p>
                 <h3 className="mt-10 text-2xl font-bold text-[#1F2925]">{copy("Understand", "افهم")}</h3>
                 <p className="mt-4 text-sm leading-7 text-[#5E6862]">
                   {copy("Map the workflow, decision points, data conditions, and constraints that define useful technology.", "نرسم سير العمل ونقاط القرار وحالة البيانات والقيود التي تحدد التقنية المفيدة.")}
                 </p>
               </div>
               <div className="bg-white border border-[#D8DDD8] p-8 shadow-sm">
-                <p className="text-4xl font-bold text-[#52735F]">02</p>
+                <p className="text-4xl font-bold text-[#6453C2]">02</p>
                 <h3 className="mt-10 text-2xl font-bold text-[#1F2925]">{copy("Engineer", "اهندس")}</h3>
                 <p className="mt-4 text-sm leading-7 text-[#5E6862]">
                   {copy("Build the intelligence, interface, integration, and controls required for a system to operate.", "نبني الذكاء والواجهة والتكامل والضوابط المطلوبة لكي يعمل النظام.")}
                 </p>
               </div>
               <div className="bg-white border border-[#D8DDD8] p-8 shadow-sm">
-                <p className="text-4xl font-bold text-[#52735F]">03</p>
+                <p className="text-4xl font-bold text-[#6453C2]">03</p>
                 <h3 className="mt-10 text-2xl font-bold text-[#1F2925]">{copy("Embed", "رسّخ")}</h3>
                 <p className="mt-4 text-sm leading-7 text-[#5E6862]">
                   {copy("Help the organisation operate and evolve the system, with capability transfer built in.", "نساعد المؤسسة على تشغيل النظام وتطويره مع نقل القدرة ضمن العملية.")}
@@ -152,10 +152,10 @@ export default function About() {
             <div className="grid border border-[#D8DDD8] bg-white shadow-sm" style={{ borderColor: "var(--ix-border)" }}>
               {principles.map(([en, ar], index) => (
                 <div key={en} className="grid grid-cols-[52px_1fr] gap-4 border-b p-6 last:border-b-0 sm:p-8" style={{ borderColor: "var(--ix-border)" }}>
-                  <span className="text-sm font-bold text-[#52735F]">{String(index + 1).padStart(2, "0")}</span>
+                  <span className="text-sm font-bold text-[#6453C2]">{String(index + 1).padStart(2, "0")}</span>
                   <div>
                     <p className="text-xl font-bold leading-8 text-[#1F2925]">{t(en, ar, en)}</p>
-                    <Check className="mt-4 h-4 w-4 text-[#52735F]" />
+                    <Check className="mt-4 h-4 w-4 text-[#6453C2]" />
                   </div>
                 </div>
               ))}
@@ -190,7 +190,7 @@ export default function About() {
         <section className="border-t bg-[#EAEDEA]" style={{ borderColor: "var(--ix-border)" }}>
           <div className="ix-shell grid gap-8 py-16 lg:grid-cols-[1.3fr_.7fr] lg:items-end">
             <div>
-              <p className="ix-eyebrow text-[#52735F]">{copy("Work with us", "اعمل معنا")}</p>
+              <p className="ix-eyebrow text-[#6453C2]">{copy("Work with us", "اعمل معنا")}</p>
               <h2 className="ix-display mt-5 max-w-3xl text-4xl font-bold text-[#1F2925] sm:text-6xl">
                 {copy("Bring the operating problem. We’ll bring the engineering plan.", "أحضر المشكلة التشغيلية. وسنقدم خطة الهندسة.")}
               </h2>

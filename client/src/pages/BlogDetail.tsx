@@ -32,7 +32,7 @@ function CustomLink({ href, children }: { href?: string; children?: React.ReactN
       href={href}
       target={isExternal ? "_blank" : undefined}
       rel={isExternal ? "noopener noreferrer" : undefined}
-      className="text-[#52735F] hover:text-[#43614F] underline underline-offset-4 decoration-[#52735F]/40 hover:decoration-[#52735F] font-medium transition-colors cursor-pointer"
+      className="text-[#6453C2] hover:text-[#5342AE] underline underline-offset-4 decoration-[#6453C2]/40 hover:decoration-[#6453C2] font-medium transition-colors cursor-pointer"
     >
       {children}
     </a>
@@ -115,7 +115,7 @@ export default function BlogDetail() {
       <div className="ix-page min-h-screen bg-[#F5F4EF] text-[#1F2925]">
         <Navigation />
         <div className="flex items-center justify-center h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-[#52735F]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#6453C2]" />
         </div>
       </div>
     );
@@ -129,7 +129,7 @@ export default function BlogDetail() {
           <h1 className="text-2xl font-bold text-[#1F2925] mb-2">Unable to Load Article</h1>
           <p className="text-[#5E6862] mb-6">A temporary error occurred while loading this article. Please try again shortly.</p>
           <Link href="/blog">
-            <Button className="bg-[#52735F] hover:bg-[#43614F] text-white rounded-xl">Return to Blog</Button>
+            <Button className="bg-[#6453C2] hover:bg-[#5342AE] text-white rounded-xl">Return to Blog</Button>
           </Link>
         </div>
       </div>
@@ -144,7 +144,7 @@ export default function BlogDetail() {
           <h1 className="text-2xl font-bold text-[#1F2925] mb-2">Post Not Found</h1>
           <p className="text-[#5E6862] mb-6">The article you are looking for does not exist or has been removed.</p>
           <Link href="/blog">
-            <Button className="bg-[#52735F] hover:bg-[#43614F] text-white rounded-xl">Return to Blog</Button>
+            <Button className="bg-[#6453C2] hover:bg-[#5342AE] text-white rounded-xl">Return to Blog</Button>
           </Link>
         </div>
       </div>
@@ -167,13 +167,13 @@ export default function BlogDetail() {
           <h1 className="text-3xl md:text-5xl font-bold mb-6 leading-tight text-[#1F2925]">{post!.title}</h1>
           <div className="flex items-center gap-6 text-[#5E6862]">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-[#E4EBE6] border border-[#D8DDD8] flex items-center justify-center text-[#52735F] text-xs font-bold">
+              <div className="w-7 h-7 rounded-full bg-[#EFEBFA] border border-[#D8DDD8] flex items-center justify-center text-[#6453C2] text-xs font-bold">
                 {(post!.author || "A").charAt(0)}
               </div>
               <span className="text-sm font-semibold">{post!.author}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <Calendar className="w-4 h-4 text-[#52735F]" />
+              <Calendar className="w-4 h-4 text-[#6453C2]" />
               {new Date(post!.publishedAt).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
@@ -197,11 +197,11 @@ export default function BlogDetail() {
             className="prose prose-lg max-w-none
             prose-headings:text-[#1F2925] prose-headings:font-bold
             prose-p:text-[#5E6862] prose-p:leading-relaxed
-            prose-a:text-[#52735F] prose-a:no-underline hover:prose-a:underline
+            prose-a:text-[#6453C2] prose-a:no-underline hover:prose-a:underline
             prose-strong:text-[#1F2925]
-            prose-code:text-[#52735F] prose-code:bg-[#EAEDEA] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+            prose-code:text-[#6453C2] prose-code:bg-[#EAEDEA] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
             prose-pre:bg-white prose-pre:border prose-pre:border-[#D8DDD8] prose-pre:rounded-xl
-            prose-blockquote:border-[#52735F] prose-blockquote:text-[#5E6862]
+            prose-blockquote:border-[#6453C2] prose-blockquote:text-[#5E6862]
             prose-li:text-[#5E6862]
             prose-img:rounded-xl prose-img:border prose-img:border-[#D8DDD8]
           "
@@ -218,7 +218,7 @@ export default function BlogDetail() {
             <h2 className="text-2xl font-bold mb-3 text-[#1F2925]">More Articles</h2>
             <p className="text-[#5E6862] mb-6">Explore more insights on AI, Space Tech, and Engineering.</p>
             <Link href="/blog">
-              <Button className="bg-[#52735F] hover:bg-[#43614F] text-white rounded-xl px-8 shadow-md shadow-[#52735F]/20">
+              <Button className="bg-[#6453C2] hover:bg-[#5342AE] text-white rounded-xl px-8 shadow-md shadow-[#6453C2]/20">
                 Read More Blog Posts
               </Button>
             </Link>

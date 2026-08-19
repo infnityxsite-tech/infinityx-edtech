@@ -50,7 +50,7 @@ export default function Consultation() {
   const rule = isLight ? "border-[#D8DDD8]" : "border-white/10";
   const panel = isLight ? "bg-white" : "bg-[#141A16]";
   const muted = isLight ? "text-[#5E6862]" : "text-slate-300";
-  const control = `mt-2 h-11 w-full rounded-md border px-3 text-sm outline-none transition-colors focus:border-[#52735F] focus:ring-2 focus:ring-[#52735F]/15 ${
+  const control = `mt-2 h-11 w-full rounded-md border px-3 text-sm outline-none transition-colors focus:border-[#6453C2] focus:ring-2 focus:ring-[#6453C2]/15 ${
     isLight ? "border-[#D8DDD8] bg-white text-[#1F2925]" : "border-white/20 bg-white/[.03] text-white"
   }`;
 
@@ -62,7 +62,7 @@ export default function Consultation() {
         <section className={`border-b pt-12 sm:pt-16 ${rule}`}>
           <div className="mx-auto grid max-w-7xl gap-12 px-6 pb-14 lg:grid-cols-[1fr_1fr] lg:px-8 lg:pb-20">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[.16em] text-[#52735F]">{copy("Enterprise project brief", "موجز مشروع مؤسسي")}</p>
+              <p className="text-xs font-bold uppercase tracking-[.16em] text-[#6453C2]">{copy("Enterprise project brief", "موجز مشروع مؤسسي")}</p>
               <h1 className="mt-6 max-w-2xl text-5xl font-extrabold tracking-[-.065em] text-[#1F2925] sm:text-6xl">
                 {copy("Start with the operating challenge, not a technology label.", "ابدأ بالتحدي التشغيلي، لا باسم التقنية.")}
               </h1>
@@ -77,7 +77,7 @@ export default function Consultation() {
               <ol className="mt-8 grid border-t border-[#D8DDD8] sm:grid-cols-3">
                 {[copy("Describe", "صف"), copy("Submit", "أرسل"), copy("Continue", "تابع")].map((step, index) => (
                   <li key={step} className="border-b border-[#D8DDD8] py-4 text-sm font-bold sm:border-e sm:px-4 sm:first:ps-0 sm:last:border-e-0">
-                    <span className="me-2 text-[#52735F]">0{index + 1}</span>
+                    <span className="me-2 text-[#6453C2]">0{index + 1}</span>
                     {step}
                   </li>
                 ))}
@@ -91,8 +91,8 @@ export default function Consultation() {
           <div className={`border ${rule} ${panel} shadow-sm`}>
             {submitted ? (
               <div className="p-8 sm:p-12">
-                <CheckCircle2 className="h-9 w-9 text-[#52735F]" />
-                <p className="mt-8 text-xs font-bold uppercase tracking-[.16em] text-[#52735F]">{copy("Project brief received", "تم استلام موجز المشروع")}</p>
+                <CheckCircle2 className="h-9 w-9 text-[#6453C2]" />
+                <p className="mt-8 text-xs font-bold uppercase tracking-[.16em] text-[#6453C2]">{copy("Project brief received", "تم استلام موجز المشروع")}</p>
                 <h2 className="mt-4 text-4xl font-extrabold tracking-[-.05em] text-[#1F2925]">{copy("Thank you. We have the context to begin.", "شكراً لك. لدينا الآن السياق للبدء.")}</h2>
                 <p className={`mt-5 max-w-lg leading-7 ${muted}`}>
                   {copy(
@@ -103,7 +103,7 @@ export default function Consultation() {
               </div>
             ) : (
               <form onSubmit={submit} className="p-7 sm:p-10">
-                <p className="text-xs font-bold uppercase tracking-[.16em] text-[#52735F]">{copy("Your operation", "عملياتك")}</p>
+                <p className="text-xs font-bold uppercase tracking-[.16em] text-[#6453C2]">{copy("Your operation", "عملياتك")}</p>
                 <h2 className="mt-3 border-b border-[#D8DDD8] pb-7 text-2xl font-extrabold tracking-[-.035em] text-[#1F2925]">
                   {copy("Give the engineering team a useful starting point.", "امنح الفريق الهندسي نقطة بداية مفيدة.")}
                 </h2>
@@ -170,7 +170,7 @@ export default function Consultation() {
                   <p className={`max-w-sm text-xs leading-5 ${muted}`}>
                     {copy("This form begins a project conversation. It does not generate a proposal automatically.", "يبدأ هذا النموذج محادثة حول المشروع، ولا ينشئ مقترحاً تلقائياً.")}
                   </p>
-                  <Button type="submit" disabled={mutation.isPending} className="h-12 rounded-md bg-[#52735F] px-5 font-bold text-white hover:bg-[#43614F]">
+                  <Button type="submit" disabled={mutation.isPending} className="h-12 rounded-md bg-[#6453C2] px-5 font-bold text-white hover:bg-[#5342AE]">
                     {mutation.isPending ? (
                       <>
                         <Loader2 className="me-2 h-4 w-4 animate-spin" />
@@ -188,7 +188,7 @@ export default function Consultation() {
             )}
           </div>
           <aside className={`self-start border-s ps-0 pt-2 lg:ps-8 ${rule}`}>
-            <p className="text-xs font-bold uppercase tracking-[.16em] text-[#52735F]">{copy("A useful brief", "موجز مفيد")}</p>
+            <p className="text-xs font-bold uppercase tracking-[.16em] text-[#6453C2]">{copy("A useful brief", "موجز مفيد")}</p>
             <div className={`mt-6 space-y-6 border-t pt-6 ${rule}`}>
               {[
                 [copy("Operating context", "السياق التشغيلي"), copy("What happens today, who is involved, and what conditions define the work.", "ما الذي يحدث اليوم، ومن يشارك، وما الظروف التي تحدد العمل.")],

@@ -33,7 +33,7 @@ export default function AcademyHub() {
         <section className="bg-[#F5F4EF] text-[#1F2925] border-b border-[#D8DDD8]/60">
           <div className="ix-shell grid min-h-[600px] gap-10 py-12 sm:py-16 lg:grid-cols-[.85fr_1.15fr] lg:items-end">
             <div>
-              <p className="ix-eyebrow text-[#52735F]">{copy("Infinity X / Academy", "إنفينيتي إكس / الأكاديمية")}</p>
+              <p className="ix-eyebrow text-[#6453C2]">{copy("Infinity X / Academy", "إنفينيتي إكس / الأكاديمية")}</p>
               <h1 className="ix-display mt-6 max-w-3xl text-5xl font-bold text-[#1F2925] sm:text-7xl">
                 {copy("Learn by building the system.", "تعلم من خلال بناء النظام.")}
               </h1>
@@ -55,15 +55,15 @@ export default function AcademyHub() {
               </div>
               <div className="mt-12 grid max-w-xl grid-cols-3 border-y border-[#D8DDD8]">
                 <div className="py-4">
-                  <p className="text-2xl font-bold text-[#52735F]">04</p>
+                  <p className="text-2xl font-bold text-[#6453C2]">04</p>
                   <p className="mt-1 text-[10px] uppercase tracking-[.15em] text-[#7B847F]">{copy("Disciplines", "تخصصات")}</p>
                 </div>
                 <div className="border-s border-[#D8DDD8] py-4 ps-4">
-                  <p className="text-2xl font-bold text-[#52735F]">02</p>
+                  <p className="text-2xl font-bold text-[#6453C2]">02</p>
                   <p className="mt-1 text-[10px] uppercase tracking-[.15em] text-[#7B847F]">{copy("Formats", "أنماط")}</p>
                 </div>
                 <div className="border-s border-[#D8DDD8] py-4 ps-4">
-                  <p className="text-2xl font-bold text-[#52735F]">01</p>
+                  <p className="text-2xl font-bold text-[#6453C2]">01</p>
                   <p className="mt-1 text-[10px] uppercase tracking-[.15em] text-[#7B847F]">{copy("Student portal", "بوابة طالب")}</p>
                 </div>
               </div>
@@ -80,7 +80,7 @@ export default function AcademyHub() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#1F2925]/80 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between gap-5 text-white">
                 <div>
-                  <p className="ix-eyebrow text-[#B8D4C2]">{copy("The learning loop", "حلقة التعلم")}</p>
+                  <p className="ix-eyebrow text-[#C8BFF5]">{copy("The learning loop", "حلقة التعلم")}</p>
                   <p className="mt-1 text-2xl font-bold">{copy("Study → build → review → ship", "ادرس ← ابنِ ← راجع ← انشر")}</p>
                 </div>
                 <span className="hidden border border-white/30 px-3 py-1.5 text-xs font-bold sm:block">LAB / 01</span>
@@ -93,22 +93,22 @@ export default function AcademyHub() {
         <section className="border-b bg-[#EAEDEA]" style={{ borderColor: "var(--ix-border)" }}>
           <div className="ix-shell grid gap-0 md:grid-cols-4">
             <div className="border-b py-7 md:border-b-0 md:border-e md:pe-6" style={{ borderColor: "var(--ix-border)" }}>
-              <p className="text-xs font-bold text-[#52735F]">01</p>
+              <p className="text-xs font-bold text-[#6453C2]">01</p>
               <p className="mt-3 font-bold text-[#1F2925]">{copy("Choose a discipline", "اختر تخصصاً")}</p>
               <p className="mt-2 text-sm leading-6" style={{ color: "var(--ix-text-secondary)" }}>{copy("Start with the work you want to do.", "ابدأ بالعمل الذي تريد إنجازه.")}</p>
             </div>
             <div className="border-b py-7 md:border-b-0 md:border-e md:px-6" style={{ borderColor: "var(--ix-border)" }}>
-              <p className="text-xs font-bold text-[#52735F]">02</p>
+              <p className="text-xs font-bold text-[#6453C2]">02</p>
               <p className="mt-3 font-bold text-[#1F2925]">{copy("Compare programs", "قارن البرامج")}</p>
               <p className="mt-2 text-sm leading-6" style={{ color: "var(--ix-text-secondary)" }}>{copy("See format, duration, and outcomes.", "اطلع على النمط والمدة والمخرجات.")}</p>
             </div>
             <div className="border-b py-7 md:border-b-0 md:border-e md:px-6" style={{ borderColor: "var(--ix-border)" }}>
-              <p className="text-xs font-bold text-[#52735F]">03</p>
+              <p className="text-xs font-bold text-[#6453C2]">03</p>
               <p className="mt-3 font-bold text-[#1F2925]">{copy("Apply", "قدم طلبك")}</p>
               <p className="mt-2 text-sm leading-6" style={{ color: "var(--ix-text-secondary)" }}>{copy("Submit the information needed for admission.", "قدم المعلومات المطلوبة للالتحاق.")}</p>
             </div>
             <div className="py-7 md:ps-6">
-              <p className="text-xs font-bold text-[#52735F]">04</p>
+              <p className="text-xs font-bold text-[#6453C2]">04</p>
               <p className="mt-3 font-bold text-[#1F2925]">{copy("Learn", "تعلم")}</p>
               <p className="mt-2 text-sm leading-6" style={{ color: "var(--ix-text-secondary)" }}>{copy("Continue the work in your Student Portal.", "واصل العمل في بوابة الطالب.")}</p>
             </div>
@@ -136,12 +136,12 @@ export default function AcademyHub() {
                       key={item.slug}
                       onClick={() => setSelected(index)}
                       className={`border-e p-5 text-start transition-all last:border-e-0 sm:p-6 ${
-                        active ? "bg-[#52735F] text-white shadow-sm" : "text-[#1F2925] hover:bg-white/80"
+                        active ? "bg-[#6453C2] text-white shadow-sm" : "text-[#1F2925] hover:bg-white/80"
                       }`}
                       style={{ borderColor: "var(--ix-border)" }}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <Icon className={`h-5 w-5 ${active ? "text-[#B8D4C2]" : "text-[#52735F]"}`} />
+                        <Icon className={`h-5 w-5 ${active ? "text-[#C8BFF5]" : "text-[#6453C2]"}`} />
                         <span className={`text-xs font-bold ${active ? "text-white/80" : "text-[#7B847F]"}`}>0{index + 1}</span>
                       </div>
                       <p className={`mt-8 text-sm font-bold leading-5 ${active ? "text-white" : "text-[#1F2925]"}`}>{t(item.name, item.arabic, item.name)}</p>
@@ -154,7 +154,7 @@ export default function AcademyHub() {
                   <p className="ix-kicker">{copy("Selected discipline", "التخصص المحدد")}</p>
                   <h3 className="ix-display mt-4 text-4xl font-bold text-[#1F2925]">{t(school.name, school.arabic, school.name)}</h3>
                   <p className="mt-4 max-w-xl text-lg leading-8" style={{ color: "var(--ix-text-secondary)" }}>{t(school.detail, school.detail, school.detail)}</p>
-                  <p className="mt-4 flex items-center gap-2 text-sm font-bold text-[#1F2925]"><Check className="h-4 w-4 text-[#52735F]" />{t(school.signal, school.signal, school.signal)}</p>
+                  <p className="mt-4 flex items-center gap-2 text-sm font-bold text-[#1F2925]"><Check className="h-4 w-4 text-[#6453C2]" />{t(school.signal, school.signal, school.signal)}</p>
                 </div>
                 <Link href={`/academy/${school.slug}`} className="ix-button ix-button-primary">
                   {copy("Explore discipline", "استكشف التخصص")}
@@ -179,17 +179,17 @@ export default function AcademyHub() {
               </Link>
             </div>
             <div className="mt-12 grid gap-6 md:grid-cols-2">
-              <Link href="/courses/live" className="group bg-white border border-[#D8DDD8] p-8 shadow-sm transition-all hover:border-[#52735F] hover:shadow-md sm:p-10">
-                <p className="text-xs font-bold text-[#52735F]">LIVE / 01</p>
-                <h3 className="mt-12 text-3xl font-bold text-[#1F2925] group-hover:text-[#52735F] transition-colors">{copy("Build with a cohort.", "ابنِ ضمن دفعة.")}</h3>
+              <Link href="/courses/live" className="group bg-white border border-[#D8DDD8] p-8 shadow-sm transition-all hover:border-[#6453C2] hover:shadow-md sm:p-10">
+                <p className="text-xs font-bold text-[#6453C2]">LIVE / 01</p>
+                <h3 className="mt-12 text-3xl font-bold text-[#1F2925] group-hover:text-[#6453C2] transition-colors">{copy("Build with a cohort.", "ابنِ ضمن دفعة.")}</h3>
                 <p className="mt-4 max-w-md text-sm leading-7 text-[#5E6862]">{copy("Interactive sessions, instructor guidance, and a pace that keeps the work moving.", "جلسات تفاعلية وتوجيه من المدرب وإيقاع يحافظ على تقدم العمل.")}</p>
-                <span className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#52735F]">{copy("Explore live courses", "استكشف الدورات المباشرة")}<ArrowUpRight className="h-4 w-4" /></span>
+                <span className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#6453C2]">{copy("Explore live courses", "استكشف الدورات المباشرة")}<ArrowUpRight className="h-4 w-4" /></span>
               </Link>
-              <Link href="/courses/recorded" className="group bg-white border border-[#D8DDD8] p-8 shadow-sm transition-all hover:border-[#52735F] hover:shadow-md sm:p-10">
-                <p className="text-xs font-bold text-[#52735F]">ON DEMAND / 02</p>
-                <h3 className="mt-12 text-3xl font-bold text-[#1F2925] group-hover:text-[#52735F] transition-colors">{copy("Build on your schedule.", "ابنِ وفق جدولك.")}</h3>
+              <Link href="/courses/recorded" className="group bg-white border border-[#D8DDD8] p-8 shadow-sm transition-all hover:border-[#6453C2] hover:shadow-md sm:p-10">
+                <p className="text-xs font-bold text-[#6453C2]">ON DEMAND / 02</p>
+                <h3 className="mt-12 text-3xl font-bold text-[#1F2925] group-hover:text-[#6453C2] transition-colors">{copy("Build on your schedule.", "ابنِ وفق جدولك.")}</h3>
                 <p className="mt-4 max-w-md text-sm leading-7 text-[#5E6862]">{copy("Structured recorded courses for focused practice when the timing needs to be yours.", "دورات مسجلة منظمة للممارسة المركزة عندما يكون التوقيت ملكاً لك.")}</p>
-                <span className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#52735F]">{copy("Explore recorded courses", "استكشف الدورات المسجلة")}<ArrowUpRight className="h-4 w-4" /></span>
+                <span className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#6453C2]">{copy("Explore recorded courses", "استكشف الدورات المسجلة")}<ArrowUpRight className="h-4 w-4" /></span>
               </Link>
             </div>
           </div>

@@ -180,7 +180,7 @@ export default function StudentLogin() {
             <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
                 <Link href="/">
                     <div className="flex justify-center items-center gap-2.5 cursor-pointer mb-8 group">
-                        <div className="bg-[#52735F] p-2 rounded-xl shadow-md shadow-[#52735F]/20">
+                        <div className="bg-[#6453C2] p-2 rounded-xl shadow-md shadow-[#6453C2]/20">
                             <GraduationCap className="w-7 h-7 text-white" />
                         </div>
                         <span className={`text-2xl font-extrabold ${isLight ? 'text-[#1F2925]' : 'text-white'}`}>
@@ -216,7 +216,7 @@ export default function StudentLogin() {
                                         id="name" type="text" value={name}
                                         onChange={e => setName(e.target.value)}
                                         placeholder={t("Ahmed Hassan", "أحمد حسن", "Ahmed Hassan")}
-                                        className={`h-11 border focus:ring-[#52735F]/20 focus:border-[#52735F] rounded-xl ${isLight ? 'bg-[#F5F4EF] border-[#D8DDD8] text-[#1F2925] placeholder:text-[#7B847F]' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
+                                        className={`h-11 border focus:ring-[#6453C2]/20 focus:border-[#6453C2] rounded-xl ${isLight ? 'bg-[#F5F4EF] border-[#D8DDD8] text-[#1F2925] placeholder:text-[#7B847F]' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
                                     />
                                 </div>
                             )}
@@ -227,7 +227,7 @@ export default function StudentLogin() {
                                     id="email" type="email" value={email}
                                     onChange={e => setEmail(e.target.value)}
                                     placeholder="student@example.com"
-                                    className={`h-11 border focus:ring-[#52735F]/20 focus:border-[#52735F] rounded-xl ${isLight ? 'bg-[#F5F4EF] border-[#D8DDD8] text-[#1F2925] placeholder:text-[#7B847F]' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
+                                    className={`h-11 border focus:ring-[#6453C2]/20 focus:border-[#6453C2] rounded-xl ${isLight ? 'bg-[#F5F4EF] border-[#D8DDD8] text-[#1F2925] placeholder:text-[#7B847F]' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
                                 />
                             </div>
 
@@ -237,14 +237,14 @@ export default function StudentLogin() {
                                     id="password" type="password" value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className={`h-11 border focus:ring-[#52735F]/20 focus:border-[#52735F] rounded-xl ${isLight ? 'bg-[#F5F4EF] border-[#D8DDD8] text-[#1F2925] placeholder:text-[#7B847F]' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
+                                    className={`h-11 border focus:ring-[#6453C2]/20 focus:border-[#6453C2] rounded-xl ${isLight ? 'bg-[#F5F4EF] border-[#D8DDD8] text-[#1F2925] placeholder:text-[#7B847F]' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
                                 />
                             </div>
 
                             <div className="pt-2 flex flex-col gap-3">
                                 <Button
                                     type="submit"
-                                    className="w-full h-11 bg-[#52735F] hover:bg-[#43614F] text-white shadow-md shadow-[#52735F]/20 text-sm font-semibold rounded-xl"
+                                    className="w-full h-11 bg-[#6453C2] hover:bg-[#5342AE] text-white shadow-md shadow-[#6453C2]/20 text-sm font-semibold rounded-xl"
                                     disabled={isLoading || isGoogleLoading}
                                 >
                                     {isLoading ? (
@@ -288,7 +288,7 @@ export default function StudentLogin() {
                             <button
                                 type="button"
                                 onClick={() => setIsLogin(!isLogin)}
-                                className={`mx-1.5 font-semibold transition-colors ${isLight ? 'text-[#52735F] hover:text-[#43614F]' : 'text-cyan-400 hover:text-cyan-300'}`}
+                                className={`mx-1.5 font-semibold transition-colors ${isLight ? 'text-[#6453C2] hover:text-[#5342AE]' : 'text-cyan-400 hover:text-cyan-300'}`}
                             >
                                 {isLogin ? t("Register now", "سجل الآن", "Register now") : t("Sign in instead", "سجل الدخول بدلاً من ذلك", "Sign in instead")}
                             </button>

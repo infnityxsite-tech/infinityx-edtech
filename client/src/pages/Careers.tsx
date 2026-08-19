@@ -76,14 +76,14 @@ export default function Careers() {
       {/* 🏛️ HERO SECTION */}
       <section className={`relative pt-12 sm:pt-16 pb-14 border-b border-[#D8DDD8]/60 overflow-hidden`}>
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 text-center z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4 md:mb-6 bg-[#E4EBE6] border border-[#D8DDD8] text-[#52735F]">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4 md:mb-6 bg-[#EFEBFA] border border-[#D8DDD8] text-[#6453C2]">
             <Sparkles className="w-3.5 h-3.5" />
             <span>{t("We are hiring!", "نحن نوظف!", "We are hiring!")}</span>
           </div>
           
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 md:mb-6 leading-tight text-[#1F2925]">
             {t("Build the Future of ", "صمّم مستقبل ", "Build the Future of ")}
-            <span className="text-[#52735F]">{t("AI Systems.", "أنظمة الذكاء الاصطناعي.", "AI Systems.")}</span>
+            <span className="text-[#6453C2]">{t("AI Systems.", "أنظمة الذكاء الاصطناعي.", "AI Systems.")}</span>
           </h1>
           
           <p className="text-base md:text-xl max-w-2xl mx-auto mb-6 md:mb-8 leading-relaxed font-light text-[#5E6862]">
@@ -91,7 +91,7 @@ export default function Careers() {
           </p>
 
           <div className="flex justify-center gap-4">
-            <Button size="lg" className="bg-[#52735F] text-white hover:bg-[#43614F] font-semibold rounded-full px-6 md:px-8 min-h-[44px]" onClick={() => {
+            <Button size="lg" className="bg-[#6453C2] text-white hover:bg-[#5342AE] font-semibold rounded-full px-6 md:px-8 min-h-[44px]" onClick={() => {
                 document.getElementById('open-roles')?.scrollIntoView({ behavior: 'smooth' });
             }}>
                 {t("View Open Roles", "عرض الوظائف المتاحة", "View Open Roles")}

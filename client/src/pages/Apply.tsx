@@ -57,7 +57,7 @@ export default function Apply() {
         <section className={`border-b pt-12 sm:pt-16 ${rule}`}>
           <div className="mx-auto grid max-w-7xl gap-10 px-6 pb-14 lg:grid-cols-[.8fr_1.2fr] lg:px-8 lg:pb-20">
             <div className="self-end">
-              <p className="text-xs font-bold uppercase tracking-[.16em] text-[#52735F]">{copy("Infinity X Academy", "أكاديمية إنفينيتي إكس")}</p>
+              <p className="text-xs font-bold uppercase tracking-[.16em] text-[#6453C2]">{copy("Infinity X Academy", "أكاديمية إنفينيتي إكس")}</p>
               <h1 className="mt-6 max-w-xl text-5xl font-extrabold tracking-[-.065em] text-[#1F2925] sm:text-6xl">{copy("Start your application with a clear next step.", "ابدأ طلبك بخطوة تالية واضحة.")}</h1>
             </div>
             <div className={`self-end border-s ps-0 lg:ps-12 ${rule}`}>
@@ -67,7 +67,7 @@ export default function Apply() {
               <ol className={`mt-8 grid border-t ${rule} sm:grid-cols-3`}>
                 {[copy("Choose offering", "اختر العرض"), copy("Submit details", "أرسل البيانات"), copy("Receive next steps", "استلم الخطوات التالية")].map((step, index) => (
                   <li key={step} className={`border-b border-[#D8DDD8] py-4 text-sm font-bold sm:border-e sm:px-4 sm:first:ps-0 sm:last:border-e-0`}>
-                    <span className="me-2 text-[#52735F]">0{index + 1}</span>
+                    <span className="me-2 text-[#6453C2]">0{index + 1}</span>
                     {step}
                   </li>
                 ))}
@@ -79,15 +79,15 @@ export default function Apply() {
           <div className={`border ${rule} ${panel} shadow-sm`}>
             {submitted ? (
               <div className="px-7 py-12 sm:px-10 sm:py-16">
-                <CheckCircle2 className="h-9 w-9 text-[#52735F]" />
-                <p className="mt-8 text-xs font-bold uppercase tracking-[.16em] text-[#52735F]">{copy("Application received", "تم استلام الطلب")}</p>
+                <CheckCircle2 className="h-9 w-9 text-[#6453C2]" />
+                <p className="mt-8 text-xs font-bold uppercase tracking-[.16em] text-[#6453C2]">{copy("Application received", "تم استلام الطلب")}</p>
                 <h2 className="mt-4 text-4xl font-extrabold tracking-[-.05em] text-[#1F2925]">{copy("Thank you. Your next step is on its way.", "شكراً لك. خطوتك التالية في الطريق.")}</h2>
                 <p className={`mt-5 max-w-lg leading-7 ${muted}`}>
                   {copy("The admissions team will review the details you provided and contact you using your submitted information.", "سيراجع فريق القبول البيانات التي قدمتها ويتواصل معك باستخدام معلوماتك المرسلة.")}
                 </p>
                 <div className="mt-9 flex flex-wrap gap-3">
                   <Link href="/academy">
-                    <Button className="h-11 rounded-md bg-[#52735F] text-white hover:bg-[#43614F]">{copy("Return to Academy", "العودة إلى الأكاديمية")}</Button>
+                    <Button className="h-11 rounded-md bg-[#6453C2] text-white hover:bg-[#5342AE]">{copy("Return to Academy", "العودة إلى الأكاديمية")}</Button>
                   </Link>
                   <Button variant="outline" className="h-11 rounded-md border-[#D8DDD8]" onClick={() => navigate("/")}>
                     {copy("Return home", "العودة للرئيسية")}
@@ -98,10 +98,10 @@ export default function Apply() {
               <form onSubmit={handleSubmit} className="p-7 sm:p-10">
                 <div className="flex items-start justify-between gap-5 border-b border-[#D8DDD8] pb-7">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[.16em] text-[#52735F]">{copy("Application details", "بيانات الطلب")}</p>
+                    <p className="text-xs font-bold uppercase tracking-[.16em] text-[#6453C2]">{copy("Application details", "بيانات الطلب")}</p>
                     <h2 className="mt-3 text-2xl font-extrabold tracking-[-.035em] text-[#1F2925]">{copy("Tell us how to reach you.", "أخبرنا بكيفية التواصل معك.")}</h2>
                   </div>
-                  <Sparkles className="h-5 w-5 shrink-0 text-[#52735F]" />
+                  <Sparkles className="h-5 w-5 shrink-0 text-[#6453C2]" />
                 </div>
                 <div className="mt-8 grid gap-6 sm:grid-cols-2">
                   <div className="space-y-2">
@@ -148,7 +148,7 @@ export default function Apply() {
                     </Select>
                   )}
                   {selected && (
-                    <p className="flex items-center gap-2 text-xs font-semibold text-[#52735F]">
+                    <p className="flex items-center gap-2 text-xs font-semibold text-[#6453C2]">
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       {copy("Selected:", "الاختيار:")} {copy(selected.title, selected.titleAr || selected.title)}
                     </p>
@@ -164,7 +164,7 @@ export default function Apply() {
                   <p className={`max-w-sm text-xs leading-5 ${muted}`}>
                     {copy("By submitting, you are asking Infinity X Academy to contact you about this application.", "بتقديم الطلب، فإنك تطلب من أكاديمية إنفينيتي إكس التواصل معك بشأن هذا الطلب.")}
                   </p>
-                  <Button type="submit" disabled={submitting} className="h-12 shrink-0 rounded-md bg-[#52735F] px-5 font-bold text-white hover:bg-[#43614F]">
+                  <Button type="submit" disabled={submitting} className="h-12 shrink-0 rounded-md bg-[#6453C2] px-5 font-bold text-white hover:bg-[#5342AE]">
                     {submitting ? (
                       <>
                         <Loader2 className="me-2 h-4 w-4 animate-spin" />
@@ -182,7 +182,7 @@ export default function Apply() {
             )}
           </div>
           <aside className={`self-start border-s ps-0 pt-3 lg:ps-8 ${rule}`}>
-            <p className="text-xs font-bold uppercase tracking-[.16em] text-[#52735F]">{copy("Before you submit", "قبل الإرسال")}</p>
+            <p className="text-xs font-bold uppercase tracking-[.16em] text-[#6453C2]">{copy("Before you submit", "قبل الإرسال")}</p>
             <div className={`mt-6 space-y-6 border-t border-[#D8DDD8] pt-6`}>
               <div>
                 <h2 className="text-lg font-bold text-[#1F2925]">{copy("Choose the right offering", "اختر العرض المناسب")}</h2>
@@ -196,8 +196,8 @@ export default function Apply() {
                   {copy("Use an email and phone number where the admissions team can reach you.", "استخدم بريداً إلكترونياً ورقم هاتف يمكن لفريق القبول التواصل معك من خلالهما.")}
                 </p>
               </div>
-              <div className={`flex gap-3 border-s ps-4 text-sm leading-6 border-[#52735F]`}>
-                <CircleAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#52735F]" />
+              <div className={`flex gap-3 border-s ps-4 text-sm leading-6 border-[#6453C2]`}>
+                <CircleAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#6453C2]" />
                 <p className="text-[#5E6862]">{copy("Applications are reviewed with the information provided. Submitting does not create a student account.", "تتم مراجعة الطلبات بناءً على المعلومات المقدمة. لا يؤدي التقديم إلى إنشاء حساب طالب.")}</p>
               </div>
             </div>

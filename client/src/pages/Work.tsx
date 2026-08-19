@@ -63,7 +63,7 @@ export default function Work() {
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <section className={`border-b pt-12 sm:pt-16 ${rule}`}>
           <div className="mx-auto max-w-7xl px-6 pb-14 lg:px-8 lg:pb-16">
-            <p className="text-xs font-bold uppercase tracking-[.17em] text-[#52735F]">
+            <p className="text-xs font-bold uppercase tracking-[.17em] text-[#6453C2]">
               {t("Infinity X engineering work", "أعمال إنفينيتي إكس الهندسية", "Infinity X engineering work")}
             </p>
             <div className="mt-6 grid gap-9 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
@@ -86,8 +86,8 @@ export default function Work() {
           <div className={`grid border-t ${rule} md:grid-cols-3`}>
             {principles.map(({ icon: Icon, number, title, detail }, index) => (
               <article key={number} className={`border-b py-8 md:px-8 md:py-12 ${index > 0 ? "md:border-s" : ""} ${rule}`}>
-                <Icon className="h-5 w-5 text-[#52735F]" />
-                <p className="mt-10 text-xs font-bold tracking-[.16em] text-[#52735F]">{number}</p>
+                <Icon className="h-5 w-5 text-[#6453C2]" />
+                <p className="mt-10 text-xs font-bold tracking-[.16em] text-[#6453C2]">{number}</p>
                 <h2 className="mt-5 text-2xl font-extrabold tracking-[-.04em] text-[#1F2925]">{title}</h2>
                 <p className={`mt-4 max-w-sm text-sm leading-7 ${muted}`}>{detail}</p>
               </article>
@@ -99,7 +99,7 @@ export default function Work() {
         <section className={`border-y ${isLight ? "border-[#D8DDD8] bg-[#EAEDEA]" : "border-white/10 bg-white/[.03]"}`}>
           <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[.8fr_1.2fr] lg:px-8">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[.16em] text-[#52735F]">{t("Public portfolio", "محفظة عامة", "Public portfolio")}</p>
+              <p className="text-xs font-bold uppercase tracking-[.16em] text-[#6453C2]">{t("Public portfolio", "محفظة عامة", "Public portfolio")}</p>
               <h2 className="mt-5 text-4xl font-extrabold tracking-[-.05em] text-[#1F2925]">
                 {t("Evidence should be specific—or it should not be published.", "يجب أن يكون الدليل محدداً، أو لا يُنشر.", "Evidence should be specific—or it should not be published.")}
               </h2>
@@ -120,7 +120,7 @@ export default function Work() {
         <section className="border-t bg-[#EAEDEA]" style={{ borderColor: "var(--ix-border)" }}>
           <div className="mx-auto grid max-w-7xl gap-8 px-6 py-16 md:grid-cols-[1.5fr_1fr] lg:px-8">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[.16em] text-[#52735F]">{t("Your project", "مشروعك", "Your project")}</p>
+              <p className="text-xs font-bold uppercase tracking-[.16em] text-[#6453C2]">{t("Your project", "مشروعك", "Your project")}</p>
               <h2 className="mt-5 text-4xl font-extrabold tracking-[-.05em] text-[#1F2925]">
                 {t(
                   "Bring the challenge. We’ll define the system and the path to deployment.",
@@ -131,7 +131,7 @@ export default function Work() {
             </div>
             <div className="flex items-end">
               <Link href="/consultation">
-                <Button className="h-12 rounded-md bg-[#52735F] px-5 font-bold text-white hover:bg-[#43614F]">
+                <Button className="h-12 rounded-md bg-[#6453C2] px-5 font-bold text-white hover:bg-[#5342AE]">
                   {t("Start an AI project", "ابدأ مشروع ذكاء اصطناعي", "Start an AI project")}
                   <ArrowUpRight className="ms-2 h-4 w-4" />
                 </Button>

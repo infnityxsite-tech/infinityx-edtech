@@ -32,15 +32,15 @@ export default function Home() {
             className="absolute inset-0 opacity-40 pointer-events-none"
             style={{
               backgroundImage:
-                "linear-gradient(rgba(82,115,95,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(82,115,95,.07) 1px, transparent 1px)",
+                "linear-gradient(rgba(100,83,194,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(100,83,194,.07) 1px, transparent 1px)",
               backgroundSize: "64px 64px",
               maskImage: "linear-gradient(to bottom, black 60%, transparent 95%)",
             }}
           />
           <div className="ix-shell relative grid min-h-[640px] gap-12 py-10 sm:py-16 lg:grid-cols-[.92fr_1.08fr] lg:items-center lg:py-20">
             <div className="max-w-2xl">
-              <div className="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[.18em] text-[#52735F]">
-                <span className="h-2 w-2 rounded-full bg-[#52735F] shadow-[0_0_0_4px_rgba(82,115,95,.15)]" />
+              <div className="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[.18em] text-[#6453C2]">
+                <span className="h-2 w-2 rounded-full bg-[#6453C2] shadow-[0_0_0_4px_rgba(100,83,194,.15)]" />
                 {copy("Infinity X / Systems studio", "إنفينيتي إكس / استوديو الأنظمة")}
               </div>
               <h1 className="ix-display mt-6 text-5xl font-bold leading-[.94] tracking-[-.065em] text-[#1F2925] sm:text-7xl lg:text-[6.8rem]">
@@ -64,15 +64,15 @@ export default function Home() {
               </div>
               <div className="mt-12 grid max-w-xl grid-cols-3 border-y border-[#D8DDD8]">
                 <div className="py-4">
-                  <p className="text-2xl font-bold text-[#52735F]">04</p>
+                  <p className="text-2xl font-bold text-[#6453C2]">04</p>
                   <p className="mt-1 text-[10px] uppercase tracking-[.15em] text-[#7B847F]">{copy("Core systems", "أنظمة أساسية")}</p>
                 </div>
                 <div className="border-s border-[#D8DDD8] py-4 ps-4">
-                  <p className="text-2xl font-bold text-[#52735F]">01</p>
+                  <p className="text-2xl font-bold text-[#6453C2]">01</p>
                   <p className="mt-1 text-[10px] uppercase tracking-[.15em] text-[#7B847F]">{copy("Operating partner", "شريك تشغيلي")}</p>
                 </div>
                 <div className="border-s border-[#D8DDD8] py-4 ps-4">
-                  <p className="text-2xl font-bold text-[#52735F]">∞</p>
+                  <p className="text-2xl font-bold text-[#6453C2]">∞</p>
                   <p className="mt-1 text-[10px] uppercase tracking-[.15em] text-[#7B847F]">{copy("Room to improve", "مساحة للتحسين")}</p>
                 </div>
               </div>
@@ -80,7 +80,7 @@ export default function Home() {
 
             {/* Hero Image Container */}
             <div className="relative lg:translate-y-4">
-              <div className="absolute -inset-4 rounded-xl border border-[#52735F]/15 pointer-events-none" />
+              <div className="absolute -inset-4 rounded-xl border border-[#6453C2]/15 pointer-events-none" />
               <div className="relative overflow-hidden rounded-lg border border-[#D8DDD8] bg-white shadow-xl shadow-black/5">
                 <img
                   src="/uploads/ix-hero-command-center.webp"
@@ -90,12 +90,12 @@ export default function Home() {
                   loading="eager"
                 />
                 <div className="absolute left-4 top-4 flex items-center gap-2 border border-[#D8DDD8] bg-white/95 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.16em] text-[#1F2925] shadow-sm backdrop-blur">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#52735F]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#6453C2]" />
                   {copy("Live system view", "عرض النظام المباشر")}
                 </div>
                 <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#1F2925]/85 via-[#1F2925]/40 to-transparent p-5 text-white flex items-end justify-between gap-4">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#B8D4C2]">{copy("Built for the operation", "مصمم للعملية")}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#C8BFF5]">{copy("Built for the operation", "مصمم للعملية")}</p>
                     <p className="mt-1 max-w-sm text-base sm:text-lg font-bold">{copy("From signal to action, inside the workflow.", "من الإشارة إلى الإجراء، داخل سير العمل.")}</p>
                   </div>
                   <span className="hidden border border-white/30 px-2.5 py-1 text-xs font-bold sm:block">01 / 04</span>
@@ -120,13 +120,13 @@ export default function Home() {
                     onClick={() => setActiveLens(lens.id)}
                     className={`group flex items-center gap-3 border px-4 py-3 text-start transition-all ${
                       selected
-                        ? "border-[#52735F] bg-white shadow-[0_4px_16px_rgba(82,115,95,.08)]"
+                        ? "border-[#6453C2] bg-white shadow-[0_4px_16px_rgba(100,83,194,.08)]"
                         : "border-transparent hover:border-[#D8DDD8] bg-transparent"
                     }`}
                   >
-                    <Icon className={`h-4 w-4 ${selected ? "text-[#52735F]" : "text-[#7B847F]"}`} />
+                    <Icon className={`h-4 w-4 ${selected ? "text-[#6453C2]" : "text-[#7B847F]"}`} />
                     <span className={`text-sm font-bold ${selected ? "text-[#1F2925]" : "text-[#5E6862]"}`}>{copy(lens.short, lens.short)}</span>
-                    <ChevronRight className={`ms-auto h-4 w-4 ${selected ? "text-[#52735F]" : "text-[#7B847F]"} ${isRTL ? "rotate-180" : ""}`} />
+                    <ChevronRight className={`ms-auto h-4 w-4 ${selected ? "text-[#6453C2]" : "text-[#7B847F]"} ${isRTL ? "rotate-180" : ""}`} />
                   </button>
                 );
               })}
@@ -151,7 +151,7 @@ export default function Home() {
             <div className="grid gap-0 border-t" style={{ borderColor: "var(--ix-border)" }}>
               {isLoading ? (
                 <div className="py-14">
-                  <Loader2 className="h-7 w-7 animate-spin text-[#52735F]" />
+                  <Loader2 className="h-7 w-7 animate-spin text-[#6453C2]" />
                 </div>
               ) : (
                 services.slice(0, 4).map((service: any, index: number) => (
@@ -161,10 +161,10 @@ export default function Home() {
                     className="group grid gap-4 border-b py-6 transition-colors hover:bg-[#EAEDEA]/70 sm:grid-cols-[48px_1fr_36px] sm:items-center"
                     style={{ borderColor: "var(--ix-border)" }}
                   >
-                    <span className="text-xs font-bold text-[#52735F]">{String(index + 1).padStart(2, "0")}</span>
+                    <span className="text-xs font-bold text-[#6453C2]">{String(index + 1).padStart(2, "0")}</span>
                     <div>
                       <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="text-xl font-bold tracking-[-.025em] text-[#1F2925] group-hover:text-[#52735F]">
+                        <h3 className="text-xl font-bold tracking-[-.025em] text-[#1F2925] group-hover:text-[#6453C2]">
                           {t(service.title, service.title_ar, service.title)}
                         </h3>
                         <span className="border border-[#D8DDD8] bg-white px-2 py-0.5 text-[9px] font-bold uppercase tracking-[.14em] text-[#7B847F]">
@@ -175,7 +175,7 @@ export default function Home() {
                         {t(service.description, service.description_ar, service.description)}
                       </p>
                     </div>
-                    <span className="grid h-9 w-9 place-items-center rounded-full border border-[#D8DDD8] bg-white transition-all group-hover:border-[#52735F] group-hover:bg-[#52735F] group-hover:text-white">
+                    <span className="grid h-9 w-9 place-items-center rounded-full border border-[#D8DDD8] bg-white transition-all group-hover:border-[#6453C2] group-hover:bg-[#6453C2] group-hover:text-white">
                       <ArrowUpRight className="h-4 w-4" />
                     </span>
                   </Link>
@@ -190,7 +190,7 @@ export default function Home() {
           <div className="ix-shell py-16 lg:py-24">
             <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
               <div>
-                <p className="ix-eyebrow text-[#52735F]">{copy("How we work", "كيف نعمل")}</p>
+                <p className="ix-eyebrow text-[#6453C2]">{copy("How we work", "كيف نعمل")}</p>
                 <h2 className="ix-display mt-5 max-w-3xl text-4xl font-bold sm:text-6xl">{copy("A production path, not a pitch deck.", "مسار إنتاج، وليس عرضاً تقديمياً.")}</h2>
               </div>
               <Link href="/about" className="ix-button ix-button-secondary bg-white">
@@ -200,21 +200,21 @@ export default function Home() {
             </div>
             <div className="mt-14 grid gap-6 md:grid-cols-3">
               <div className="bg-white border border-[#D8DDD8] p-8 shadow-sm">
-                <p className="text-4xl font-bold text-[#52735F]">01</p>
+                <p className="text-4xl font-bold text-[#6453C2]">01</p>
                 <h3 className="mt-8 text-xl font-bold text-[#1F2925]">{copy("Frame the work", "حدد العمل")}</h3>
                 <p className="mt-3 text-sm leading-7 text-[#5E6862]">
                   {copy("We start with the decision, constraint, and evidence the operation needs.", "نبدأ بالقرار والقيد والأدلة التي تحتاجها العملية.")}
                 </p>
               </div>
               <div className="bg-white border border-[#D8DDD8] p-8 shadow-sm">
-                <p className="text-4xl font-bold text-[#52735F]">02</p>
+                <p className="text-4xl font-bold text-[#6453C2]">02</p>
                 <h3 className="mt-8 text-xl font-bold text-[#1F2925]">{copy("Build the system", "ابنِ النظام")}</h3>
                 <p className="mt-3 text-sm leading-7 text-[#5E6862]">
                   {copy("Data, model, interface, workflow, and controls are designed as one product.", "نصمم البيانات والنموذج والواجهة وسير العمل والضوابط كمنتج واحد.")}
                 </p>
               </div>
               <div className="bg-white border border-[#D8DDD8] p-8 shadow-sm">
-                <p className="text-4xl font-bold text-[#52735F]">03</p>
+                <p className="text-4xl font-bold text-[#6453C2]">03</p>
                 <h3 className="mt-8 text-xl font-bold text-[#1F2925]">{copy("Transfer ownership", "انقل الملكية")}</h3>
                 <p className="mt-3 text-sm leading-7 text-[#5E6862]">
                   {copy("The team receives the operating model, documentation, and room to improve.", "يتلقى الفريق نموذج التشغيل والتوثيق ومساحة للتحسين.")}
@@ -275,7 +275,7 @@ export default function Home() {
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
               <p className="mt-4 flex items-center gap-2 text-sm" style={{ color: "var(--ix-text-secondary)" }}>
-                <Check className="h-4 w-4 text-[#52735F]" />
+                <Check className="h-4 w-4 text-[#6453C2]" />
                 {copy("No generic stack before the problem is understood.", "لا حزمة تقنية عامة قبل فهم المشكلة.")}
               </p>
             </div>

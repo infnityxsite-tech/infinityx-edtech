@@ -36,7 +36,7 @@ export default function Certificate() {
   if (isLoading) {
     return (
       <div className={`grid min-h-screen place-items-center ${isLight ? "bg-[#F5F4EF]" : "bg-[#07111b]"}`}>
-        <Loader2 className="h-8 w-8 animate-spin text-[#52735F]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#6453C2]" />
       </div>
     );
   }
@@ -48,7 +48,7 @@ export default function Certificate() {
         dir={isRTL ? "rtl" : "ltr"}
       >
         <div>
-          <Award className="mx-auto h-10 w-10 text-[#52735F]" />
+          <Award className="mx-auto h-10 w-10 text-[#6453C2]" />
           <h1 className="mt-6 text-4xl font-extrabold tracking-[-.05em] text-[#1F2925]">
             {t("Certificate not found.", "الشهادة غير موجودة.", "Certificate not found.")}
           </h1>
@@ -60,7 +60,7 @@ export default function Certificate() {
             )}
           </p>
           <Link href="/verify">
-            <Button className="mt-8 rounded-md bg-[#52735F] text-white hover:bg-[#43614F]">
+            <Button className="mt-8 rounded-md bg-[#6453C2] text-white hover:bg-[#5342AE]">
               {t("Verify another certificate", "تحقق من شهادة أخرى", "Verify another certificate")}
             </Button>
           </Link>
@@ -87,7 +87,7 @@ export default function Certificate() {
           <Button
             onClick={handleDownload}
             disabled={isDownloading}
-            className="h-10 rounded-md bg-[#52735F] px-4 text-sm font-bold text-white hover:bg-[#43614F]"
+            className="h-10 rounded-md bg-[#6453C2] px-4 text-sm font-bold text-white hover:bg-[#5342AE]"
           >
             {isDownloading ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Download className="me-2 h-4 w-4" />}
             {t("Download certificate", "تنزيل الشهادة", "Download certificate")}
@@ -107,7 +107,7 @@ export default function Certificate() {
           </div>
 
           <aside className={`self-start border-s ps-7 ${isLight ? "border-[#D8DDD8]" : "border-white/10"}`}>
-            <div className="flex items-center gap-2 text-[#52735F]">
+            <div className="flex items-center gap-2 text-[#6453C2]">
               <ShieldCheck className="h-5 w-5" />
               <p className="text-xs font-bold uppercase tracking-[.16em]">
                 {t("Verified credential", "شهادة موثقة", "Verified credential")}
@@ -136,7 +136,7 @@ export default function Certificate() {
                 <dt className="text-[11px] font-bold uppercase tracking-[.15em] text-[#7B847F]">
                   {t("Credential ID", "معرّف الشهادة", "Credential ID")}
                 </dt>
-                <dd className="mt-2 break-all font-mono text-sm font-bold text-[#52735F]">{certificate.certId}</dd>
+                <dd className="mt-2 break-all font-mono text-sm font-bold text-[#6453C2]">{certificate.certId}</dd>
               </div>
             </dl>
             <p className={`mt-10 text-sm leading-7 ${isLight ? "text-[#5E6862]" : "text-slate-400"}`}>

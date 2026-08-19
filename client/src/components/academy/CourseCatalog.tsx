@@ -30,13 +30,13 @@ export default function CourseCatalog({ mode }: CourseCatalogProps) {
       <section className="bg-[#F5F4EF] text-[#1F2925] border-b border-[#D8DDD8]/60 py-12 sm:py-16">
         <div className="ix-shell grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-end">
           <div>
-            <p className="ix-eyebrow text-[#52735F]">{copy("Infinity X Academy", "أكاديمية إنفينيتي إكس")}</p>
+            <p className="ix-eyebrow text-[#6453C2]">{copy("Infinity X Academy", "أكاديمية إنفينيتي إكس")}</p>
             <h1 className="ix-display mt-6 max-w-2xl text-5xl font-bold text-[#1F2925] sm:text-6xl">
               {isLive ? copy("Learn live, alongside a cohort.", "تعلم مباشرةً ضمن دفعة.") : copy("Learn on your own schedule.", "تعلم وفق جدولك الخاص.")}
             </h1>
           </div>
           <div className="border-s border-[#D8DDD8] ps-0 lg:ps-12">
-            <Icon className="h-7 w-7 text-[#52735F]" />
+            <Icon className="h-7 w-7 text-[#6453C2]" />
             <p className="mt-6 max-w-xl text-lg leading-8 text-[#5E6862]">
               {isLive
                 ? copy("Instructor-led short courses with scheduled sessions, direct feedback, and a shared pace.", "دورات قصيرة يقودها مدربون بجلسات مجدولة وتغذية راجعة مباشرة وإيقاع مشترك.")
@@ -56,20 +56,20 @@ export default function CourseCatalog({ mode }: CourseCatalogProps) {
               onChange={(event) => setQuery(event.target.value)}
               placeholder={copy("Search courses", "ابحث عن الدورات")}
               aria-label={copy("Search courses", "ابحث عن الدورات")}
-              className={`h-11 w-full rounded-full border border-[#D8DDD8] bg-white px-10 text-sm outline-none transition-colors focus:border-[#52735F] focus:ring-2 focus:ring-[#52735F]/15 ${
+              className={`h-11 w-full rounded-full border border-[#D8DDD8] bg-white px-10 text-sm outline-none transition-colors focus:border-[#6453C2] focus:ring-2 focus:ring-[#6453C2]/15 ${
                 isRTL ? "pr-10" : "pl-10"
               }`}
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <SlidersHorizontal className="h-4 w-4 text-[#52735F]" />
+            <SlidersHorizontal className="h-4 w-4 text-[#6453C2]" />
             {["All", ...categories].map((item) => (
               <button
                 key={item}
                 type="button"
                 onClick={() => setCategory(item)}
                 className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors ${
-                  category === item ? "bg-[#52735F] text-white shadow-sm" : "bg-white border border-[#D8DDD8] text-[#5E6862] hover:bg-[#EAEDEA]"
+                  category === item ? "bg-[#6453C2] text-white shadow-sm" : "bg-white border border-[#D8DDD8] text-[#5E6862] hover:bg-[#EAEDEA]"
                 }`}
               >
                 {item === "All" ? copy("All courses", "كل الدورات") : item}
@@ -82,7 +82,7 @@ export default function CourseCatalog({ mode }: CourseCatalogProps) {
                 type="button"
                 onClick={() => setCurrency(item)}
                 className={`rounded-full px-3 py-1 text-xs font-bold transition-colors ${
-                  currency === item ? "bg-[#52735F] text-white shadow-sm" : "bg-white border border-[#D8DDD8] text-[#5E6862] hover:bg-[#EAEDEA]"
+                  currency === item ? "bg-[#6453C2] text-white shadow-sm" : "bg-white border border-[#D8DDD8] text-[#5E6862] hover:bg-[#EAEDEA]"
                 }`}
               >
                 {item}
@@ -97,7 +97,7 @@ export default function CourseCatalog({ mode }: CourseCatalogProps) {
         <div className="ix-shell">
           {isLoading ? (
             <div className="grid min-h-80 place-items-center">
-              <Loader2 className="h-8 w-8 animate-spin text-[#52735F]" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#6453C2]" />
             </div>
           ) : filtered.length === 0 ? (
             <div className="border-y border-[#D8DDD8] py-20 text-center">

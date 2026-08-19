@@ -10,7 +10,7 @@ function BrandLogo({ className = "h-8 w-auto" }: { className?: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) {
     return (
-      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] bg-[#52735F] text-xs font-black tracking-[-.06em] text-white">
+      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] bg-[#6453C2] text-xs font-black tracking-[-.06em] text-white">
         IX
       </span>
     );
@@ -80,7 +80,7 @@ export default function Navigation() {
     `inline-flex items-center rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition-all ${
       active(path)
         ? isLight
-          ? "bg-[#E4EBE6] text-[#2F4A37] shadow-[0_1px_4px_rgba(82,115,95,.1)]"
+          ? "bg-[#EFEBFA] text-[#503EAE] shadow-[0_1px_4px_rgba(100,83,194,.12)]"
           : "bg-white/12 text-white"
         : isLight
           ? "text-[#5E6862] hover:bg-[#EAEDEA] hover:text-[#1F2925]"
@@ -158,7 +158,7 @@ export default function Navigation() {
           )}
           <Link
             href="/consultation"
-            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#52735F] px-4 text-xs font-bold text-white shadow-[0_3px_12px_rgba(82,115,95,.25)] transition-all hover:bg-[#43614F] hover:shadow-[0_4px_16px_rgba(82,115,95,.35)] active:scale-95"
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#6453C2] px-4 text-xs font-bold text-white shadow-[0_3px_12px_rgba(100,83,194,.25)] transition-all hover:bg-[#5342AE] hover:shadow-[0_4px_16px_rgba(100,83,194,.35)] active:scale-95"
           >
             {t("Start a project", "ابدأ مشروعاً", "Start a project")}
             <ArrowUpRight className="h-3.5 w-3.5" />
@@ -169,7 +169,7 @@ export default function Navigation() {
         <div className="flex items-center gap-2 lg:hidden">
           <Link
             href="/consultation"
-            className="inline-flex h-8 items-center gap-1 rounded-full bg-[#52735F] px-3 text-[12px] font-bold text-white shadow-sm transition-all hover:bg-[#43614F] active:scale-95 whitespace-nowrap"
+            className="inline-flex h-8 items-center gap-1 rounded-full bg-[#6453C2] px-3 text-[12px] font-bold text-white shadow-sm transition-all hover:bg-[#5342AE] active:scale-95 whitespace-nowrap"
           >
             {t("Start", "ابدأ", "Start")}
             <ArrowUpRight className="h-3 w-3" />

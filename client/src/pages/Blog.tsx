@@ -46,14 +46,14 @@ export default function Blog() {
       {/* 🏛️ HERO SECTION */}
       <section className="relative pt-12 sm:pt-16 pb-14 border-b border-[#D8DDD8]/60 overflow-hidden">
         <div className="relative max-w-5xl mx-auto px-6 text-center z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-6 bg-[#E4EBE6] border border-[#D8DDD8] text-[#52735F]">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-6 bg-[#EFEBFA] border border-[#D8DDD8] text-[#6453C2]">
             <Sparkles className="w-3.5 h-3.5" />
             <span>{t("InfinityX Insights & News", "رؤى وأخبار InfinityX", "InfinityX Insights")}</span>
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-tight text-[#1F2925]">
             {t("The Future of Tech, ", "مستقبل التكنولوجيا، ", "The Future of Tech, ")}
-            <span className="text-[#52735F]">{t("Decoded.", "مكشوف.", "Decoded.")}</span>
+            <span className="text-[#6453C2]">{t("Decoded.", "مكشوف.", "Decoded.")}</span>
           </h1>
 
           <p className="text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed font-light text-[#5E6862]">
@@ -70,7 +70,7 @@ export default function Blog() {
         {/* 🔄 LOADING STATE */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-sm border border-[#D8DDD8]">
-            <Loader2 className="w-10 h-10 animate-spin text-[#52735F] mb-4" />
+            <Loader2 className="w-10 h-10 animate-spin text-[#6453C2] mb-4" />
             <p className="text-[#5E6862] font-medium">Loading insights...</p>
           </div>
         ) : posts.length === 0 ? (
@@ -90,7 +90,7 @@ export default function Blog() {
                   {t("Featured Article", "مقال مميز", "Featured Article")}
                 </h2>
                 <Link href={`/blog/${featuredPost.id}`}>
-                  <div className="group relative bg-white rounded-2xl overflow-hidden border border-[#D8DDD8] shadow-md hover:shadow-xl hover:border-[#52735F] transition-all duration-300 cursor-pointer grid grid-cols-1 lg:grid-cols-2">
+                  <div className="group relative bg-white rounded-2xl overflow-hidden border border-[#D8DDD8] shadow-md hover:shadow-xl hover:border-[#6453C2] transition-all duration-300 cursor-pointer grid grid-cols-1 lg:grid-cols-2">
                     {/* Image Side */}
                     <div className="relative h-64 lg:h-auto overflow-hidden bg-[#EAEDEA]">
                       {featuredPost.imageUrl ? (
@@ -105,7 +105,7 @@ export default function Blog() {
                         </div>
                       )}
                       <div className="absolute top-4 left-4">
-                        <Badge className="bg-[#52735F] text-white border-0 shadow-sm">
+                        <Badge className="bg-[#6453C2] text-white border-0 shadow-sm">
                           {t("Latest Release", "أحدث إصدار", "Latest Release")}
                         </Badge>
                       </div>
@@ -115,17 +115,17 @@ export default function Blog() {
                     <div className="p-8 lg:p-12 flex flex-col justify-center bg-white">
                       <div className="flex items-center gap-4 text-xs font-medium text-[#7B847F] mb-4">
                         <div className="flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-[#52735F]" />
+                          <User className="w-3.5 h-3.5 text-[#6453C2]" />
                           {featuredPost.author || "InfinityX Team"}
                         </div>
                         <div className="w-1 h-1 rounded-full bg-[#D8DDD8]"></div>
                         <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-[#52735F]" />
+                          <Calendar className="w-3.5 h-3.5 text-[#6453C2]" />
                           {new Date(featuredPost.publishedAt).toLocaleDateString()}
                         </div>
                       </div>
 
-                      <h2 className="text-2xl lg:text-4xl font-bold mb-4 group-hover:text-[#52735F] transition-colors leading-tight text-[#1F2925]">
+                      <h2 className="text-2xl lg:text-4xl font-bold mb-4 group-hover:text-[#6453C2] transition-colors leading-tight text-[#1F2925]">
                         {featuredPost.title}
                       </h2>
 
@@ -133,7 +133,7 @@ export default function Blog() {
                         {featuredPost.excerpt ? stripHtml(featuredPost.excerpt) : stripHtml(featuredPost.content)?.substring(0, 200)}...
                       </p>
 
-                      <div className="flex items-center text-[#52735F] font-semibold group-hover:translate-x-1 transition-transform">
+                      <div className="flex items-center text-[#6453C2] font-semibold group-hover:translate-x-1 transition-transform">
                         {t("Read Full Article", "اقرأ المقال كاملاً", "Read Full Article")} <ArrowRight className="w-4 h-4 ml-2" />
                       </div>
                     </div>
@@ -153,7 +153,7 @@ export default function Blog() {
                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                   {remainingPosts.map((post: any) => (
                     <Link key={post.id} href={`/blog/${post.id}`}>
-                      <Card className="group h-full flex flex-col border border-[#D8DDD8] bg-white hover:border-[#52735F] hover:shadow-lg transition-all duration-300 overflow-hidden rounded-xl cursor-pointer p-0 gap-0">
+                      <Card className="group h-full flex flex-col border border-[#D8DDD8] bg-white hover:border-[#6453C2] hover:shadow-lg transition-all duration-300 overflow-hidden rounded-xl cursor-pointer p-0 gap-0">
                         {/* Card Image */}
                         <div className="relative h-48 overflow-hidden bg-[#EAEDEA]">
                           {post.imageUrl ? (
@@ -173,11 +173,11 @@ export default function Blog() {
                         <CardHeader className="p-5 pb-2">
                           <div className="flex items-center justify-between text-xs text-[#7B847F] mb-3">
                             <span className="flex items-center gap-1.5 bg-[#EAEDEA] px-2 py-1 rounded">
-                              <Calendar className="w-3 h-3 text-[#52735F]" />
+                              <Calendar className="w-3 h-3 text-[#6453C2]" />
                               {new Date(post.publishedAt).toLocaleDateString()}
                             </span>
                           </div>
-                          <h3 className="text-lg font-bold line-clamp-2 leading-tight group-hover:text-[#52735F] transition-colors text-[#1F2925]">
+                          <h3 className="text-lg font-bold line-clamp-2 leading-tight group-hover:text-[#6453C2] transition-colors text-[#1F2925]">
                             {post.title}
                           </h3>
                         </CardHeader>
@@ -188,7 +188,7 @@ export default function Blog() {
                           </p>
                         </CardContent>
 
-                        <div className="p-5 pt-0 mt-auto flex items-center text-xs font-semibold text-[#52735F] group-hover:translate-x-1 transition-transform">
+                        <div className="p-5 pt-0 mt-auto flex items-center text-xs font-semibold text-[#6453C2] group-hover:translate-x-1 transition-transform">
                           {t("Read Article", "اقرأ المقال", "Read Article")} <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                         </div>
                       </Card>

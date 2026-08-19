@@ -41,17 +41,17 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-[#18201B] text-white border-t border-[#232D27]">
+    <footer className="bg-[#15131C] text-white border-t border-[#252131]">
       <div className="ix-shell py-16 lg:py-24">
         {/* Top banner */}
         <div className="mb-16 grid gap-8 border-b border-white/10 pb-12 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
-            <p className="ix-eyebrow text-[#B8D4C2]">{t("The next system starts here", "يبدأ النظام القادم من هنا", "The next system starts here")}</p>
+            <p className="ix-eyebrow text-[#C8BFF5]">{t("The next system starts here", "يبدأ النظام القادم من هنا", "The next system starts here")}</p>
             <h2 className="ix-display mt-5 max-w-3xl text-4xl font-bold sm:text-6xl">
               {t("Bring the work. We'll build the system around it.", "أحضر العمل. وسنبني النظام حوله.", "Bring the work. We'll build the system around it.")}
             </h2>
           </div>
-          <Link href="/consultation" className="ix-button ix-button-primary bg-[#52735F] hover:bg-[#43614F] text-white">
+          <Link href="/consultation" className="ix-button ix-button-primary bg-[#6453C2] hover:bg-[#5342AE] text-white shadow-lg shadow-[#6453C2]/20">
             {t("Start a project", "ابدأ مشروعاً", "Start a project")}
             <ArrowUpRight className="h-4 w-4" />
           </Link>
@@ -71,15 +71,15 @@ export default function Footer() {
               />
               <span className="text-base font-bold tracking-tight text-white">{APP_TITLE}</span>
             </Link>
-            <p className="mt-6 max-w-sm text-sm leading-7 text-[#C8D1CC]">
+            <p className="mt-6 max-w-sm text-sm leading-7 text-[#C8CBD5]">
               {t(
                 "We engineer production-ready AI systems and grow the teams that operate them.",
                 "نصمم أنظمة ذكاء اصطناعي جاهزة للإنتاج ونبني الفرق القادرة على تشغيلها.",
                 "We engineer production-ready AI systems and grow the teams that operate them."
               )}
             </p>
-            <a href="mailto:support@infx.space" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-[#B8D4C2]">
-              <Mail className="h-4 w-4 text-[#B8D4C2]" />
+            <a href="mailto:support@infx.space" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white transition-colors hover:text-[#C8BFF5]">
+              <Mail className="h-4 w-4 text-[#C8BFF5]" />
               support@infx.space
             </a>
           </div>
@@ -87,11 +87,11 @@ export default function Footer() {
           <div className="grid gap-10 sm:grid-cols-3">
             {columns.map((column) => (
               <div key={column.title}>
-                <h2 className="text-[10px] font-bold uppercase tracking-[.18em] text-[#8A968F]">{column.title}</h2>
+                <h2 className="text-[10px] font-bold uppercase tracking-[.18em] text-[#8E84B8]">{column.title}</h2>
                 <ul className="mt-5 space-y-3">
                   {column.links.map((link) => (
                     <li key={link.label}>
-                      <Link href={link.href} className="text-sm text-[#C8D1CC] transition-colors hover:text-white">
+                      <Link href={link.href} className="text-sm text-[#C8CBD5] transition-colors hover:text-white">
                         {link.label}
                       </Link>
                     </li>
@@ -101,15 +101,19 @@ export default function Footer() {
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Bottom copyright row */}
-      <div className="border-t border-white/10 bg-[#141A16]">
-        <div className="ix-shell flex flex-col gap-3 py-5 text-xs text-[#8A968F] sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} {APP_TITLE}. {t("All rights reserved.", "جميع الحقوق محفوظة.", "All rights reserved.")}</p>
-          <div className="flex gap-4">
+        {/* Bottom bar */}
+        <div className="mt-16 flex flex-col justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row sm:items-center text-xs text-[#8E84B8]">
+          <p>© {new Date().getFullYear()} Infinity X Solutions. All rights reserved.</p>
+          <div className="flex gap-6">
             {socialLinks.map((social) => (
-              <a key={social.label} href={social.href} target="_blank" rel="noreferrer" className="transition-colors hover:text-[#B8D4C2]">
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-white"
+              >
                 {social.label}
               </a>
             ))}

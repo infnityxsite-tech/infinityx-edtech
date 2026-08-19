@@ -39,13 +39,13 @@ export default function Verify() {
       {/* Hero */}
       <section className="relative pt-12 sm:pt-16 pb-12 overflow-hidden">
         <div className="max-w-2xl w-full mx-auto text-center px-6 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E4EBE6] border border-[#D8DDD8] text-[#52735F] text-xs font-semibold mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EFEBFA] border border-[#D8DDD8] text-[#6453C2] text-xs font-semibold mb-6">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>{t("Certificate Verification", "التحقق من الشهادة", "Certificate Verification")}</span>
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-tight text-[#1F2925]">
             {t("Verify a ", "تحقق من ", "Verify a ")}
-            <span className="text-[#52735F]">{t("Certificate", "شهادة", "Certificate")}</span>
+            <span className="text-[#6453C2]">{t("Certificate", "شهادة", "Certificate")}</span>
           </h1>
           <p className="text-lg font-light leading-relaxed max-w-lg mx-auto text-[#5E6862]">
             {t(
@@ -69,7 +69,7 @@ export default function Verify() {
                   placeholder="e.g. INF-2025-0001"
                   value={certId}
                   onChange={(e) => setCertId(e.target.value)}
-                  className={`py-6 text-base rounded-xl font-medium uppercase placeholder:normal-case focus:ring-[#52735F]/20 focus:border-[#52735F] bg-white border-[#D8DDD8] text-[#1F2925] ${
+                  className={`py-6 text-base rounded-xl font-medium uppercase placeholder:normal-case focus:ring-[#6453C2]/20 focus:border-[#6453C2] bg-white border-[#D8DDD8] text-[#1F2925] ${
                     isRTL ? "pr-12" : "pl-12"
                   }`}
                 />
@@ -78,7 +78,7 @@ export default function Verify() {
                 type="submit"
                 size="lg"
                 disabled={isLoading}
-                className="py-6 px-8 rounded-xl bg-[#52735F] hover:bg-[#43614F] text-white font-bold shadow-md shadow-[#52735F]/20 transition-all hover:-translate-y-0.5 text-base"
+                className="py-6 px-8 rounded-xl bg-[#6453C2] hover:bg-[#5342AE] text-white font-bold shadow-md shadow-[#6453C2]/20 transition-all hover:-translate-y-0.5 text-base"
               >
                 {isLoading ? (isRTL ? "جارٍ التحقق..." : "Verifying...") : isRTL ? "تحقق" : "Verify"}
               </Button>
@@ -106,9 +106,9 @@ export default function Verify() {
               )}
 
               {hasSearched && !isLoading && certificate && (
-                <div className="bg-[#E4EBE6] border border-[#52735F]/30 rounded-xl p-6">
+                <div className="bg-[#EFEBFA] border border-[#6453C2]/30 rounded-xl p-6">
                   <div className="flex items-center justify-center gap-2 mb-6">
-                    <CheckCircle2 className="w-8 h-8 text-[#52735F]" />
+                    <CheckCircle2 className="w-8 h-8 text-[#6453C2]" />
                     <h3 className="text-xl font-bold text-[#1F2925]">{isRTL ? "شهادة موثقة" : "Valid Certificate"}</h3>
                   </div>
 
@@ -116,19 +116,19 @@ export default function Verify() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs text-[#7B847F] uppercase font-semibold flex items-center gap-1 mb-1">
-                          <User className="w-3.5 h-3.5 text-[#52735F]" /> {isRTL ? "اسم الطالب" : "Student Name"}
+                          <User className="w-3.5 h-3.5 text-[#6453C2]" /> {isRTL ? "اسم الطالب" : "Student Name"}
                         </p>
                         <p className="font-semibold text-[#1F2925]">{certificate.studentName}</p>
                       </div>
                       <div>
                         <p className="text-xs text-[#7B847F] uppercase font-semibold flex items-center gap-1 mb-1">
-                          <BookOpen className="w-3.5 h-3.5 text-[#52735F]" /> {isRTL ? "البرنامج / الدورة" : "Course"}
+                          <BookOpen className="w-3.5 h-3.5 text-[#6453C2]" /> {isRTL ? "البرنامج / الدورة" : "Course"}
                         </p>
                         <p className="font-semibold text-[#1F2925]">{certificate.courseName}</p>
                       </div>
                       <div>
                         <p className="text-xs text-[#7B847F] uppercase font-semibold flex items-center gap-1 mb-1">
-                          <Calendar className="w-3.5 h-3.5 text-[#52735F]" /> {isRTL ? "تاريخ الإصدار" : "Issue Date"}
+                          <Calendar className="w-3.5 h-3.5 text-[#6453C2]" /> {isRTL ? "تاريخ الإصدار" : "Issue Date"}
                         </p>
                         <p className="font-semibold text-[#1F2925]">
                           {new Date(certificate.issueDate).toLocaleDateString(isRTL ? "ar-EG" : "en-US", {
@@ -140,9 +140,9 @@ export default function Verify() {
                       </div>
                       <div>
                         <p className="text-xs text-[#7B847F] uppercase font-semibold flex items-center gap-1 mb-1">
-                          <Award className="w-3.5 h-3.5 text-[#52735F]" /> {isRTL ? "معرّف الشهادة" : "Credential ID"}
+                          <Award className="w-3.5 h-3.5 text-[#6453C2]" /> {isRTL ? "معرّف الشهادة" : "Credential ID"}
                         </p>
-                        <p className="font-mono text-sm font-semibold bg-[#F5F4EF] text-[#52735F] px-2 py-0.5 rounded inline-block">
+                        <p className="font-mono text-sm font-semibold bg-[#F5F4EF] text-[#6453C2] px-2 py-0.5 rounded inline-block">
                           {certificate.certId}
                         </p>
                       </div>
@@ -150,7 +150,7 @@ export default function Verify() {
                   </div>
 
                   <div className="mt-6 text-center">
-                    <Button asChild className="bg-[#52735F] hover:bg-[#43614F] text-white rounded-xl px-6">
+                    <Button asChild className="bg-[#6453C2] hover:bg-[#5342AE] text-white rounded-xl px-6">
                       <Link href={`/certificates/${certificate.certId}`}>
                         {isRTL ? "عرض الشهادة الرقمية" : "View Digital Certificate"}
                       </Link>
