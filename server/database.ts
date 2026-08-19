@@ -1,66 +1,78 @@
-import { Pool } from 'pg';
+import { Pool, type PoolConfig } from "pg";
 
-if (!process.env.DATABASE_URL) {
-  console.error("❌ DATABASE_URL environment variable is missing!");
-  process.exit(1);
+declare global {
+  // Reuse a small pool across warm Netlify invocations and local hot reloads.
+  // eslint-disable-next-line no-var
+  var __infinityxPostgresPool: Pool | undefined;
 }
 
-// Create PostgreSQL connection pool optimized for Neon Serverless
-export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-  maxUses: 7500,
-});
+function poolConfig(): PoolConfig {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) throw new Error("DATABASE_URL environment variable is required");
 
-pool.on('connect', () => {
-  // Silent connected log to avoid spamming unless explicitly debugging
-});
+  return {
+    connectionString,
+    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
+    max: 2,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 10_000,
+    maxUses: 5_000,
+    allowExitOnIdle: true,
+  };
+}
 
-pool.on('error', (err) => {
-  console.error('❌ Unexpected PostgreSQL pool error. Connection dropped:', err);
-  // Do not exit process. The pg pool will automatically attempt to reconnect.
-});
+export function getPool(): Pool {
+  if (!globalThis.__infinityxPostgresPool) {
+    const pool = new Pool(poolConfig());
+    pool.on("error", error => {
+      console.error("Unexpected PostgreSQL pool error:", {
+        message: error.message,
+        code: (error as NodeJS.ErrnoException).code,
+      });
+    });
+    globalThis.__infinityxPostgresPool = pool;
+  }
+  return globalThis.__infinityxPostgresPool;
+}
 
-/**
- * Execute a query with automatic retry for transient connection errors (e.g., Neon waking up from scale-to-zero)
- */
-export async function query(text: string, params?: any[], retries = 3): Promise<any> {
-  const start = Date.now();
+function isTransientDatabaseError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  const code = (error as NodeJS.ErrnoException).code;
+  return Boolean(
+    code && ["08000", "08003", "08006", "57P01", "ECONNRESET", "ETIMEDOUT"].includes(code)
+  );
+}
+
+export async function query(text: string, params?: unknown[], retries = 2): Promise<any> {
+  const startedAt = Date.now();
   try {
-    const res = await pool.query(text, params);
-    const duration = Date.now() - start;
-    if (process.env.NODE_ENV !== 'production' && duration > 500) {
-      console.warn(`🐢 Slow Query (${duration}ms):`, text.substring(0, 100));
+    const result = await getPool().query(text, params);
+    const duration = Date.now() - startedAt;
+    if (process.env.NODE_ENV !== "production" && duration > 500) {
+      console.warn(`Slow database query (${duration}ms)`);
     }
-    return res;
-  } catch (error: any) {
-    // Retry on specific transient network/connection codes
-    // 08000 (connection exception), 08003 (connection does not exist), 08006 (connection failure), 57P01 (admin shutdown - common in serverless sleep)
-    const isTransient = error.code && ['08000', '08003', '08006', '57P01'].includes(error.code) || error.message?.includes('ECONNRESET');
-
-    if (isTransient && retries > 0) {
-      console.warn(`🔄 Transient database error (${error.code || 'Network'}). Retrying query... (${retries} attempts left)`);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retrying
+    return result;
+  } catch (error) {
+    if (isTransientDatabaseError(error) && retries > 0) {
+      const attempt = 3 - retries;
+      await new Promise(resolve => setTimeout(resolve, 250 * attempt));
       return query(text, params, retries - 1);
     }
-    console.error('❌ Database query error:', { error: error.message, code: error.code, query: text.substring(0, 50) });
+    console.error("Database query failed:", {
+      message: error instanceof Error ? error.message : "Unknown database error",
+      code: error instanceof Error ? (error as NodeJS.ErrnoException).code : undefined,
+    });
     throw error;
   }
 }
 
-// Helper to get a single row
-export async function queryOne<T = any>(text: string, params?: any[]): Promise<T | null> {
+export async function queryOne<T = any>(text: string, params?: unknown[]): Promise<T | null> {
   const result = await query(text, params);
   return result.rows[0] || null;
 }
 
-// Helper to get multiple rows
-export async function queryMany<T = any>(text: string, params?: any[]): Promise<T[]> {
+export async function queryMany<T = any>(text: string, params?: unknown[]): Promise<T[]> {
   const result = await query(text, params);
   return result.rows;
 }
 
-export default pool;

@@ -1,14 +1,11 @@
 import express from "express";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas";
 import { getCertificateByCertId } from "../db";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const router = express.Router();
+const certificateCache = new Map<string, Buffer>();
 
 // Helper to draw text perfectly centered inside a bounding box, scaling size down if it overflows width.
 function drawBoundedText(
@@ -38,18 +35,11 @@ function drawBoundedText(
     ctx.fillText(text, cx, cy);
 }
 
-// Ensure the directory exists
-const GENERATED_DIR = path.join(process.cwd(), "uploads", "generated");
-if (!fs.existsSync(GENERATED_DIR)) {
-    fs.mkdirSync(GENERATED_DIR, { recursive: true });
-}
-
 // Pre-register fonts for Canvas mapping with dynamic path resolution
 const possibleFontPaths = [
     path.join(process.cwd(), "client", "public", "fonts"),
     path.join(process.cwd(), "dist", "public", "fonts"),
-    path.join(process.cwd(), "public", "fonts"),
-    path.join(__dirname, "../../client/public/fonts")
+    path.join(process.cwd(), "public", "fonts")
 ];
 let fontDir = "";
 for (const p of possibleFontPaths) {
@@ -81,13 +71,12 @@ router.get("/:certId/download", async (req, res) => {
             return res.status(404).send("Certificate not found");
         }
 
-        const outputPath = path.join(GENERATED_DIR, `${certificate.certId}.png`);
-
-        // If an exactly generated asset already exists, skip intense CPU generation and stream the file directly.
-        if (fs.existsSync(outputPath)) {
+        const cachedCertificate = certificateCache.get(certificate.certId);
+        if (cachedCertificate) {
             res.setHeader("Content-Type", "image/png");
             res.setHeader("Content-Disposition", `attachment; filename="Certificate-${certId}.png"`);
-            return fs.createReadStream(outputPath).pipe(res);
+            res.setHeader("Cache-Control", "private, max-age=300");
+            return res.send(cachedCertificate);
         }
 
         const templatePath = path.join(process.cwd(), "uploads", "certification.png");
@@ -155,13 +144,16 @@ router.get("/:certId/download", async (req, res) => {
 
         ctx.drawImage(qrImage, qrX, qrY, squareSize, squareSize);
 
-        // Save strictly to local file system
         const outBuffer = canvasArea.encodeSync("png");
-        fs.writeFileSync(outputPath, outBuffer);
+        certificateCache.set(certificate.certId, outBuffer);
+        if (certificateCache.size > 25) {
+            const oldestKey = certificateCache.keys().next().value;
+            if (oldestKey) certificateCache.delete(oldestKey);
+        }
 
-        // Return the buffer inline for download
         res.setHeader("Content-Type", "image/png");
         res.setHeader("Content-Disposition", `attachment; filename="Certificate-${certId}.png"`);
+        res.setHeader("Cache-Control", "private, max-age=300");
         res.send(outBuffer);
 
     } catch (err: any) {

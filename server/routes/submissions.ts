@@ -1,63 +1,55 @@
-/**
- * Student Submission Upload & AI Grading Route
- * 
- * POST /api/submissions/upload
- * - Accepts multipart/form-data with a file + lessonId + userId
- * - Validates file type and size
- * - Parses file content
- * - Triggers AI grading
- * - Stores results in the database
- */
-
-import express from "express";
+import express, { type NextFunction, type Request, type Response } from "express";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
-import type { Request, Response, NextFunction } from "express";
 import * as db from "../db";
-import { parseFileContent, evaluateSubmission } from "../_core/aiGrading";
-
-interface MulterRequest extends Request {
-  file?: Express.Multer.File;
-}
+import { evaluateSubmission, parseFileContent } from "../_core/aiGrading";
+import { getAdminFromRequest, getStudentFromRequest, requireStudent } from "../_core/requestAuth";
+import { destroyStoredAsset, getPrivateDownloadUrl, uploadPrivateSubmission } from "../storage";
 
 const router = express.Router();
-
-// Ensure submissions directory exists
-const submissionsDir = path.join(process.cwd(), "public", "submissions");
-if (!fs.existsSync(submissionsDir)) {
-  fs.mkdirSync(submissionsDir, { recursive: true });
-}
-
-// Configure multer for submission files
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, submissionsDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const uniqueName = `sub_${Date.now()}_${Math.round(Math.random() * 1e9)}${ext}`;
-    cb(null, uniqueName);
-  },
-});
-
-const ALLOWED_EXTENSIONS = ['.txt', '.py', '.ipynb', '.csv', '.pdf', '.js', '.ts', '.java', '.c', '.cpp', '.html', '.css', '.r', '.sql', '.md', '.json'];
+const MAX_SUBMISSION_SIZE = 5 * 1024 * 1024;
+const ALLOWED_EXTENSIONS = new Set([
+  ".txt", ".py", ".ipynb", ".csv", ".pdf", ".js", ".ts", ".java",
+  ".c", ".cpp", ".html", ".css", ".r", ".sql", ".md", ".json",
+]);
+const ALLOWED_MIME_TYPES = new Set([
+  "application/json",
+  "application/pdf",
+  "application/octet-stream",
+  "application/x-ipynb+json",
+  "text/csv",
+  "text/css",
+  "text/html",
+  "text/javascript",
+  "text/markdown",
+  "text/plain",
+  "text/x-c",
+  "text/x-c++src",
+  "text/x-java-source",
+  "text/x-python",
+  "text/x-r-source",
+  "text/x-sql",
+  "video/mp2t",
+]);
 
 const uploadMiddleware = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (ALLOWED_EXTENSIONS.includes(ext)) {
-      cb(null, true);
-    } else {
-      cb(new Error(`File type '${ext}' is not allowed. Accepted: ${ALLOWED_EXTENSIONS.join(', ')}`));
-    }
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_SUBMISSION_SIZE, files: 1 },
+  fileFilter: (_req, file, callback) => {
+    const extension = path.extname(file.originalname).toLowerCase();
+    callback(null, ALLOWED_EXTENSIONS.has(extension) && ALLOWED_MIME_TYPES.has(file.mimetype));
   },
 });
 
-// ─── Simple rate limiter (in-memory) ──────────────────────────────────────────
+function hasValidSubmissionContent(file: Express.Multer.File): boolean {
+  const extension = path.extname(file.originalname).toLowerCase();
+  if (extension === ".pdf") return file.buffer.subarray(0, 5).toString("ascii") === "%PDF-";
+  return !file.buffer.subarray(0, Math.min(file.buffer.length, 8192)).includes(0);
+}
+
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 5; // max submissions per hour per user
-const RATE_WINDOW = 60 * 60 * 1000; // 1 hour
+const RATE_LIMIT = 5;
+const RATE_WINDOW = 60 * 60 * 1000;
 
 function checkRateLimit(userId: string): boolean {
   const now = Date.now();
@@ -67,80 +59,73 @@ function checkRateLimit(userId: string): boolean {
     return true;
   }
   if (entry.count >= RATE_LIMIT) return false;
-  entry.count++;
+  entry.count += 1;
   return true;
 }
 
-// ─── UPLOAD & GRADE ENDPOINT ──────────────────────────────────────────────────
-
 router.post(
   "/upload",
+  requireStudent,
   uploadMiddleware.single("file"),
-  async (req: MulterRequest, res: Response, next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
+    let storedReference: string | null = null;
+    let submissionCreated = false;
+
     try {
       const { lessonId, userId } = req.body;
-
-      // Validate required fields
+      const authenticatedStudentId = String(res.locals.student.id);
       if (!lessonId || !userId) {
         res.status(400).json({ error: "lessonId and userId are required" });
         return;
       }
-
-      if (!req.file) {
-        res.status(400).json({ error: "No file uploaded" });
+      if (String(userId) !== authenticatedStudentId) {
+        res.status(403).json({ error: "The submission user does not match the authenticated student" });
         return;
       }
-
-      // Rate limiting
-      if (!checkRateLimit(userId)) {
+      if (!req.file) {
+        res.status(400).json({ error: "No valid submission file was uploaded" });
+        return;
+      }
+      if (!hasValidSubmissionContent(req.file)) {
+        res.status(400).json({ error: "The submission content does not match its file type" });
+        return;
+      }
+      if (!checkRateLimit(authenticatedStudentId)) {
         res.status(429).json({ error: "Rate limit exceeded. Max 5 submissions per hour." });
         return;
       }
 
-      // Fetch assignment for this lesson
       const assignment = await db.getAssignmentByLessonId(String(lessonId));
       if (!assignment || !assignment.isActive) {
         res.status(400).json({ error: "No active assignment found for this lesson." });
         return;
       }
 
-      // Check attempt count
-      const attemptCount = await db.getSubmissionCount(userId, assignment.id);
+      const attemptCount = await db.getSubmissionCount(authenticatedStudentId, assignment.id);
       if (attemptCount >= (assignment.maxAttempts || 3)) {
         res.status(400).json({ error: `Maximum attempts reached (${assignment.maxAttempts || 3}).` });
         return;
       }
 
-      // Create submission record
-      const fileUrl = `/submissions/${req.file.filename}`;
+      storedReference = await uploadPrivateSubmission(req.file.buffer);
       const submission = await db.createSubmission({
-        userId,
+        userId: authenticatedStudentId,
         assignmentId: assignment.id,
-        fileUrl,
-        fileName: req.file.originalname,
+        fileUrl: storedReference,
+        fileName: path.basename(req.file.originalname).replace(/[\r\n]/g, "").slice(0, 255),
         fileSizeBytes: req.file.size,
         fileMimeType: req.file.mimetype,
         attemptNumber: attemptCount + 1,
       });
+      submissionCreated = true;
 
-      // Immediately respond with submission ID (grading happens async-ish but fast)
-      res.json({
-        success: true,
-        submissionId: submission.id,
-        status: "processing",
-        attemptNumber: submission.attemptNumber,
-      });
-
-      // ─── BACKGROUND GRADING ───────────────────────────────────────────
-      // Note: We respond first, then grade. The client will poll for results.
+      // Netlify can freeze work after an HTTP response. Complete grading before
+      // returning so a successful upload never leaves an abandoned job.
       try {
         await db.updateSubmissionStatus(submission.id, "processing");
+        const studentContent = parseFileContent(req.file.buffer, req.file.originalname, req.file.mimetype);
 
-        // Parse file content
-        const fileBuffer = fs.readFileSync(req.file.path);
-        const studentContent = parseFileContent(fileBuffer, req.file.originalname, req.file.mimetype);
-
-        if (!studentContent || studentContent.trim().length === 0) {
+        if (!studentContent.trim()) {
           await db.updateSubmissionStatus(submission.id, "failed");
           await db.createGradingResult({
             submissionId: submission.id,
@@ -149,47 +134,45 @@ router.post(
             percentage: 0,
             status: "fail",
             summary: "Unable to extract content from the uploaded file.",
-            feedbackJson: { strengths: [], weaknesses: ["File appears to be empty or unreadable."], suggestions: ["Please upload a valid file with readable content."], rubricBreakdown: [] },
+            feedbackJson: {
+              strengths: [],
+              weaknesses: ["File appears to be empty or unreadable."],
+              suggestions: ["Please upload a valid file with readable content."],
+              rubricBreakdown: [],
+            },
             providerUsed: "none",
             modelUsed: "none",
           });
-          return;
+        } else {
+          const evaluation = await evaluateSubmission({
+            instructions: assignment.instructions || "",
+            rubric: assignment.rubric || "",
+            maxScore: assignment.maxScore || 100,
+            studentContent,
+            fileName: req.file.originalname,
+          });
+          await db.createGradingResult({
+            submissionId: submission.id,
+            score: evaluation.result.score,
+            maxScore: evaluation.result.maxScore,
+            percentage: evaluation.result.percentage,
+            status: evaluation.result.status,
+            summary: evaluation.result.summary,
+            feedbackJson: {
+              strengths: evaluation.result.strengths,
+              weaknesses: evaluation.result.weaknesses,
+              suggestions: evaluation.result.suggestions,
+              rubricBreakdown: evaluation.result.rubricBreakdown,
+            },
+            providerUsed: evaluation.providerUsed,
+            modelUsed: evaluation.modelUsed,
+            promptTokens: evaluation.promptTokens,
+            completionTokens: evaluation.completionTokens,
+          });
+          await db.updateSubmissionStatus(submission.id, "completed");
         }
-
-        // Evaluate with AI
-        const evaluation = await evaluateSubmission({
-          instructions: assignment.instructions || "",
-          rubric: assignment.rubric || "",
-          maxScore: assignment.maxScore || 100,
-          studentContent,
-          fileName: req.file.originalname,
-        });
-
-        // Store grading result
-        await db.createGradingResult({
-          submissionId: submission.id,
-          score: evaluation.result.score,
-          maxScore: evaluation.result.maxScore,
-          percentage: evaluation.result.percentage,
-          status: evaluation.result.status,
-          summary: evaluation.result.summary,
-          feedbackJson: {
-            strengths: evaluation.result.strengths,
-            weaknesses: evaluation.result.weaknesses,
-            suggestions: evaluation.result.suggestions,
-            rubricBreakdown: evaluation.result.rubricBreakdown,
-          },
-          providerUsed: evaluation.providerUsed,
-          modelUsed: evaluation.modelUsed,
-          promptTokens: evaluation.promptTokens,
-          completionTokens: evaluation.completionTokens,
-        });
-
-        await db.updateSubmissionStatus(submission.id, "completed");
-        console.log(`[AI Grading] ✅ Submission ${submission.id} graded: ${evaluation.result.score}/${evaluation.result.maxScore}`);
-
-      } catch (gradingError: any) {
-        console.error(`[AI Grading] ❌ Grading failed for submission ${submission.id}:`, gradingError.message);
+      } catch (gradingError) {
+        console.error(`Submission ${submission.id} grading failed`);
         await db.updateSubmissionStatus(submission.id, "failed");
         await db.createGradingResult({
           submissionId: submission.id,
@@ -198,28 +181,69 @@ router.post(
           percentage: 0,
           status: "review",
           summary: "AI grading failed. Your submission has been saved and will be reviewed manually.",
-          feedbackJson: { strengths: [], weaknesses: [], suggestions: ["Please try resubmitting later."], rubricBreakdown: [] },
+          feedbackJson: { strengths: [], weaknesses: [], suggestions: ["Please try again later."], rubricBreakdown: [] },
           providerUsed: "error",
-          modelUsed: gradingError.message.substring(0, 100),
+          modelUsed: gradingError instanceof Error ? gradingError.name : "unknown-error",
         });
       }
 
-    } catch (error: any) {
-      console.error("[Submissions] Upload error:", error);
-      res.status(500).json({ error: error.message || "Upload failed" });
+      res.status(200).json({
+        success: true,
+        submissionId: submission.id,
+        status: "processing",
+        attemptNumber: submission.attemptNumber,
+      });
+    } catch (error) {
+      if (storedReference && !submissionCreated) {
+        await destroyStoredAsset(storedReference).catch(() => undefined);
+      }
+      const message = error instanceof Error ? error.message : "Upload failed";
+      console.error("Student submission upload failed:", message);
+      const status = message.includes("credentials are not configured") ? 503 : 500;
+      res.status(status).json({ error: status === 503 ? "Cloud storage is not configured" : "Upload failed" });
     }
   }
 );
 
-// Multer error handler
-router.use((err: any, req: Request, res: Response, next: NextFunction): void => {
-  if (err instanceof multer.MulterError) {
-    if (err.code === "LIMIT_FILE_SIZE") {
-      res.status(400).json({ error: "File too large (max 5MB)" });
+router.get("/:submissionId/download", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const submissionId = Number.parseInt(req.params.submissionId, 10);
+    if (!Number.isSafeInteger(submissionId) || submissionId <= 0) {
+      res.status(400).json({ error: "Invalid submission ID" });
       return;
     }
+
+    const [student, admin, submission] = await Promise.all([
+      getStudentFromRequest(req).catch(() => null),
+      getAdminFromRequest(req).catch(() => null),
+      db.getSubmissionById(submissionId),
+    ]);
+    if (!submission) {
+      res.status(404).json({ error: "Submission not found" });
+      return;
+    }
+    if (!admin && (!student || String(submission.userId) !== String(student.id))) {
+      res.status(403).json({ error: "Not authorized to download this submission" });
+      return;
+    }
+
+    const signedUrl = getPrivateDownloadUrl(submission.fileUrl, submission.fileName || "submission");
+    res.setHeader("Cache-Control", "no-store, private");
+    res.redirect(302, signedUrl);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Download failed";
+    const status = message.includes("credentials are not configured") ? 503 : 500;
+    res.status(status).json({ error: status === 503 ? "Cloud storage is not configured" : "Download failed" });
   }
-  res.status(400).json({ error: err.message || "Upload error" });
+});
+
+router.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  if (error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE") {
+    return res.status(400).json({ error: "File too large (max 5MB)" });
+  }
+  const message = error instanceof Error ? error.message : "Upload error";
+  return res.status(400).json({ error: message });
 });
 
 export default router;
+

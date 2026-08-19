@@ -1,5 +1,4 @@
-import { query, queryOne, queryMany } from "./database";
-import pool from "./database";
+import { getPool, query, queryOne, queryMany } from "./database";
 export { query };
 import { ENV } from "./_core/env";
 
@@ -218,7 +217,7 @@ export async function createCourse(course: InsertCourse): Promise<{ id: string }
 }
 
 export async function createCourseComplete(courseData: any, modulesData: any[]): Promise<{ id: string }> {
-  const client = await pool.connect();
+  const client = await getPool().connect();
   try {
     await client.query('BEGIN');
 
@@ -319,7 +318,7 @@ export async function getCourseComplete(id: string) {
 }
 
 export async function updateCourseComplete(courseId: string, courseData: any, modulesData: any[]): Promise<{ id: string }> {
-  const client = await pool.connect();
+  const client = await getPool().connect();
   try {
     await client.query('BEGIN');
 
@@ -492,7 +491,7 @@ export async function getAllLessonsWithModule() {
 
 /** Deep copy a module (with all lessons, materials, quizzes, questions) into a target course */
 export async function deepCopyModule(sourceModuleId: string, targetCourseId: string, orderIndex: number): Promise<{ moduleId: string }> {
-  const client = await pool.connect();
+  const client = await getPool().connect();
   try {
     await client.query('BEGIN');
 
@@ -552,7 +551,7 @@ export async function deepCopyModule(sourceModuleId: string, targetCourseId: str
 
 /** Deep copy a single lesson (with materials, quizzes, questions) into a target module */
 export async function deepCopyLesson(sourceLessonId: string, targetModuleId: string, orderIndex: number): Promise<{ lessonId: string }> {
-  const client = await pool.connect();
+  const client = await getPool().connect();
   try {
     await client.query('BEGIN');
 
@@ -696,7 +695,7 @@ export async function updateSubmissionStatus(submissionId: number, status: strin
 
 export async function getSubmissionsByAssignment(userId: string, assignmentId: number) {
   return await queryMany<any>(
-    `SELECT s.id, s.file_url as "fileUrl", s.file_name as "fileName", s.status, s.attempt_number as "attemptNumber",
+    `SELECT s.id, ('/api/submissions/' || s.id || '/download') as "fileUrl", s.file_name as "fileName", s.status, s.attempt_number as "attemptNumber",
             s.submitted_at as "submittedAt",
             g.score, g.max_score as "maxScore", g.percentage, g.summary, g.feedback_json as "feedbackJson",
             g.provider_used as "providerUsed", g.status as "gradingStatus"
@@ -705,6 +704,17 @@ export async function getSubmissionsByAssignment(userId: string, assignmentId: n
      WHERE s.user_id = $1 AND s.assignment_id = $2
      ORDER BY s.submitted_at DESC`,
     [userId, assignmentId]
+  );
+}
+
+export async function getSubmissionById(submissionId: number) {
+  return await queryOne<any>(
+    `SELECT id, user_id as "userId", assignment_id as "assignmentId",
+            file_url as "fileUrl", file_name as "fileName", file_size_bytes as "fileSizeBytes",
+            file_mime_type as "fileMimeType", status, attempt_number as "attemptNumber"
+       FROM student_submissions
+      WHERE id = $1`,
+    [submissionId]
   );
 }
 
@@ -993,7 +1003,7 @@ export async function deleteStudent(userId: string) {
 }
 
 export async function updateStudentCourses(userId: string, courseIds: string[]) {
-  const client = await pool.connect();
+  const client = await getPool().connect();
   try {
     await client.query('BEGIN');
     await client.query(`DELETE FROM enrollments WHERE student_id = $1`, [userId]);
@@ -1127,7 +1137,7 @@ export async function getProgramComplete(id: string) {
 }
 
 export async function createProgramComplete(programData: any, modulesData: any[]): Promise<{ id: string }> {
-  const client = await pool.connect();
+  const client = await getPool().connect();
   try {
     await client.query('BEGIN');
 
@@ -1169,7 +1179,7 @@ export async function createProgramComplete(programData: any, modulesData: any[]
 }
 
 export async function updateProgramComplete(programId: string, programData: any, modulesData: any[]): Promise<{ id: string }> {
-  const client = await pool.connect();
+  const client = await getPool().connect();
   try {
     await client.query('BEGIN');
 

@@ -8,7 +8,7 @@ async function run() {
     if (!rows.length) { console.log('not found'); return; }
     const id = rows[0].id;
     await c.query(`UPDATE services SET hero_image_url=$1, problem_statement=$2, problem_statement_ar=$3, overview_long=$4, overview_long_ar=$5 WHERE id=$6`, [
-      '/uploads/hero_rag_knowledge.png',
+      '/uploads/hero_rag_knowledge.webp',
       'Enterprise knowledge is trapped in thousands of documents, wikis, emails, and databases. Employees spend 20% of their time searching for information, and critical institutional knowledge walks out the door when experienced staff leave.',
       'المعرفة المؤسسية محتجزة في آلاف المستندات والويكيات والبريد الإلكتروني وقواعد البيانات. يقضي الموظفون ٢٠٪ من وقتهم في البحث عن المعلومات، والمعرفة المؤسسية الحرجة تغادر مع مغادرة الموظفين ذوي الخبرة.',
       'We build Retrieval-Augmented Generation systems that connect LLMs to your enterprise knowledge bases, enabling accurate, cited answers from your own data. Our RAG pipelines handle documents, databases, APIs, and multimedia content.\n\nEvery system includes citation tracking, confidence scoring, and feedback loops that continuously improve retrieval accuracy.',

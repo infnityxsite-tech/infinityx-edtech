@@ -1,0 +1,88 @@
+[build]
+  command = "pnpm install --frozen-lockfile && pnpm build"
+  publish = "dist/public"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "24"
+  PNPM_VERSION = "10.4.1"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@napi-rs/canvas"]
+  included_files = ["uploads/certification.png", "client/public/fonts/*.ttf"]
+
+# Server routes must be evaluated before the SPA fallback.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/.netlify/functions/api"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/robots.txt"
+  to = "/.netlify/functions/api"
+  status = 200
+  force = true
+
+# Old database/content URLs keep working after bundled PNGs were converted.
+# Existing PNG files (the certificate template) shadow this non-forced rule.
+[[redirects]]
+  from = "/uploads/:name.png"
+  to = "/uploads/:name.webp"
+  status = 301
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), geolocation=(), microphone=()"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/uploads/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/sitemap.xml"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, s-maxage=3600"
+
+[[headers]]
+  for = "/robots.txt"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, s-maxage=86400"

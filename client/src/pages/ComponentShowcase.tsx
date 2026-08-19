@@ -696,7 +696,7 @@ export default function ComponentsShowcase() {
                   <Label>Avatar</Label>
                   <div className="flex gap-4">
                     <Avatar>
-                      <AvatarImage src="/uploads/logo.png" />
+                      <AvatarImage src="/uploads/logo.webp" />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                     <Avatar>

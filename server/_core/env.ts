@@ -4,7 +4,7 @@ const envSchema = z.object({
   databaseUrl: z.string().min(1),
   isProduction: z.boolean().default(false),
   port: z.string().default("3000"),
-  jwtSecret: z.string().default("secret"),
+  jwtSecret: z.string().min(32),
   appId: z.string().default("infinityx"),
   
   // ✅ FIXED: Added these missing properties to the schema
@@ -18,7 +18,9 @@ export const ENV = envSchema.parse({
   databaseUrl: process.env.DATABASE_URL || "",
   isProduction: process.env.NODE_ENV === "production",
   port: process.env.PORT,
-  jwtSecret: process.env.JWT_SECRET,
+  jwtSecret:
+    process.env.JWT_SECRET ||
+    (process.env.NODE_ENV === "production" ? "" : "development-only-jwt-secret-change-me"),
   appId: process.env.VITE_APP_ID,
   
   // ✅ FIXED: Mapping the environment variables

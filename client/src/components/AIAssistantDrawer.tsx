@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
+import { auth } from "@/lib/firebase";
 import {
   Loader2, Upload, X, CheckCircle2, AlertTriangle, Sparkles,
   FileText, ChevronDown, ChevronUp, RotateCcw, Trophy, Target,
@@ -213,8 +214,12 @@ export default function AIAssistantDrawer({
       formData.append("lessonId", String(lessonId));
       formData.append("userId", studentId);
 
+      const idToken = await auth.currentUser?.getIdToken();
+      if (!idToken) throw new Error("Your student session has expired. Please sign in again.");
+
       const response = await fetch("/api/submissions/upload", {
         method: "POST",
+        headers: { Authorization: `Bearer ${idToken}` },
         body: formData,
       });
 

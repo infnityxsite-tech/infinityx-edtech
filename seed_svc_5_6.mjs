@@ -51,7 +51,7 @@ async function run() {
     console.log('🌱 Seeding services 5-6...\n');
 
     await seed(client, 'ai-automation-systems', {
-      hero: '/uploads/hero_ai_automation.png',
+      hero: '/uploads/hero_ai_automation.webp',
       problem: 'Enterprises waste thousands of hours on repetitive manual processes that are error-prone, slow, and impossible to scale. Traditional RPA tools handle simple tasks but fail when processes require contextual understanding, decision-making, or adaptation to changing conditions.',
       problemAr: 'تهدر المؤسسات آلاف الساعات في عمليات يدوية متكررة معرضة للأخطاء وبطيئة ومستحيلة التوسع. أدوات الأتمتة التقليدية تتعامل مع المهام البسيطة لكنها تفشل عندما تتطلب العمليات فهماً سياقياً أو اتخاذ قرارات أو تكيفاً مع الظروف المتغيرة.',
       overview: 'Our AI Automation Systems combine intelligent agents, workflow orchestration engines, and decision-making models to automate complex business processes end-to-end. Unlike traditional RPA, our solutions understand context, learn from outcomes, and adapt to exceptions — delivering true autonomous operation.\n\nWe design automation architectures that integrate with your existing enterprise systems (ERP, CRM, HRIS) through secure APIs, processing documents, emails, and structured data with near-human accuracy while operating 24/7 without fatigue.',
@@ -87,7 +87,7 @@ async function run() {
     });
 
     await seed(client, 'custom-llm-solutions', {
-      hero: '/uploads/hero_custom_llm.png',
+      hero: '/uploads/hero_custom_llm.webp',
       problem: 'Off-the-shelf LLMs produce generic outputs that lack domain expertise, hallucinate on industry-specific questions, and cannot access proprietary enterprise data — making them unreliable for critical business applications.',
       problemAr: 'النماذج اللغوية الجاهزة تنتج مخرجات عامة تفتقر للخبرة التخصصية وتُهلوس في الأسئلة الصناعية المتخصصة ولا تستطيع الوصول لبيانات المؤسسة الخاصة — مما يجعلها غير موثوقة للتطبيقات التجارية الحرجة.',
       overview: 'We build enterprise-grade LLM solutions that are fine-tuned on your domain data, integrated with your knowledge bases, and deployed within your security perimeter. Our custom models understand your industry terminology, follow your business rules, and generate outputs that meet your quality standards.\n\nFrom intelligent chatbots and content generation engines to code assistants and document analysis tools, we deliver LLM applications that transform how your teams work with information.',

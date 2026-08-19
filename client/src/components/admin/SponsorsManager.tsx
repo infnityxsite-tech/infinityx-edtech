@@ -117,7 +117,7 @@ export default function SponsorsManager() {
                                         id="logoUrl"
                                         value={formData.logoUrl}
                                         onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
-                                        placeholder="/uploads/logo.png"
+                                        placeholder="/uploads/logo.webp"
                                         required
                                     />
                                     {formData.logoUrl && (

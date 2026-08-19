@@ -26,7 +26,7 @@ export const schoolsData: Record<string, SchoolConfig> = {
     titleAr: "كلية الذكاء الاصطناعي وعلوم البيانات",
     subtitle: "Master neural networks, computer vision, NLP, and predictive analytics.",
     subtitleAr: "أتقن الشبكات العصبية والرؤية الحاسوبية ومعالجة اللغة الطبيعية والتحليلات التنبؤية.",
-    image: "/uploads/school_ai_cover.png",
+    image: "/uploads/school_ai_cover.webp",
     icon: Brain,
     gradient: "from-cyan-500 to-blue-600",
     tracks: [
@@ -64,7 +64,7 @@ export const schoolsData: Record<string, SchoolConfig> = {
     titleAr: "كلية الأمن السيبراني",
     subtitle: "Ethical hacking, penetration testing, SOC analysis, and digital forensics.",
     subtitleAr: "الاختراق الأخلاقي واختبار الاختراق وتحليل مراكز العمليات الأمنية والتحقيق الرقمي.",
-    image: "/uploads/school_cyber_cover.png",
+    image: "/uploads/school_cyber_cover.webp",
     icon: Shield,
     gradient: "from-red-500 to-amber-500",
     tracks: [
@@ -102,7 +102,7 @@ export const schoolsData: Record<string, SchoolConfig> = {
     titleAr: "كلية تطوير النظم المتكاملة",
     subtitle: "React, Node.js, cloud architecture, databases, and DevOps.",
     subtitleAr: "React وNode.js والبنية السحابية وقواعد البيانات وDevOps.",
-    image: "/uploads/school_fullstack_cover.png",
+    image: "/uploads/school_fullstack_cover.webp",
     icon: Code,
     gradient: "from-emerald-500 to-teal-500",
     tracks: [
@@ -140,7 +140,7 @@ export const schoolsData: Record<string, SchoolConfig> = {
     titleAr: "كلية تكنولوجيا الفضاء",
     subtitle: "Satellite systems, Earth observation AI, and aerospace data pipelines.",
     subtitleAr: "أنظمة الأقمار الاصطناعية وذكاء رصد الأرض وأنابيب بيانات الفضاء.",
-    image: "/uploads/school_space_cover.png",
+    image: "/uploads/school_space_cover.webp",
     icon: Rocket,
     gradient: "from-indigo-500 to-purple-600",
     tracks: [

@@ -9,7 +9,7 @@ async function run() {
     if (rows.length) {
       const id = rows[0].id;
       await c.query(`UPDATE services SET hero_image_url=$1, problem_statement=$2, problem_statement_ar=$3, overview_long=$4, overview_long_ar=$5 WHERE id=$6`, [
-        '/uploads/hero_industrial_inspect.png',
+        '/uploads/hero_industrial_inspect.webp',
         'Manual quality inspection is slow, inconsistent, and cannot scale with production demands. Human inspectors miss up to 30% of defects due to fatigue, while sampling-based approaches leave most products unchecked.',
         'الفحص اليدوي للجودة بطيء وغير متسق ولا يمكن توسيعه مع متطلبات الإنتاج. يفوّت المفتشون البشريون ما يصل إلى ٣٠٪ من العيوب بسبب الإرهاق، بينما الأساليب القائمة على العينات تترك معظم المنتجات دون فحص.',
         'We deploy AI-powered visual inspection systems that examine 100% of production output in real-time. Our computer vision models detect defects invisible to the human eye, classify anomalies by severity, and trigger automated responses.\n\nEvery system is calibrated to your specific products and quality standards, with continuous learning from new defect patterns.',
@@ -35,7 +35,7 @@ async function run() {
     if (rows.length) {
       const id = rows[0].id;
       await c.query(`UPDATE services SET hero_image_url=$1, problem_statement=$2, problem_statement_ar=$3, overview_long=$4, overview_long_ar=$5 WHERE id=$6`, [
-        '/uploads/hero_decision_support.png',
+        '/uploads/hero_decision_support.webp',
         'Critical business decisions are made with incomplete data, gut instinct, and outdated analysis frameworks. This leads to missed opportunities, unquantified risks, and suboptimal resource allocation across the enterprise.',
         'القرارات التجارية الحرجة تُتخذ ببيانات ناقصة وحدس وأطر تحليل قديمة. يؤدي ذلك إلى فرص ضائعة ومخاطر غير مُقدّرة وتخصيص غير مثالي للموارد عبر المؤسسة.',
         'We build AI-driven decision intelligence platforms that combine predictive modeling, scenario simulation, and risk assessment to help executives make data-backed decisions with confidence.\n\nOur systems integrate with your business data sources to provide real-time decision support with explainable AI outputs that stakeholders can trust.',

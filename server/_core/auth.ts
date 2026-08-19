@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { ENV } from './env';
 import { query, queryOne } from '../database';
 
-const JWT_SECRET = ENV.jwtSecret || 'your-secret-key-change-this';
+const JWT_SECRET = ENV.jwtSecret;
 const JWT_EXPIRES_IN = '7d'; // Token expires in 7 days
 
 export interface AdminUser {

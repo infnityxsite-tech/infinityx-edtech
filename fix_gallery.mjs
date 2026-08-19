@@ -17,27 +17,27 @@ async function run() {
       
       if (slug.includes('vision')) {
         images = [
-          ['/uploads/hero_cv_industrial.png', 'Real-time object detection pipeline'],
-          ['/uploads/industrial_yolo_cv.png', 'YOLOv11 defect classification'],
-          ['/uploads/satellite_agri_grid.png', 'Spatial analysis grid overlay'],
+          ['/uploads/hero_cv_industrial.webp', 'Real-time object detection pipeline'],
+          ['/uploads/industrial_yolo_cv.webp', 'YOLOv11 defect classification'],
+          ['/uploads/satellite_agri_grid.webp', 'Spatial analysis grid overlay'],
         ];
       } else if (slug.includes('mlops')) {
         images = [
-          ['/uploads/hero_ai_neural.png', 'Neural network architecture'],
-          ['/uploads/gallery_mlops_pipeline.png', 'MLOps training dashboard'],
-          ['/uploads/mlops_dashboard.png', 'Model monitoring & metrics'],
+          ['/uploads/hero_ai_neural.webp', 'Neural network architecture'],
+          ['/uploads/gallery_mlops_pipeline.webp', 'MLOps training dashboard'],
+          ['/uploads/mlops_dashboard.webp', 'Model monitoring & metrics'],
         ];
       } else if (slug.includes('cloud')) {
         images = [
-          ['/uploads/hero_cloud_infra.png', 'Cloud infrastructure topology'],
-          ['/uploads/gallery_cloud_k8s.png', 'Kubernetes cluster visualization'],
-          ['/uploads/software_architecture_hero.png', 'Microservices architecture'],
+          ['/uploads/hero_cloud_infra.webp', 'Cloud infrastructure topology'],
+          ['/uploads/gallery_cloud_k8s.webp', 'Kubernetes cluster visualization'],
+          ['/uploads/software_architecture_hero.webp', 'Microservices architecture'],
         ];
       } else {
         images = [
-          ['/uploads/hero_analytics_dash.png', 'Predictive analytics dashboard'],
-          ['/uploads/gallery_analytics_bi.png', 'Business intelligence panels'],
-          ['/uploads/ai_datacenter_hero.png', 'Data processing infrastructure'],
+          ['/uploads/hero_analytics_dash.webp', 'Predictive analytics dashboard'],
+          ['/uploads/gallery_analytics_bi.webp', 'Business intelligence panels'],
+          ['/uploads/ai_datacenter_hero.webp', 'Data processing infrastructure'],
         ];
       }
       

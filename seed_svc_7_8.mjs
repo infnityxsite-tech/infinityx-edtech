@@ -23,7 +23,7 @@ async function run() {
     console.log('🌱 Seeding services 7-8...\n');
 
     await seed(client, 'data-engineering', {
-      hero: '/uploads/hero_data_engineering.png',
+      hero: '/uploads/hero_data_engineering.webp',
       problem: 'Organizations sit on massive volumes of data scattered across silos, legacy systems, and cloud platforms — but lack the infrastructure to transform raw data into reliable, real-time insights that drive decisions.',
       problemAr: 'تمتلك المؤسسات أحجاماً هائلة من البيانات المتناثرة عبر صوامع وأنظمة قديمة ومنصات سحابية — لكنها تفتقر للبنية التحتية لتحويل البيانات الخام إلى رؤى موثوقة ولحظية تقود القرارات.',
       overview: 'We architect and deploy enterprise-grade data infrastructure — from scalable data lakes and real-time streaming pipelines to governed data warehouses and automated ETL workflows. Our solutions ensure your data is clean, accessible, and ready for AI/ML workloads.\n\nEvery pipeline we build follows DataOps best practices with version-controlled transformations, automated quality checks, and comprehensive lineage tracking.',
@@ -59,7 +59,7 @@ async function run() {
     });
 
     await seed(client, 'intelligent-dashboards', {
-      hero: '/uploads/hero_dashboards.png',
+      hero: '/uploads/hero_dashboards.webp',
       problem: 'Executives and operations teams rely on static reports and spreadsheets that are outdated by the time they are reviewed, making it impossible to respond to changing conditions with the speed that modern business demands.',
       problemAr: 'يعتمد المديرون التنفيذيون وفرق العمليات على تقارير ثابتة وجداول بيانات تصبح قديمة بحلول وقت مراجعتها، مما يجعل من المستحيل الاستجابة للظروف المتغيرة بالسرعة التي يتطلبها العمل الحديث.',
       overview: 'We design and build interactive business intelligence dashboards with real-time data visualization, predictive KPI tracking, and executive reporting capabilities. Our dashboards connect to live data sources and update automatically.\n\nEvery dashboard is built with role-based access control, mobile responsiveness, and embedded alerting — turning passive data consumption into active decision-making.',

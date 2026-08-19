@@ -3,7 +3,7 @@
     "client/src/**/*",
     "shared/**/*",
     "server/**/*",
-    "api/**/*"
+    "netlify/**/*"
   ],
   "exclude": [
     "node_modules",

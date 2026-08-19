@@ -15,7 +15,7 @@ export default function AcademyHero() {
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
-          src="/uploads/academy_hero_bg.png"
+          src="/uploads/academy_hero_bg.webp"
           alt="Academy"
           className="w-full h-full object-cover"
         />
