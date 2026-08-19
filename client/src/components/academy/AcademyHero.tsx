@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, BookOpen } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -11,7 +11,7 @@ export default function AcademyHero() {
   const isLight = theme === "light";
 
   return (
-    <section className="relative min-h-[85vh] flex items-center pt-28 pb-20 overflow-hidden">
+    <section className="relative min-h-[min(760px,92vh)] flex items-center pt-32 pb-20 overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
@@ -19,7 +19,7 @@ export default function AcademyHero() {
           alt="Academy"
           className="w-full h-full object-cover"
         />
-        <div className={`absolute inset-0 ${isLight ? "bg-white/80" : "bg-[#020617]/80"}`} />
+        <div className={`absolute inset-0 ${isLight ? "bg-[#fdfcf9]/88" : "bg-[#020617]/84"}`} />
       </div>
 
       {/* Gradient overlays */}
@@ -59,18 +59,18 @@ export default function AcademyHero() {
           </motion.div>
 
           {/* Heading */}
-          <h1 className={`text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-[1.1] ${isLight ? "text-slate-900" : "text-white"}`}>
-            {t("Shape the Future", "اصنع المستقبل", "Shape the Future")}
+          <h1 className={`text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-[-0.055em] mb-8 leading-[1.02] ${isLight ? "text-slate-950" : "text-white"}`}>
+            {t("Build practical", "ابنِ مهارات عملية", "Build practical")}
             <br />
-            <span className="bg-gradient-to-r from-indigo-500 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-              {t("With Technology.", "بالتكنولوجيا.", "With Technology.")}
+            <span className={isLight ? "text-[#165dcc]" : "text-cyan-300"}>
+              {t("technology expertise.", "في التكنولوجيا.", "technology expertise.")}
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className={`text-lg sm:text-xl max-w-2xl mx-auto mb-12 leading-relaxed font-medium ${isLight ? "text-slate-600" : "text-slate-300"}`}>
             {t(
-              "A project-based, industry-driven academy offering live and recorded training across AI, Cybersecurity, Full-Stack Development, and Space Technology.",
+              "Project-based programs in AI, cybersecurity, full-stack engineering, and space technology — built around the work teams actually do.",
               "أكاديمية قائمة على المشاريع العملية ومُصممة وفق متطلبات السوق — نقدم تدريباً تفاعلياً حياً ومسجلاً في الذكاء الاصطناعي والأمن السيبراني وتطوير البرمجيات وتكنولوجيا الفضاء.",
               "Project-based, industry-driven academy."
             )}
@@ -78,24 +78,24 @@ export default function AcademyHero() {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#schools">
+            <Link href="/programs">
               <Button
                 size="lg"
-                className="h-14 bg-gradient-to-r from-indigo-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold px-10 rounded-xl shadow-lg shadow-indigo-500/25 text-lg w-full sm:w-auto border border-indigo-400/30"
+                className="h-14 bg-[#165dcc] hover:bg-[#124ead] text-white font-bold px-8 rounded-md shadow-none text-base w-full sm:w-auto"
               >
-                {t("Explore Our Schools", "استكشف كلياتنا", "Explore Schools")}
+                <BookOpen className="me-2 h-5 w-5" />{t("Explore programs", "استكشف البرامج", "Explore programs")}
               </Button>
-            </a>
-            <a href="https://academy.infx.space/" target="_blank" rel="noopener noreferrer">
+            </Link>
+            <Link href="/courses">
               <Button
                 size="lg"
                 variant="outline"
-                className={`h-14 px-10 rounded-xl text-lg font-bold w-full sm:w-auto ${isLight ? "border-slate-300 text-slate-800 hover:bg-slate-100" : "border-white/[0.15] text-white hover:bg-white/[0.08]"}`}
+                className={`h-14 px-8 rounded-md text-base font-bold w-full sm:w-auto ${isLight ? "border-slate-300 text-slate-800 hover:bg-slate-100" : "border-white/[0.15] text-white hover:bg-white/[0.08]"}`}
               >
-                {t("Go to LMS Portal", "الدخول لمنصة التعلم", "LMS Portal")}
+                {t("Live & recorded learning", "التعلم المباشر والمسجل", "Live & recorded learning")}
                 <ArrowRight className={`w-5 h-5 ${isRTL ? "me-2 rotate-180" : "ms-2"}`} />
               </Button>
-            </a>
+            </Link>
           </div>
         </motion.div>
       </div>

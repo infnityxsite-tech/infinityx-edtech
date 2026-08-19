@@ -29,6 +29,7 @@ import { useLocation, Link } from "wouter";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSEO } from "@/hooks/useSEO";
 
 /** Renders long text (with line-breaks) as a readable list of paragraphs */
 function FormattedText({ text, className }: { text: string; className?: string }) {
@@ -48,6 +49,7 @@ export default function Careers() {
   const { t, isRTL } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
+  useSEO({ title: "Careers at Infinity X Solutions", description: "Explore current opportunities to join the engineering and education teams at Infinity X Solutions.", canonical: "https://infx.space/careers", robots: "index, follow" });
   const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -329,7 +331,7 @@ export default function Careers() {
 
       {/* 📧 CTA SECTION */}
       <section className={`py-16 md:py-24 text-center mt-8 md:mt-12 relative overflow-hidden ${isLight ? 'bg-slate-100 text-slate-900 border-t border-slate-200' : 'bg-[#020617] text-white'}`}>
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(16,185,129,.12),transparent_38%),radial-gradient(circle_at_82%_80%,rgba(16,185,129,.08),transparent_34%)]" />
         
         <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6">
           <Badge variant="outline" className={`mb-4 md:mb-6 px-3 py-1 ${isLight ? 'border-emerald-300 text-emerald-600' : 'border-emerald-500/50 text-emerald-400'}`}>{t("General Application", "تقديم عام", "General Application")}</Badge>

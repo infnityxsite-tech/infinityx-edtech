@@ -1,192 +1,31 @@
-import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { Loader2, Target, Eye, Award, MapPin, Rocket, Cpu, Sparkles, Shield, Code, Brain, ArrowRight, Layers } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useTheme } from "@/contexts/ThemeContext";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { ArrowRight, ArrowUpRight, Check, Loader2, ScanLine, ShieldCheck, Workflow } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useSEO } from "@/hooks/useSEO";
+import { trpc } from "@/lib/trpc";
+
+const principles = [
+  ["Operating context before model selection.", "سياق التشغيل قبل اختيار النموذج."],
+  ["A deployable system, not an isolated prototype.", "نظام قابل للنشر، وليس نموذجاً أولياً معزولاً."],
+  ["Knowledge transfer designed into the engagement.", "نقل المعرفة مصمم داخل التعاون."],
+  ["Clear ownership after launch.", "ملكية واضحة بعد الإطلاق."],
+];
 
 export default function About() {
-  const { isRTL, t } = useLanguage();
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
+  const { t, isRTL } = useLanguage();
   const { data: pageContent, isLoading } = trpc.admin.getPageContent.useQuery({ pageKey: "about" });
-
-  const founderImageUrl = "/uploads/poster.png";
-
-  if (isLoading) return <div className={`flex items-center justify-center min-h-screen ${isLight ? 'bg-[#f8fafc]' : 'bg-[#020617]'}`}><Loader2 className="w-10 h-10 animate-spin text-cyan-400" /></div>;
-
-  return (
-    <div className={`min-h-screen ${isRTL ? 'rtl' : 'ltr'} ${isLight ? 'bg-[#f8fafc] text-slate-900' : 'bg-[#020617] text-white'}`} dir={isRTL ? 'rtl' : 'ltr'}>
-      <Navigation />
-
-      {/* HERO */}
-      <section className="relative pt-36 pb-24 overflow-hidden">
-        <div className="absolute inset-0">
-          <img src="/uploads/hero_ai_neural.png" className="w-full h-full object-cover" alt="About" />
-          <div className={`absolute inset-0 ${isLight ? 'bg-white/85' : 'bg-[#020617]/88'}`} />
-        </div>
-        <div className={`absolute inset-0 ${isLight ? 'opacity-[0.04]' : 'opacity-[0.03]'}`} style={{ backgroundImage: `linear-gradient(${isLight ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.1)'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.1)'} 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
-        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-6 border ${isLight ? 'bg-cyan-50 border-cyan-200 text-cyan-700' : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'}`}>
-              <Sparkles className="w-3.5 h-3.5" />
-              {t("About Infinity X Solutions", "عن إنفينيتي إكس سولوشنز", "About Us")}
-            </div>
-            <h1 className={`text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-              {t("We Engineer ", "نهندس ", "We Engineer ")}
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">{t("Intelligent Systems", "أنظمة ذكية", "Intelligent Systems")}</span>
-            </h1>
-            <p className={`text-lg md:text-xl max-w-3xl mx-auto leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-              {t("Infinity X Solutions is an enterprise AI studio that architects, deploys, and transfers production-grade artificial intelligence and computer vision systems for organizations across the MENA region.", "إنفينيتي إكس سولوشنز هو استوديو ذكاء اصطناعي للمؤسسات يصمم وينشر ويسلم أنظمة ذكاء اصطناعي ورؤية حاسوبية جاهزة للإنتاج.", "Enterprise AI studio for MENA organizations.")}
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* WHAT WE DO */}
-      <section className={`py-24 ${isLight ? 'bg-white' : ''}`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-center mb-20">
-            <div>
-              <h2 className={`text-3xl font-black mb-6 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                {t("Not a Vendor. A Technical Partner.", "لسنا مورداً. شريك تقني.", "Technical Partner.")}
-              </h2>
-              <p className={`text-lg leading-relaxed mb-6 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                {t("We don't sell off-the-shelf software. We embed ourselves in your engineering organization, build custom AI systems tailored to your specific operational challenges, train your team to independently operate and improve them, then hand over complete source code and IP ownership.", "نحن لا نبيع برمجيات جاهزة. نندمج في مؤسستك الهندسية، نبني أنظمة ذكاء اصطناعي مخصصة لتحدياتك التشغيلية، ندرب فريقك لتشغيلها وتحسينها بشكل مستقل، ثم نسلم الكود المصدري الكامل وملكية الملكية الفكرية.", "Custom AI, full IP transfer.")}
-              </p>
-              <p className={`text-lg leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                {t("Every engagement follows our Build → Train → Transfer model, ensuring you're never dependent on us. We succeed when your internal teams can operate without us.", "كل تعاقد يتبع نموذج البناء ← التدريب ← التسليم، مما يضمن عدم اعتمادك علينا أبداً.", "Build → Train → Transfer.")}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { stat: "12+", label: t("Enterprise Clients", "عميل مؤسسي", "Clients"), color: "cyan" },
-                { stat: "99.8%", label: t("Model Accuracy", "دقة النموذج", "Accuracy"), color: "emerald" },
-                { stat: "<12ms", label: t("Inference Latency", "زمن الاستجابة", "Latency"), color: "purple" },
-                { stat: "100%", label: t("IP Ownership", "ملكية فكرية", "IP Transfer"), color: "blue" },
-              ].map((s, i) => (
-                <div key={i} className={`p-6 rounded-2xl border text-center ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-                  <p className={`text-3xl font-black mb-1 text-${s.color}-${isLight ? '600' : '400'}`}>{s.stat}</p>
-                  <p className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CAPABILITIES */}
-      <section className={`py-24 border-y ${isLight ? 'border-slate-200 bg-slate-50' : 'border-white/[0.04] bg-[#030712]'}`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <h2 className={`text-3xl font-black text-center mb-16 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-            {t("Core Capabilities", "القدرات الأساسية", "Capabilities")}
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { icon: Eye, title: t("Computer Vision", "الرؤية الحاسوبية", "CV"), desc: t("Industrial object detection, defect classification, spatial tracking, and autonomous decision-making at the edge using YOLOv11 and TensorRT.", "كشف الأجسام الصناعية، تصنيف العيوب، التتبع المكاني، واتخاذ القرارات المستقلة.", "Industrial CV systems.") },
-              { icon: Brain, title: t("AI & Machine Learning", "الذكاء الاصطناعي", "AI/ML"), desc: t("Predictive analytics, NLP pipelines, recommendation engines, and custom model training with full MLOps infrastructure.", "تحليلات تنبؤية، أنظمة معالجة لغات طبيعية، محركات توصية، وتدريب نماذج مخصصة.", "ML pipelines & analytics.") },
-              { icon: Layers, title: t("Cloud-Native Architecture", "البنية السحابية", "Cloud"), desc: t("Microservices, Kubernetes orchestration, event-driven systems, and real-time data streaming for enterprise-grade scalability.", "خدمات مصغرة، تنسيق Kubernetes، أنظمة مدفوعة بالأحداث، وبث البيانات في الوقت الفعلي.", "Cloud-native systems.") },
-            ].map((cap, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className={`p-8 rounded-2xl border ${isLight ? 'bg-white border-slate-200 shadow-lg' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-                <cap.icon className={`w-10 h-10 mb-6 ${isLight ? 'text-cyan-600' : 'text-cyan-400'}`} />
-                <h3 className={`text-xl font-bold mb-3 ${isLight ? 'text-slate-900' : 'text-white'}`}>{cap.title}</h3>
-                <p className={`text-sm leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{cap.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* REGIONAL */}
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className={`rounded-3xl p-8 md:p-12 border ${isLight ? 'bg-white border-slate-200 shadow-xl' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className={`text-3xl font-black mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                  {t("MENA-First. Global Standards.", "الشرق الأوسط أولاً. معايير عالمية.", "MENA-First.")}
-                </h2>
-                <p className={`text-lg mb-6 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                  {t("We serve enterprises across the MENA region with systems built to international standards. Our team understands local regulatory requirements, data residency constraints, and operational contexts.", "نخدم المؤسسات في منطقة الشرق الأوسط بأنظمة مبنية وفق معايير دولية.", "MENA enterprises, global standards.")}
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  {[{n:'Egypt',a:'مصر'},{n:'Saudi Arabia',a:'السعودية'},{n:'UAE',a:'الإمارات'},{n:'North Africa',a:'شمال أفريقيا'}].map(c => (
-                    <div key={c.n} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border ${isLight ? 'bg-cyan-50 border-cyan-200 text-cyan-700' : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'}`}>
-                      <MapPin className="w-3.5 h-3.5" />{t(c.n, c.a, c.n)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className={`p-6 rounded-xl text-center border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/[0.03] border-white/[0.06]'}`}>
-                  <p className="text-3xl font-black text-cyan-500 mb-1">5+</p>
-                  <p className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{t("Years", "سنوات", "Years")}</p>
-                </div>
-                <div className={`p-6 rounded-xl text-center border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/[0.03] border-white/[0.06]'}`}>
-                  <p className="text-3xl font-black text-emerald-500 mb-1">40+</p>
-                  <p className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{t("Projects Delivered", "مشروع منجز", "Projects")}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FOUNDER */}
-      <section className={`py-24 border-t ${isLight ? 'border-slate-200 bg-slate-50' : 'border-white/[0.04] bg-[#030712]'}`}>
-        <div className="max-w-6xl mx-auto px-6">
-          <div className={`rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-12 border ${isLight ? 'bg-white border-slate-200 shadow-xl' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-            <div className="md:w-1/3">
-              <div className="relative">
-                <div className="absolute inset-0 bg-cyan-600 rounded-2xl rotate-3 opacity-20" />
-                <img src={founderImageUrl} alt="Founder" className="relative rounded-2xl shadow-lg w-full object-cover aspect-[3/4]" />
-              </div>
-            </div>
-            <div className="md:w-2/3">
-              <h2 className="text-sm font-bold text-cyan-400 uppercase tracking-widest mb-2">{t("Technical Leadership", "القيادة التقنية", "Leadership")}</h2>
-              <h3 className={`text-4xl font-bold mb-6 flex items-center gap-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                {t((pageContent as any)?.founderName || "Ahmed Farahat", "أحمد فرحات", "Ahmed Farahat")}
-                <a href="https://linkedin.com/in/ahmed-s-farahat" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">
-                  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
-                </a>
-              </h3>
-              <div className={`space-y-4 text-lg leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                <p>{t("AI engineer and technical architect specializing in computer vision, deep learning, and production MLOps. With experience deploying real-time inference systems for industrial applications, Ahmed leads Infinity X's engineering practice and client engagements.", "مهندس ذكاء اصطناعي ومعماري تقني متخصص في الرؤية الحاسوبية والتعلم العميق وعمليات تعلم الآلة الإنتاجية.", "AI engineer & technical architect.")}</p>
-                <p>{t("Beyond enterprise work, Ahmed runs Infinity X Academy — training the next generation of AI engineers across the MENA region through hands-on, project-based curricula.", "إلى جانب العمل المؤسسي، يدير أحمد أكاديمية إنفينيتي إكس لتدريب الجيل القادم من مهندسي الذكاء الاصطناعي.", "Also runs Infinity X Academy.")}</p>
-              </div>
-              <div className="mt-8 border-l-4 border-cyan-500 pl-6 py-2">
-                <p className={`italic font-medium text-xl ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
-                  "{t("We build systems that our clients own forever. That's the only model that creates real value.", "نبني أنظمة يملكها عملاؤنا للأبد. هذا النموذج الوحيد الذي يخلق قيمة حقيقية.", "Systems our clients own forever.")}"
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-24">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <Shield className="w-14 h-14 text-cyan-500 mx-auto mb-6" />
-          <h2 className={`text-4xl font-black mb-6 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-            {t("Ready to Work With Us?", "مستعد للعمل معنا؟", "Ready?")}
-          </h2>
-          <p className={`text-xl mb-10 max-w-2xl mx-auto ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-            {t("Let's discuss how we can architect the right AI solution for your organization.", "دعنا نناقش كيف يمكننا تصميم الحل المناسب لمؤسستك.", "Discuss your AI needs.")}
-          </p>
-          <Link href="/consultation">
-            <Button size="lg" className="h-16 px-12 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-2xl text-xl shadow-xl shadow-cyan-500/25">
-              {t("Request Consultation", "اطلب استشارة", "Consult")} <ArrowRight className={`w-5 h-5 ${isRTL ? 'me-2 rotate-180' : 'ms-2'}`} />
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      <Footer />
-    </div>
-  );
+  const founderName = (pageContent as any)?.founderName || "Ahmed Farahat";
+  const copy = (en: string, ar: string) => t(en, ar, en);
+  useSEO({ title: "Company | Infinity X Solutions", description: "Infinity X Solutions is an AI engineering company that builds, transfers, and supports production systems for real operations.", canonical: "https://infx.space/about", robots: "index, follow" });
+  if (isLoading) return <div className="grid min-h-screen place-items-center bg-[#07131f] text-white"><Loader2 className="h-8 w-8 animate-spin text-[#7db2ff]" /></div>;
+  return <div className={`ix-page ${isRTL ? "rtl" : "ltr"}`} dir={isRTL ? "rtl" : "ltr"}><Navigation /><main>
+    <section className="bg-[#07131f] text-white"><div className="ix-shell grid min-h-[650px] gap-10 py-28 sm:py-32 lg:grid-cols-[1fr_auto] lg:items-end"><div><p className="ix-eyebrow text-[#a5d9c2]">{copy("Infinity X / company", "إنفينيتي إكس / الشركة")}</p><h1 className="ix-display mt-6 max-w-4xl text-5xl font-bold sm:text-7xl">{copy("We build the capability behind the system.", "نبني القدرة خلف النظام.")}</h1><p className="mt-7 max-w-2xl text-lg leading-8 text-[#c0cdd3]">{copy("Infinity X is an AI engineering company for teams that need production systems—not presentation-ready experiments. We build the intelligence, the workflow, and the ownership around the work.", "إنفينيتي إكس شركة هندسة ذكاء اصطناعي للفرق التي تحتاج إلى أنظمة إنتاج، وليس تجارب جاهزة للعرض. نبني الذكاء وسير العمل والملكية حول العمل.")}</p><Link href="/consultation" className="ix-button ix-button-primary mt-9 w-fit">{copy("Work with us", "اعمل معنا")}<ArrowUpRight className="h-4 w-4" /></Link></div><div className="grid w-full max-w-md grid-cols-2 border border-white/15"><div className="border-e border-b border-white/15 bg-[#102033] p-6"><ScanLine className="h-5 w-5 text-[#7db2ff]" /><p className="mt-14 text-xl font-bold">{copy("Build", "ابنِ")}</p><p className="mt-2 text-sm leading-6 text-[#b9c8d1]">{copy("The system around the operation.", "النظام حول العملية.")}</p></div><div className="border-b border-white/15 bg-[#13304d] p-6"><Workflow className="h-5 w-5 text-[#a5d9c2]" /><p className="mt-14 text-xl font-bold">{copy("Embed", "رسّخ")}</p><p className="mt-2 text-sm leading-6 text-[#c0cdd3]">{copy("The workflow people actually use.", "سير العمل الذي يستخدمه الناس فعلاً.")}</p></div><div className="border-e bg-[#13304d] p-6"><ShieldCheck className="h-5 w-5 text-[#a5d9c2]" /><p className="mt-14 text-xl font-bold">{copy("Transfer", "انقل")}</p><p className="mt-2 text-sm leading-6 text-[#c0cdd3]">{copy("The capability that remains after launch.", "القدرة التي تبقى بعد الإطلاق.")}</p></div><div className="bg-[#102033] p-6"><p className="text-4xl font-bold text-[#7db2ff]">∞</p><p className="mt-12 text-xl font-bold">{copy("Improve", "حسّن")}</p><p className="mt-2 text-sm leading-6 text-[#b9c8d1]">{copy("The room to keep making it better.", "المساحة لمواصلة التحسين.")}</p></div></div></div></section>
+    <section className="border-b" style={{ borderColor: "var(--ix-border)" }}><div className="ix-shell grid gap-10 py-16 lg:grid-cols-[.75fr_1.25fr] lg:items-end"><div><p className="ix-kicker">{copy("The company in one sentence", "الشركة في جملة واحدة")}</p><h2 className="ix-display mt-4 text-4xl font-bold sm:text-5xl">{copy("The model is one layer. The operating system is the product.", "النموذج طبقة واحدة. النظام التشغيلي هو المنتج.")}</h2></div><p className="max-w-xl text-lg leading-8" style={{ color: "var(--ix-text-secondary)" }}>{copy("That is why we work across computer vision, automation, predictive intelligence, software, and technical education: the lasting outcome is the capability to see, decide, and run better.", "لهذا نعمل عبر الرؤية الحاسوبية والأتمتة والذكاء التنبؤي والبرمجيات والتعليم التقني: النتيجة المستمرة هي القدرة على الرؤية والقرار والتشغيل بشكل أفضل.")}</p></div></section>
+    <section className="ix-section"><div className="ix-shell"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="ix-kicker">{copy("How we work", "كيف نعمل")}</p><h2 className="ix-display mt-4 text-4xl font-bold sm:text-5xl">{copy("A practical operating model for complex technology.", "نموذج تشغيلي عملي للتقنية المعقدة.")}</h2></div><Link href="/solutions" className="ix-link inline-flex items-center gap-2">{copy("See the systems", "شاهد الأنظمة")}<ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} /></Link></div><div className="mt-12 grid gap-px border border-[#c7d2d8] bg-[#c7d2d8] md:grid-cols-3"><div className="bg-[#f0f3f1] p-8"><p className="text-4xl font-bold text-[#1268e5]">01</p><h3 className="mt-16 text-2xl font-bold">{copy("Understand", "افهم")}</h3><p className="mt-4 text-sm leading-7" style={{ color: "var(--ix-text-secondary)" }}>{copy("Map the workflow, decision points, data conditions, and constraints that define useful technology.", "نرسم سير العمل ونقاط القرار وحالة البيانات والقيود التي تحدد التقنية المفيدة.")}</p></div><div className="bg-white p-8"><p className="text-4xl font-bold text-[#1268e5]">02</p><h3 className="mt-16 text-2xl font-bold">{copy("Engineer", "اهندس")}</h3><p className="mt-4 text-sm leading-7" style={{ color: "var(--ix-text-secondary)" }}>{copy("Build the intelligence, interface, integration, and controls required for a system to operate.", "نبني الذكاء والواجهة والتكامل والضوابط المطلوبة لكي يعمل النظام.")}</p></div><div className="bg-[#13304d] p-8 text-white"><p className="text-4xl font-bold text-[#a5d9c2]">03</p><h3 className="mt-16 text-2xl font-bold">{copy("Embed", "رسّخ")}</h3><p className="mt-4 text-sm leading-7 text-[#c0cdd3]">{copy("Help the organisation operate and evolve the system, with capability transfer built in.", "نساعد المؤسسة على تشغيل النظام وتطويره مع نقل القدرة ضمن العملية.")}</p></div></div></div></section>
+    <section className="border-y" style={{ borderColor: "var(--ix-border)", background: "var(--ix-surface-muted)" }}><div className="ix-shell grid gap-10 py-16 lg:grid-cols-[.7fr_1.3fr] lg:py-20"><div><p className="ix-kicker">{copy("Engineering principles", "مبادئ هندسية")}</p><h2 className="ix-display mt-4 text-4xl font-bold">{copy("What teams can expect from the work.", "ما يمكن للفرق توقعه من العمل.")}</h2></div><div className="grid border" style={{ borderColor: "var(--ix-border)" }}>{principles.map(([en, ar], index) => <div key={en} className="grid grid-cols-[52px_1fr] gap-4 border-b p-6 last:border-b-0 sm:p-8" style={{ borderColor: "var(--ix-border)" }}><span className="text-sm font-bold text-[#1268e5]">{String(index + 1).padStart(2, "0")}</span><div><p className="text-xl font-bold leading-8">{t(en, ar, en)}</p><Check className="mt-5 h-4 w-4 text-[#1268e5]" /></div></div>)}</div></div></section>
+    <section className="ix-section"><div className="ix-shell grid gap-10 lg:grid-cols-[.85fr_1.15fr] lg:items-center"><div className="overflow-hidden border" style={{ borderColor: "var(--ix-border)" }}><img src="/uploads/poster.png" alt={founderName} className="aspect-[4/5] w-full max-w-sm object-cover" /></div><div><p className="ix-kicker">{copy("Technical leadership", "قيادة تقنية")}</p><h2 className="ix-display mt-5 text-4xl font-bold sm:text-5xl">{founderName}</h2><p className="mt-6 max-w-2xl text-base leading-8" style={{ color: "var(--ix-text-secondary)" }}>{copy("Infinity X is led by an AI engineer and technical architect specialising in computer vision, deep learning, and production MLOps across enterprise systems and project-based technical education.", "يقود إنفينيتي إكس مهندس ذكاء اصطناعي ومعماري تقني متخصص في الرؤية الحاسوبية والتعلم العميق وعمليات تعلم الآلة الإنتاجية عبر أنظمة المؤسسات والتعليم التقني القائم على المشاريع.")}</p><a href="https://linkedin.com/in/ahmed-s-farahat" target="_blank" rel="noreferrer" className="ix-button ix-button-secondary mt-7 w-fit">{copy("Professional profile", "الملف المهني")}<ArrowUpRight className="h-4 w-4" /></a></div></div></section>
+    <section className="bg-[#102033] text-white"><div className="ix-shell grid gap-8 py-16 lg:grid-cols-[1.3fr_.7fr] lg:items-end"><div><p className="ix-eyebrow text-[#a5d9c2]">{copy("Work with us", "اعمل معنا")}</p><h2 className="ix-display mt-5 max-w-3xl text-4xl font-bold sm:text-6xl">{copy("Bring the operating problem. We’ll bring the engineering plan.", "أحضر المشكلة التشغيلية. وسنقدم خطة الهندسة.")}</h2></div><Link href="/consultation" className="ix-button ix-button-primary lg:justify-self-end">{copy("Start an AI project", "ابدأ مشروع ذكاء اصطناعي")}<ArrowUpRight className="h-4 w-4" /></Link></div></section>
+  </main><Footer /></div>;
 }

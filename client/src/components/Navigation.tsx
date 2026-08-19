@@ -1,106 +1,32 @@
 import { Link, useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
 import { APP_TITLE } from "@/const";
-import { Menu, X, ChevronRight, GraduationCap, LogOut, LayoutDashboard, Sun, Moon } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { ArrowUpRight, Globe, LayoutDashboard, LogOut, Menu, Moon, Sun, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function Navigation() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [location, navigate] = useLocation();
   const [scrolled, setScrolled] = useState(false);
-  const { lang, isRTL, t } = useLanguage();
+  const { isRTL, t, lang, toggleLang } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const isLight = theme === "light";
-
   const [studentName, setStudentName] = useState<string | null>(null);
   const [studentId, setStudentId] = useState<string | null>(null);
-
   useEffect(() => { setStudentId(localStorage.getItem("studentId")); setStudentName(localStorage.getItem("studentName")); }, [location]);
-  useEffect(() => { setIsMenuOpen(false); }, [location]);
-  useEffect(() => { const h = () => setScrolled(window.scrollY > 20); window.addEventListener("scroll", h, { passive: true }); return () => window.removeEventListener("scroll", h); }, []);
-
-
-  const isActive = (p: string) => location === p;
-  const handleLogout = () => { localStorage.removeItem("studentToken"); localStorage.removeItem("studentId"); localStorage.removeItem("studentName"); setStudentId(null); setStudentName(null); navigate("/"); };
-
-  const primaryLinks = [
-    { label: t("Home", "الرئيسية", "Home"), path: "/" },
-    { label: t("About", "من نحن", "About"), path: "/about" },
+  useEffect(() => { setOpen(false); }, [location]);
+  useEffect(() => { const onScroll = () => setScrolled(window.scrollY > 16); window.addEventListener("scroll", onScroll, { passive: true }); return () => window.removeEventListener("scroll", onScroll); }, []);
+  const logout = () => { localStorage.removeItem("studentToken"); localStorage.removeItem("studentId"); localStorage.removeItem("studentName"); setStudentId(null); setStudentName(null); navigate("/"); };
+  const links = [
     { label: t("Solutions", "الحلول", "Solutions"), path: "/solutions" },
     { label: t("Academy", "الأكاديمية", "Academy"), path: "/academy" },
-    { label: t("Careers", "الوظائف", "Careers"), path: "/careers" },
+    { label: t("Company", "الشركة", "Company"), path: "/about" },
   ];
-
-  const lnk = (p: string) => `px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all cursor-pointer ${isActive(p) ? isLight ? "text-cyan-600 bg-cyan-500/10" : "text-cyan-400 bg-cyan-400/10" : isLight ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100" : "text-slate-400 hover:text-white hover:bg-white/[0.06]"}`;
-
-  return (
-    <nav className={`fixed w-full top-0 z-50 transition-all duration-300 ${scrolled ? isLight ? "bg-white/90 backdrop-blur-xl border-b border-slate-200/80 shadow-sm" : "bg-[#0a0e1a]/95 backdrop-blur-xl border-b border-white/[0.06] shadow-lg shadow-black/20" : isLight ? "bg-white/70 backdrop-blur-md border-b border-slate-200/50" : "bg-[#0a0e1a]/70 backdrop-blur-md border-b border-white/[0.04]"}`}>
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        {/* LOGO */}
-        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-          <img src="/uploads/logo.png" alt={APP_TITLE} className={`h-9 w-auto object-contain transition-transform group-hover:scale-105 ${isLight ? "" : "brightness-125"}`} onError={(e) => { e.currentTarget.src = "/uploads/logo_new.png"; }} />
-          <span className={`font-bold text-lg tracking-tight hidden sm:inline ${isLight ? "text-slate-900" : "bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-cyan-400"}`}>{APP_TITLE}</span>
-        </Link>
-
-        {/* DESKTOP CENTER — B2B Core */}
-        <div className="hidden lg:flex items-center gap-1">
-          {primaryLinks.map(i => (<Link key={i.path} href={i.path}><span className={lnk(i.path)}>{i.label}</span></Link>))}
-          <Link href="/contact"><span className={lnk("/contact")}>{t("Contact", "تواصل", "Contact")}</span></Link>
-        </div>
-
-        {/* DESKTOP RIGHT — Auth + CTA */}
-        <div className="hidden lg:flex items-center gap-2 ms-3 ps-3 border-s border-slate-200 dark:border-white/10">
-          <button onClick={toggleTheme} className={`p-1.5 rounded-full transition-all ${isLight ? "hover:bg-slate-100 text-slate-500" : "hover:bg-white/[0.1] text-slate-400"}`} aria-label="Toggle theme">
-            {isLight ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-          </button>
-
-          {studentId ? (
-            <div className="flex items-center gap-2">
-              <Link href="/dashboard"><button className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-500 text-xs font-medium border border-cyan-500/20"><div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-white flex items-center justify-center text-[10px] font-bold">{(studentName || "S").charAt(0).toUpperCase()}</div><span className="max-w-[80px] truncate">{studentName}</span></button></Link>
-              <button onClick={handleLogout} className="p-1.5 rounded-full hover:bg-red-500/10 text-slate-500 hover:text-red-400"><LogOut className="w-3.5 h-3.5" /></button>
-            </div>
-          ) : (
-            <Link href="/login">
-              <Button variant="outline" className={`rounded-full px-4 h-8 text-xs font-semibold flex items-center gap-1.5 ${isLight ? "border-slate-300 text-slate-700 hover:bg-slate-50" : "border-white/[0.15] text-white hover:bg-white/[0.08]"}`}>
-                <GraduationCap className="w-3.5 h-3.5" /> {t("Student Sign In", "دخول الطالب", "Sign In")}
-              </Button>
-            </Link>
-          )}
-
-          <Link href="/consultation">
-            <Button className="rounded-full px-5 h-8 text-xs font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:from-cyan-400 hover:to-blue-500 transition-all">
-              {t("Request Consultation", "طلب استشارة", "Consult")}
-            </Button>
-          </Link>
-        </div>
-
-        {/* MOBILE */}
-        <div className="lg:hidden flex items-center gap-2">
-          <button onClick={toggleTheme} className={`p-1.5 rounded-full ${isLight ? "text-slate-500" : "text-slate-400"}`}>{isLight ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}</button>
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className={`p-2 rounded-lg ${isLight ? "text-slate-600 hover:bg-slate-100" : "text-slate-400 hover:bg-white/[0.08]"}`}>{isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}</button>
-        </div>
-      </div>
-
-      {/* MOBILE MENU */}
-      {isMenuOpen && (
-        <div className={`lg:hidden absolute top-16 left-0 w-full border-b shadow-2xl ${isLight ? "bg-white/98 border-slate-200" : "bg-[#0d1225]/98 backdrop-blur-xl border-white/[0.06]"}`}>
-          <div className="flex flex-col p-4 space-y-1">
-            {primaryLinks.map(i => (<Link key={i.path} href={i.path}><div className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium ${isActive(i.path) ? isLight ? "bg-cyan-50 text-cyan-600" : "bg-cyan-500/10 text-cyan-400" : isLight ? "text-slate-600 hover:bg-slate-50" : "text-slate-400 hover:bg-white/[0.04]"}`}>{i.label}{isActive(i.path) && <ChevronRight className="w-4 h-4" />}</div></Link>))}
-            <Link href="/contact"><div className={`flex items-center justify-between px-4 py-3 mt-1 rounded-xl text-sm font-medium ${isActive("/contact") ? isLight ? "bg-cyan-50 text-cyan-600" : "bg-cyan-500/10 text-cyan-400" : isLight ? "text-slate-600 hover:bg-slate-50" : "text-slate-400 hover:bg-white/[0.04]"}`}>{t("Contact", "تواصل", "Contact")}{isActive("/contact") && <ChevronRight className="w-4 h-4" />}</div></Link>
-            <div className={`pt-3 mt-2 border-t flex flex-col gap-2 ${isLight ? "border-slate-200" : "border-white/[0.06]"}`}>
-              <Link href="/consultation"><Button className="w-full h-11 text-sm font-semibold rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white">{t("Request Consultation", "طلب استشارة", "Consult")}</Button></Link>
-              {studentId ? (
-                <><Link href="/dashboard"><Button className="w-full bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 h-11 text-sm rounded-xl" variant="ghost"><LayoutDashboard className="w-4 h-4 me-2" /> {t("Dashboard", "لوحة التحكم", "Dashboard")}</Button></Link>
-                <Button onClick={handleLogout} variant="outline" className="w-full h-11 text-red-400 border-red-500/20 hover:bg-red-500/10 rounded-xl text-sm"><LogOut className="w-4 h-4 me-2" /> {t("Logout", "خروج", "Logout")}</Button></>
-              ) : (
-                <Link href="/login"><Button variant="outline" className={`w-full h-11 text-sm rounded-xl font-semibold ${isLight ? "border-slate-300 text-slate-700" : "border-white/[0.15] text-white"}`}><GraduationCap className="w-4 h-4 me-2" /> {t("Student Sign In", "دخول الطالب", "Sign In")}</Button></Link>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </nav>
-  );
+  const active = (path: string) => { if (path === "/solutions") return location === path || location.startsWith("/solutions/"); if (path === "/academy") return location === path || location.startsWith("/academy/") || location.startsWith("/program") || location.startsWith("/courses"); if (path === "/about") return location === "/about" || location === "/company"; return location === path; };
+  const linkClass = (path: string) => `inline-flex items-center rounded-full px-3 py-2 text-[13px] font-semibold transition-all ${active(path) ? isLight ? "bg-[#dceaff] text-[#0d55bd] shadow-[0_4px_14px_rgba(18,104,229,.12)]" : "bg-white/12 text-white" : isLight ? "text-[#52606b] hover:bg-[#eef2f4] hover:text-[#10202d]" : "text-[#b8c7d0] hover:bg-white/10 hover:text-white"}`;
+  return <nav aria-label="Primary navigation" className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${scrolled ? isLight ? "border-b border-[#d9e0e4]/90 bg-[#f6f7f4]/94 shadow-[0_8px_30px_rgba(16,32,45,.06)] backdrop-blur-xl" : "border-b border-white/10 bg-[#07111b]/94 backdrop-blur-xl" : "bg-transparent"}`}>
+    <div className="ix-shell flex h-[76px] items-center justify-between gap-4"><Link href="/" className="flex shrink-0 items-center gap-3" aria-label={`${APP_TITLE} home`}><span className="grid h-9 w-9 place-items-center rounded-[11px] bg-[#1268e5] text-sm font-black tracking-[-.06em] text-white">IX</span><span className={`hidden text-[15px] font-bold tracking-[-.025em] sm:block ${isLight ? "text-[#10202d]" : "text-white"}`}>{APP_TITLE}</span></Link><div className="hidden items-center gap-1 lg:flex"><Link href="/" className={linkClass("/")}>{t("Home", "الرئيسية", "Home")}</Link>{links.map((item) => <Link key={item.path} href={item.path} className={linkClass(item.path)}>{item.label}</Link>)}</div><div className="hidden items-center gap-2 lg:flex"><button type="button" onClick={toggleLang} className={`inline-flex h-9 items-center gap-1.5 rounded-full px-2.5 text-xs font-bold transition-colors ${isLight ? "text-[#52606b] hover:bg-[#eef2f4]" : "text-[#b8c7d0] hover:bg-white/10"}`} aria-label={lang === "en" ? "Switch to Arabic" : "Switch to English"}><Globe className="h-3.5 w-3.5" />{lang === "en" ? "AR" : "EN"}</button><button type="button" onClick={toggleTheme} className={`grid h-9 w-9 place-items-center rounded-full transition-colors ${isLight ? "text-[#52606b] hover:bg-[#eef2f4]" : "text-[#b8c7d0] hover:bg-white/10"}`} aria-label={isLight ? "Switch to dark theme" : "Switch to light theme"}>{isLight ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}</button>{studentId ? <><Link href="/dashboard" className={`inline-flex h-9 items-center gap-2 rounded-full border px-3 text-xs font-bold ${isLight ? "border-[#d9e0e4] text-[#10202d]" : "border-white/15 text-white"}`}><LayoutDashboard className="h-3.5 w-3.5" />{studentName || t("Portal", "البوابة", "Portal")}</Link><button onClick={logout} className="rounded-full p-2 text-[#8a99a3] hover:text-red-500" aria-label="Sign out"><LogOut className="h-4 w-4" /></button></> : <Link href="/login" className={`px-3 text-xs font-bold ${isLight ? "text-[#52606b] hover:text-[#10202d]" : "text-[#b8c7d0] hover:text-white"}`}>{t("Student Portal", "بوابة الطالب", "Student Portal")}</Link>}<Link href="/consultation" className="inline-flex h-10 items-center gap-2 rounded-full bg-[#1268e5] px-4 text-xs font-bold text-white shadow-[0_8px_20px_rgba(18,104,229,.2)] transition-colors hover:bg-[#0d55bd]">{t("Start a project", "ابدأ مشروعاً", "Start a project")}<ArrowUpRight className="h-3.5 w-3.5" /></Link></div><div className="flex items-center gap-1 lg:hidden"><Link href="/consultation" className="inline-flex h-9 items-center gap-1 rounded-full bg-[#1268e5] px-3 text-[11px] font-bold text-white">{t("Start", "ابدأ", "Start")}<ArrowUpRight className="h-3.5 w-3.5" /></Link><button type="button" onClick={toggleLang} className={`rounded-full p-2 text-xs font-bold ${isLight ? "text-[#52606b]" : "text-[#b8c7d0]"}`} aria-label={lang === "en" ? "Switch to Arabic" : "Switch to English"}>{lang === "en" ? "AR" : "EN"}</button><button type="button" onClick={toggleTheme} className={`rounded-full p-2 ${isLight ? "text-[#52606b]" : "text-[#b8c7d0]"}`} aria-label="Toggle theme">{isLight ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}</button><button type="button" onClick={() => setOpen(!open)} className={`rounded-full p-2 ${isLight ? "text-[#10202d]" : "text-white"}`} aria-label={open ? "Close navigation" : "Open navigation"}>{open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}</button></div></div>
+    {open && <div className={`border-t px-4 py-5 lg:hidden ${isLight ? "border-[#d9e0e4] bg-[#f6f7f4]" : "border-white/10 bg-[#07111b]"}`}><div className="ix-shell"><div className="grid gap-1">{[{ label: t("Home", "الرئيسية", "Home"), path: "/" }, ...links].map((item) => <Link key={item.path} href={item.path} className={linkClass(item.path)}>{item.label}</Link>)}</div><div className="mt-5 grid gap-2 border-t pt-4" style={{ borderColor: "var(--ix-border)" }}><Link href="/consultation" className="ix-button ix-button-primary w-full">{t("Start an AI project", "ابدأ مشروع ذكاء اصطناعي", "Start an AI project")}<ArrowUpRight className="h-4 w-4" /></Link>{studentId ? <><Link href="/dashboard" className="ix-button ix-button-secondary w-full"><LayoutDashboard className="h-4 w-4" />{t("Student Portal", "بوابة الطالب", "Student Portal")}</Link><button onClick={logout} className="ix-button w-full text-red-500"><LogOut className="h-4 w-4" />{t("Sign out", "تسجيل الخروج", "Sign out")}</button></> : <Link href="/login" className="ix-button ix-button-secondary w-full">{t("Student Portal", "بوابة الطالب", "Student Portal")}</Link>}</div></div></div>}
+  </nav>;
 }

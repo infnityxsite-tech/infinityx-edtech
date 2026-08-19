@@ -13,6 +13,9 @@ export default function FloatingControls() {
   const [location] = useLocation();
   const isLight = theme === "light";
   const isLearningPage = location.startsWith("/learn/");
+  const isPrivateSurface = isLearningPage || location.startsWith("/admin");
+
+  if (!isPrivateSurface) return null;
 
   return (
     <div className={`fixed z-[55] animate-fade-in group ${

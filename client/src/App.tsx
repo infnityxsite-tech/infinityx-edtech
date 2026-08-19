@@ -15,7 +15,6 @@ import ProgramDetails from "./pages/ProgramDetails";
 import Programs from "./pages/Programs";
 import Solutions from "./pages/Solutions";
 import SolutionDetail from "./pages/SolutionDetail";
-import IndustryLanding from "./pages/IndustryLanding";
 import SchoolLanding from "./pages/SchoolLanding";
 import AcademyHub from "./pages/AcademyHub";
 import SchoolDeepDive from "./pages/SchoolDeepDive";
@@ -65,6 +64,11 @@ function ProtectedRoute({ component: Component }: { component: React.FC }) {
   return <Component />;
 }
 
+function LegacyRedirect({ to }: { to: string }) {
+  useEffect(() => { window.location.replace(to); }, [to]);
+  return null;
+}
+
 function ScrollToTop() {
   const [location] = useLocation();
 
@@ -80,9 +84,12 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/about" component={About} />
+      <Route path="/company" component={About} />
       <Route path="/solutions" component={Solutions} />
       <Route path="/solutions/:slug" component={SolutionDetail} />
-      <Route path="/industries/:slug" component={IndustryLanding} />
+      <Route path="/industries" component={() => <LegacyRedirect to="/solutions" />} />
+      <Route path="/industries/:slug" component={() => <LegacyRedirect to="/solutions" />} />
+      <Route path="/work" component={() => <LegacyRedirect to="/solutions" />} />
       <Route path="/academy" component={AcademyHub} />
       <Route path="/academy/:school" component={SchoolDeepDive} />
       <Route path="/courses" component={Courses} />

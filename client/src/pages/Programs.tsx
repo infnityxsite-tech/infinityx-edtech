@@ -1,188 +1,30 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Loader2,
-  Search,
-  Rocket,
-  CheckCircle,
-  Cpu,
-  Code,
-  Shield,
-  ArrowRight
-} from "lucide-react";
-import { useLocation } from "wouter";
 import Footer from "@/components/Footer";
+import { ArrowRight, ArrowUpRight, Loader2, Search, SlidersHorizontal } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useTheme } from "@/contexts/ThemeContext";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Programs() {
   const { data: programs = [], isLoading } = trpc.admin.getPrograms.useQuery();
-  const [query, setQuery] = useState("");
-  const [location, navigate] = useLocation();
-  const { lang, isRTL, t } = useLanguage();
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
-
-  // Filter programs based on search
-  const filteredPrograms = programs.filter((program: any) =>
-    program.title.toLowerCase().includes(query.toLowerCase()) || 
-    (program.title_ar && program.title_ar.includes(query))
-  );
-
-  return (
-    <div className={`min-h-screen ${isRTL ? 'rtl' : 'ltr'} ${isLight ? 'bg-[#f0f4f8] text-slate-900' : 'bg-[#0a0e1a] text-white'}`} dir={isRTL ? 'rtl' : 'ltr'}>
-      <Navigation />
-
-      {/* === HERO SECTION === */}
-      <section className="relative pt-36 pb-24 text-center overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `linear-gradient(${isLight ? '#94a3b8' : '#334155'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#94a3b8' : '#334155'} 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
-        <div className={`absolute top-0 left-0 w-full h-full overflow-hidden ${isLight ? 'opacity-5' : 'opacity-20'}`}>
-            <div className="absolute top-10 left-10 w-96 h-96 bg-blue-600 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-600 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative z-10 max-w-5xl mx-auto px-6">
-          <div className={`inline-block border px-4 py-1 rounded-full text-sm font-medium mb-6 ${isLight ? 'bg-slate-100 border-slate-200 text-slate-700' : 'bg-white/10 border-white/20 text-white'}`}>
-            {t("ACADEMIC PROGRAMS", "البرامج الأكاديمية", "ACADEMIC PROGRAMS")}
-          </div>
-          <h1 className={`text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-            {t("Specialized Schools & Diplomas", "الكليات والدبلومات المتخصصة", "Specialized Schools & Diplomas")}
-          </h1>
-          <p className={`text-lg md:text-xl max-w-2xl mx-auto font-light leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-            {t(
-                "Advance your career with expert-led, industry-focused programs in Space Tech, AI, and Software Engineering.",
-                "طور مسارك المهني ببرامج متخصصة يقودها خبراء في تكنولوجيا الفضاء، الذكاء الاصطناعي، وهندسة البرمجيات.",
-                "Advance your career with expert-led programs."
-            )}
-          </p>
-        </div>
-      </section>
-
-      {/* === SEARCH & FILTER === */}
-      <section className={`py-10 backdrop-blur-xl border-b sticky top-0 z-40 ${isLight ? 'bg-white/80 border-slate-200 shadow-sm' : 'bg-[#0d1225]/80 border-white/[0.04]'}`}>
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="relative w-full md:w-2/3">
-            <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-3.5 text-slate-500 w-4 h-4`} />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("Search programs...", "بحث عن برنامج...", "Search programs...")}
-              className={`${isRTL ? 'pr-10' : 'pl-10'} ${isLight ? 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
-            />
-          </div>
-          <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-             <Button variant="outline" size="sm" className={`whitespace-nowrap rounded-full ${isLight ? 'hover:bg-blue-50 border-slate-200 text-slate-600 hover:text-blue-600' : 'hover:bg-blue-500/10 hover:text-blue-400 border-white/[0.08] text-slate-400'}`}>
-                {t("Space Tech", "تكنولوجيا الفضاء", "Space Tech")}
-             </Button>
-             <Button variant="outline" size="sm" className={`whitespace-nowrap rounded-full ${isLight ? 'hover:bg-green-50 border-slate-200 text-slate-600 hover:text-green-600' : 'hover:bg-green-500/10 hover:text-green-400 border-white/[0.08] text-slate-400'}`}>
-                {t("AI & Data", "الذكاء الاصطناعي", "AI & Data")}
-             </Button>
-             <Button variant="outline" size="sm" className={`whitespace-nowrap rounded-full ${isLight ? 'hover:bg-purple-50 border-slate-200 text-slate-600 hover:text-purple-600' : 'hover:bg-purple-500/10 hover:text-purple-400 border-white/[0.08] text-slate-400'}`}>
-                {t("Software", "البرمجيات", "Software")}
-             </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* === PROGRAMS GRID === */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-6">
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
-            </div>
-          ) : filteredPrograms.length === 0 ? (
-            <div className="text-center py-20 bg-[#0d1225]/80 rounded-2xl border border-dashed border-white/[0.06]">
-              <p className="text-slate-400 text-lg">
-                {t("No programs found matching your search.", "لم يتم العثور على برامج تطابق بحثك.", "No programs found.")}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredPrograms.map((program: any) => (
-                <Card
-                  key={program.id}
-                  className={`group hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col p-0 gap-0 border ${isLight ? 'bg-white border-slate-200/60 hover:border-cyan-300' : 'bg-[#0d1225]/80 backdrop-blur-xl border-white/[0.06] hover:border-cyan-500/30'}`}
-                >
-                  <div className="relative h-56 overflow-hidden">
-                    {program.imageUrl ? (
-                        <img
-                        src={program.imageUrl}
-                        alt={program.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                        />
-                    ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-slate-800 to-blue-900 flex items-center justify-center">
-                            <Rocket className="w-12 h-12 text-white/20" />
-                        </div>
-                    )}
-                    <div className="absolute top-4 right-4 bg-white/[0.1] backdrop-blur border border-white/[0.1] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                        {program.duration || "Flexible"}
-                    </div>
-                  </div>
-
-                  <CardHeader className="p-5 pb-2">
-                    <CardTitle className={`text-lg font-bold leading-tight border-l-2 border-cyan-500/60 pl-3 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      {t(program.title, program.title_ar, program.title)}
-                    </CardTitle>
-                  </CardHeader>
-
-                  <CardContent className="flex-1 flex flex-col justify-between space-y-4 px-5 pb-5">
-                    <p className={`text-sm leading-relaxed line-clamp-3 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                      {t(program.description, program.description_ar, program.description || "No description available.")}
-                    </p>
-
-                    {program.skills && (
-                      <div className="flex flex-wrap gap-2">
-                          {program.skills.split(",").slice(0, 3).map((skill: string, idx: number) => (
-                            <span
-                              key={idx}
-                              className={`border px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider ${isLight ? 'bg-slate-100 border-slate-200 text-slate-600' : 'bg-white/[0.04] border-white/[0.06] text-slate-400'}`}
-                            >
-                              {skill.trim()}
-                            </span>
-                          ))}
-                          {program.skills.split(",").length > 3 && (
-                              <span className={`text-xs py-1 ${isLight ? 'text-slate-500' : 'text-slate-600'}`}>+More</span>
-                          )}
-                      </div>
-                    )}
-
-                    <div className="flex gap-3 pt-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => navigate(`/program/${program.id}`)}
-                        className={`flex-1 rounded-xl shadow-sm border ${isLight ? 'border-cyan-500/30 text-cyan-700 hover:bg-cyan-50' : 'border-cyan-500/30 text-cyan-400 hover:bg-cyan-950/30'}`}
-                      >
-                        {t("View Details", "التفاصيل", "View Details")}
-                      </Button>
-                      <Button
-                        onClick={() =>
-                          navigate(`/apply?programId=${program.id}&programName=${encodeURIComponent(program.title)}`)
-                        }
-                        className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl shadow-lg shadow-cyan-500/20"
-                      >
-                        {t("Apply", "سجل", "Apply")} <ArrowRight className={`w-4 h-4 ${isRTL ? 'mr-1 rotate-180' : 'ml-1'}`} />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      <Footer />
-    </div>
-  );
+  const { isRTL, t, lang } = useLanguage();
+  const [query, setQuery] = useState(""); const [discipline, setDiscipline] = useState("All"); const [format, setFormat] = useState("All");
+  const copy = (en: string, ar: string) => t(en, ar, en);
+  useSEO({ title: "Programs | Infinity X Academy", description: "Discover practical, project-based technology programs from Infinity X Academy.", canonical: "https://infx.space/programs", robots: "index, follow" });
+  const all = programs as any[];
+  const disciplines = useMemo(() => Array.from(new Set(all.map((program) => String(program.category || "").trim()).filter(Boolean))).sort(), [all]);
+  const formats = useMemo(() => Array.from(new Set(all.map((program) => String(program.deliveryMode || "").trim()).filter(Boolean))).sort(), [all]);
+  const filtered = useMemo(() => all.filter((program) => `${program.title || ""} ${program.titleAr || program.title_ar || ""} ${program.description || ""} ${program.category || ""}`.toLowerCase().includes(query.toLowerCase()) && (discipline === "All" || program.category === discipline) && (format === "All" || program.deliveryMode === format)), [all, query, discipline, format]);
+  const price = (program: any) => { const egp = Number(program.priceEgp) > 0 ? new Intl.NumberFormat(lang === "ar" ? "ar-EG" : "en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(Number(program.priceEgp)) : ""; const usd = Number(program.priceUsd) > 0 ? new Intl.NumberFormat(lang === "ar" ? "ar-EG" : "en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number(program.priceUsd)) : ""; return [egp, usd].filter(Boolean).join(" / ") || copy("Contact for tuition", "تواصل لمعرفة الرسوم"); };
+  const label = (value: string) => value === "All" ? copy("All", "الكل") : value.toLowerCase() === "ai" ? copy("AI & Data", "الذكاء الاصطناعي والبيانات") : value.toLowerCase() === "live" ? copy("Live", "مباشر") : value.toLowerCase() === "recorded" ? copy("Recorded", "مسجل") : value;
+  const facts = (program: any) => [{ label: copy("Level", "المستوى"), value: program.level || "—" }, { label: copy("Duration", "المدة"), value: program.duration || "—" }, { label: copy("Format", "النمط"), value: program.deliveryMode || "—" }, { label: copy("Tuition", "الرسوم"), value: price(program) }];
+  const reset = () => { setQuery(""); setDiscipline("All"); setFormat("All"); };
+  const featured = filtered[0];
+  return <div className={`ix-page ${isRTL ? "rtl" : "ltr"}`} dir={isRTL ? "rtl" : "ltr"}><Navigation /><main>
+    <section className="bg-[#07131f] text-white"><div className="ix-shell grid gap-10 py-28 sm:py-32 lg:grid-cols-[1fr_auto] lg:items-end"><div><p className="ix-eyebrow text-[#a5d9c2]">{copy("Infinity X / program desk", "إنفينيتي إكس / مكتب البرامج")}</p><h1 className="ix-display mt-6 max-w-4xl text-5xl font-bold sm:text-7xl">{copy("Choose the work you want to be ready for.", "اختر العمل الذي تريد أن تكون مستعداً له.")}</h1><p className="mt-7 max-w-2xl text-lg leading-8 text-[#c0cdd3]">{copy("Compare practical programs by discipline, format, duration, and tuition. Then open the path and see the work inside it.", "قارن البرامج العملية حسب التخصص والنمط والمدة والرسوم. ثم افتح المسار وشاهد العمل داخله.")}</p></div><div className="grid grid-cols-2 border border-white/15 sm:grid-cols-4 lg:grid-cols-2"><div className="border-e border-b border-white/15 p-5"><p className="text-3xl font-bold text-[#7db2ff]">{all.length || "—"}</p><p className="mt-2 text-[10px] uppercase tracking-[.15em] text-[#9aaab4]">{copy("Programs", "برامج")}</p></div><div className="border-b border-white/15 bg-[#13304d] p-5"><p className="text-3xl font-bold text-[#a5d9c2]">{disciplines.length || "—"}</p><p className="mt-2 text-[10px] uppercase tracking-[.15em] text-[#c0cdd3]">{copy("Disciplines", "تخصصات")}</p></div><div className="border-e border-white/15 p-5"><p className="text-3xl font-bold text-[#7db2ff]">{formats.length || "—"}</p><p className="mt-2 text-[10px] uppercase tracking-[.15em] text-[#9aaab4]">{copy("Formats", "أنماط")}</p></div><div className="p-5"><p className="text-3xl font-bold text-[#7db2ff]">01</p><p className="mt-2 text-[10px] uppercase tracking-[.15em] text-[#9aaab4]">{copy("Student portal", "بوابة طالب")}</p></div></div></div></section>
+    <section className="sticky top-[76px] z-30 border-b bg-[#f6f7f4]/95 py-4 backdrop-blur-xl" style={{ borderColor: "var(--ix-border)" }}><div className="ix-shell flex flex-col gap-4"><div className="flex flex-col gap-3 sm:flex-row sm:items-center"><div className="relative max-w-xl flex-1"><Search className={`absolute top-3.5 h-4 w-4 text-[#71808b] ${isRTL ? "right-4" : "left-4"}`} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={copy("Search programs", "ابحث عن البرامج")} aria-label={copy("Search programs", "ابحث عن البرامج")} className={`h-11 w-full border bg-white px-10 text-sm outline-none focus:border-[#1268e5] focus:ring-2 focus:ring-[#1268e5]/15 ${isRTL ? "pr-10" : "pl-10"}`} style={{ borderColor: "var(--ix-border)" }} /></div><Link href="/courses" className="ix-button ix-button-secondary w-fit">{copy("Explore courses", "استكشف الدورات")}<ArrowUpRight className="h-4 w-4" /></Link></div><div className="flex flex-wrap items-center gap-2"><SlidersHorizontal className="h-4 w-4 text-[#1268e5]" /><span className="text-xs font-bold text-[#71808b]">{copy("Filter", "تصفية")}</span>{["All", ...disciplines].map((item) => <button type="button" key={item} onClick={() => setDiscipline(item)} className={`border px-3 py-2 text-sm font-bold transition-all ${discipline === item ? "border-[#1268e5] bg-[#1268e5] text-white" : "border-transparent hover:border-[#c7d2d8] hover:bg-white"}`}>{label(item)}</button>)}{formats.length > 0 && <>{formats.map((item) => <button type="button" key={item} onClick={() => setFormat(item)} className={`border px-3 py-2 text-sm font-bold transition-all ${format === item ? "border-[#1268e5] bg-[#1268e5] text-white" : "border-transparent hover:border-[#c7d2d8] hover:bg-white"}`}>{label(item)}</button>)}</>}</div></div></section>
+    <section className="ix-section"><div className="ix-shell">{isLoading ? <div className="grid min-h-[420px] place-items-center"><Loader2 className="h-8 w-8 animate-spin text-[#1268e5]" /></div> : filtered.length === 0 ? <div className="border-y py-20 text-center" style={{ borderColor: "var(--ix-border)" }}><h2 className="text-2xl font-bold">{copy("No matching programs", "لا توجد برامج مطابقة")}</h2><p className="mt-3" style={{ color: "var(--ix-text-secondary)" }}>{copy("Try another search term or clear the active filters.", "جرّب عبارة بحث أخرى أو امسح عوامل التصفية النشطة.")}</p><button onClick={reset} className="ix-button ix-button-secondary mt-6">{copy("Clear filters", "مسح عوامل التصفية")}</button></div> : <><div className="mb-8 flex flex-wrap items-center justify-between gap-4"><p className="text-sm font-semibold" style={{ color: "var(--ix-text-secondary)" }}>{filtered.length} {copy("programs available", "برامج متاحة")}</p><span className="text-xs font-bold uppercase tracking-[.14em] text-[#71808b]">{copy("Read, compare, decide", "اقرأ وقارن وقرر")}</span></div>{featured && <article className="grid overflow-hidden border" style={{ borderColor: "var(--ix-border)" }}><div className="grid gap-8 bg-[#f0f3f1] p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end"><div><p className="ix-kicker">{featured.category || copy("Featured program", "برنامج مميز")}</p><h2 className="ix-display mt-5 max-w-3xl text-4xl font-bold sm:text-5xl">{copy(featured.title, featured.titleAr || featured.title_ar || featured.title)}</h2><p className="mt-5 max-w-2xl text-sm leading-7" style={{ color: "var(--ix-text-secondary)" }}>{copy(featured.description || "", featured.descriptionAr || featured.description_ar || featured.description || "")}</p></div><Link href={`/program/${featured.id}`} className="ix-button ix-button-primary w-fit">{copy("Open program", "افتح البرنامج")}<ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} /></Link></div><dl className="grid border-t bg-white sm:grid-cols-2 lg:grid-cols-4" style={{ borderColor: "var(--ix-border)" }}>{facts(featured).map((fact) => <div key={fact.label} className="border-b p-5 lg:border-e lg:last:border-e-0" style={{ borderColor: "var(--ix-border)" }}><dt className="text-[10px] font-bold uppercase tracking-[.14em] text-[#71808b]">{fact.label}</dt><dd className="mt-2 text-sm font-bold">{fact.value}</dd></div>)}</dl></article>}{filtered.length > 1 && <div className="mt-12 grid border-t md:grid-cols-2" style={{ borderColor: "var(--ix-border)" }}>{filtered.slice(1).map((program: any, index: number) => <article key={program.id} className="group flex flex-col border-b p-6 transition-colors hover:bg-[#f0f3f1] sm:p-8 md:[&:nth-child(odd)]:border-e" style={{ borderColor: "var(--ix-border)" }}><div className="flex items-center justify-between gap-4"><p className="ix-kicker">{program.category || copy("Program", "برنامج")}</p><span className="text-xs font-bold text-[#1268e5]">{String(index + 2).padStart(2, "0")}</span></div><h2 className="mt-5 text-2xl font-bold tracking-[-.035em]">{copy(program.title, program.titleAr || program.title_ar || program.title)}</h2><dl className="mt-7 grid grid-cols-2 border-t" style={{ borderColor: "var(--ix-border)" }}>{facts(program).map((fact) => <div key={fact.label} className="border-b py-4 odd:pe-4 even:border-s even:ps-4" style={{ borderColor: "var(--ix-border)" }}><dt className="text-[10px] font-bold uppercase tracking-[.14em] text-[#71808b]">{fact.label}</dt><dd className="mt-2 text-sm font-bold">{fact.value}</dd></div>)}</dl><div className="mt-auto flex flex-wrap gap-5 pt-7"><Link href={`/program/${program.id}`} className="ix-link inline-flex items-center gap-2">{copy("Open program", "افتح البرنامج")}<ArrowRight className={`h-4 w-4 transition-transform group-hover:translate-x-1 ${isRTL ? "rotate-180" : ""}`} /></Link><Link href={`/apply?programId=${program.id}&programName=${encodeURIComponent(program.title)}`} className="ix-link">{copy("Apply", "قدم طلبك")}</Link></div></article>)}</div>}</>}</div></section>
+  </main><Footer /></div>;
 }

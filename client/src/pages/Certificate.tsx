@@ -3,88 +3,31 @@ import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Download, ChevronLeft, Award, Loader2 } from "lucide-react";
+import { Download, ArrowLeft, Award, Loader2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Certificate() {
-    const { certId } = useParams<{ certId: string }>();
-    const [isDownloading, setIsDownloading] = useState(false);
+  const { certId } = useParams<{ certId: string }>();
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { t, isRTL } = useLanguage();
+  const { theme } = useTheme();
+  const isLight = theme === "light";
+  const { data: certificate, isLoading, isError } = trpc.admin.getCertificateByCertId.useQuery({ certId: certId?.toUpperCase() || "" }, { enabled: !!certId, retry: false });
+  useSEO({ title: certificate ? `Certificate ${certificate.certId}` : "Certificate verification", description: "Infinity X Academy digital certificate verification.", canonical: `https://infx.space/certificates/${certId || ""}`, robots: isLoading ? undefined : "noindex, follow" });
+  const handleDownload = () => { if (!certificate) return; setIsDownloading(true); window.location.href = `/api/certificates/${encodeURIComponent(certificate.certId)}/download`; window.setTimeout(() => setIsDownloading(false), 2000); };
 
-    const { data: certificate, isLoading, isError } = trpc.admin.getCertificateByCertId.useQuery(
-        { certId: certId?.toUpperCase() || "" },
-        { enabled: !!certId, retry: false }
-    );
+  if (isLoading) return <div className={`grid min-h-screen place-items-center ${isLight ? "bg-[#fdfcf9]" : "bg-[#06101f]"}`}><Loader2 className="h-8 w-8 animate-spin text-[#165dcc]" /></div>;
+  if (isError || !certificate) return <div className={`grid min-h-screen place-items-center px-6 text-center ${isLight ? "bg-[#fdfcf9] text-[#102033]" : "bg-[#06101f] text-white"}`} dir={isRTL ? "rtl" : "ltr"}><div><Award className="mx-auto h-10 w-10 text-[#165dcc]" /><h1 className="mt-6 text-4xl font-extrabold tracking-[-.05em]">{t("Certificate not found.", "الشهادة غير موجودة.", "Certificate not found.")}</h1><p className={`mt-4 ${isLight ? "text-slate-500" : "text-slate-400"}`}>{t("Check the credential ID and try verification again.", "تحقق من معرّف الشهادة وحاول التحقق مرة أخرى.", "Check the credential ID and try verification again.")}</p><Link href="/verify"><Button className="mt-8 rounded-md bg-[#165dcc] text-white hover:bg-[#124ead]">{t("Verify another certificate", "تحقق من شهادة أخرى", "Verify another certificate")}</Button></Link></div></div>;
 
-    const handleDownload = () => {
-        if (!certificate) return;
-        setIsDownloading(true);
-        window.location.href = `/api/certificates/${encodeURIComponent(certificate.certId)}/download`;
-        setTimeout(() => setIsDownloading(false), 2000);
-    };
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center flex-col gap-4">
-                <Loader2 className="w-10 h-10 animate-spin text-cyan-400" />
-                <p className="text-slate-500 font-medium">Loading certificate…</p>
-            </div>
-        );
-    }
-
-    if (isError || !certificate) {
-        return (
-            <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center flex-col gap-4 text-center px-4">
-                <div className="w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center text-red-400">
-                    <Award className="w-10 h-10" />
-                </div>
-                <h1 className="text-2xl font-bold text-white">Certificate Not Found</h1>
-                <p className="text-slate-500">The ID <strong className="text-slate-300">{certId}</strong> does not exist or is invalid.</p>
-                <Button asChild className="mt-4 bg-white/[0.08] hover:bg-white/[0.12] text-white border border-white/10 rounded-xl"><Link href="/verify">← Verify another certificate</Link></Button>
-            </div>
-        );
-    }
-
-    return (
-        <div className="min-h-screen bg-[#0a0e1a] flex flex-col">
-            <Navigation />
-
-            <main className="flex-1 flex flex-col items-center py-28 px-4">
-                {/* Action bar */}
-                <div className="w-full max-w-5xl flex items-center justify-between mb-6">
-                    <Button asChild variant="ghost" className="text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-xl">
-                        <Link href="/verify" className="flex items-center gap-2">
-                            <ChevronLeft className="w-4 h-4" /> Back
-                        </Link>
-                    </Button>
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm text-slate-500 hidden sm:block">Certificate ID: <strong className="text-slate-300">{certificate.certId}</strong></span>
-                        <Button
-                            onClick={handleDownload}
-                            disabled={isDownloading}
-                            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white flex items-center gap-2 min-w-[160px] rounded-xl shadow-lg shadow-cyan-500/20"
-                        >
-                            {isDownloading
-                                ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating…</>
-                                : <><Download className="w-4 h-4" /> Download PDF</>}
-                        </Button>
-                    </div>
-                </div>
-
-                <div className="w-full overflow-x-auto rounded-2xl shadow-2xl shadow-black/30 border border-white/[0.06] flex justify-center bg-white p-2 sm:p-4">
-                    <img
-                        src={`/api/certificates/${encodeURIComponent(certificate.certId)}/download`}
-                        alt="Certificate"
-                        className="max-w-[1000px] w-full h-auto rounded-lg shadow-sm object-contain"
-                        draggable={false}
-                    />
-                </div>
-
-                <p className="text-xs text-slate-600 mt-4 text-center">
-                    Rendered securely by the server · Click Download for the original PNG file.
-                </p>
-            </main>
-
-            <Footer />
-        </div>
-    );
+  return <div className={`min-h-screen ${isRTL ? "rtl" : "ltr"} ${isLight ? "bg-[#fdfcf9] text-[#102033]" : "bg-[#06101f] text-white"}`} dir={isRTL ? "rtl" : "ltr"}>
+    <Navigation />
+    <main className="mx-auto max-w-6xl px-6 pb-20 pt-28 lg:px-8">
+      <div className={`flex flex-col gap-5 border-b pb-7 sm:flex-row sm:items-center sm:justify-between ${isLight ? "border-slate-200" : "border-white/10"}`}><Link href="/verify" className={`inline-flex items-center gap-2 text-sm font-bold ${isLight ? "text-slate-500 hover:text-slate-950" : "text-slate-400 hover:text-white"}`}><ArrowLeft className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} />{t("Certificate verification", "التحقق من الشهادة", "Certificate verification")}</Link><Button onClick={handleDownload} disabled={isDownloading} className="h-10 rounded-md bg-[#165dcc] px-4 text-sm font-bold text-white hover:bg-[#124ead]">{isDownloading ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Download className="me-2 h-4 w-4" />}{t("Download certificate", "تنزيل الشهادة", "Download certificate")}</Button></div>
+      <section className="grid gap-12 py-12 lg:grid-cols-[1.2fr_.8fr] lg:py-16"><div className={`border p-3 sm:p-5 ${isLight ? "border-slate-200 bg-white shadow-[0_16px_45px_rgba(15,23,42,.08)]" : "border-white/10 bg-white/[.03]"}`}><img src={`/api/certificates/${encodeURIComponent(certificate.certId)}/download`} alt={t("Infinity X Academy certificate", "شهادة أكاديمية إنفينيتي إكس", "Infinity X Academy certificate")} className="w-full object-contain" draggable={false} /></div><aside className={`self-start border-s ps-7 ${isLight ? "border-slate-200" : "border-white/10"}`}><div className="flex items-center gap-2 text-[#165dcc]"><ShieldCheck className="h-5 w-5" /><p className="text-xs font-bold uppercase tracking-[.16em]">{t("Verified credential", "شهادة موثقة", "Verified credential")}</p></div><h1 className="mt-8 text-4xl font-extrabold tracking-[-.05em]">{certificate.studentName}</h1><dl className={`mt-10 space-y-6 border-t pt-6 ${isLight ? "border-slate-200" : "border-white/10"}`}><div><dt className="text-[11px] font-bold uppercase tracking-[.15em] text-slate-500">{t("Program", "البرنامج", "Program")}</dt><dd className="mt-2 text-lg font-bold">{certificate.courseName}</dd></div><div><dt className="text-[11px] font-bold uppercase tracking-[.15em] text-slate-500">{t("Issued", "تاريخ الإصدار", "Issued")}</dt><dd className="mt-2 font-bold">{new Date(certificate.issueDate).toLocaleDateString(isRTL ? "ar-EG" : "en-US", { year: "numeric", month: "long", day: "numeric" })}</dd></div><div><dt className="text-[11px] font-bold uppercase tracking-[.15em] text-slate-500">{t("Credential ID", "معرّف الشهادة", "Credential ID")}</dt><dd className="mt-2 break-all font-mono text-sm font-bold">{certificate.certId}</dd></div></dl><p className={`mt-10 text-sm leading-7 ${isLight ? "text-slate-500" : "text-slate-400"}`}>{t("This page confirms the credential record held by Infinity X Academy.", "تؤكد هذه الصفحة سجل الشهادة المحفوظ لدى أكاديمية إنفينيتي إكس.", "This page confirms the credential record held by Infinity X Academy.")}</p></aside></section>
+    </main>
+    <Footer />
+  </div>;
 }

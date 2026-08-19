@@ -1,15 +1,12 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useRoute, Link } from "wouter";
-import { motion } from "framer-motion";
+import { useSEO } from "@/hooks/useSEO";
 import { trpc } from "@/lib/trpc";
-import { ArrowLeft, ArrowRight, Loader2, Cpu, Globe, Factory, Truck, Building2, Wifi, Eye, Database, Cloud, BarChart3, Brain, Code, Layers, Zap, Target } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-const IconMap: any = { Eye, Database, Cloud, BarChart3, Brain, Code, Cpu, Layers, Zap, Target };
-const IndustryIcons: any = { manufacturing: Factory, logistics: Truck, 'enterprise-operations': Building2, 'smart-infrastructure': Wifi };
+import { ArrowLeft, ArrowRight, ArrowUpRight, Loader2 } from "lucide-react";
+import { Link, useRoute } from "wouter";
 
 export default function IndustryLanding() {
   const { t, isRTL } = useLanguage();
@@ -17,110 +14,32 @@ export default function IndustryLanding() {
   const isLight = theme === "light";
   const [, params] = useRoute("/industries/:slug");
   const slug = params?.slug || "";
-
   const { data: industry, isLoading } = trpc.admin.getIndustryBySlug.useQuery({ slug }, { staleTime: 1000 * 60 * 5 });
+  useSEO({ title: industry?.title ? `${industry.title} AI Systems | Infinity X` : "Industry AI Systems | Infinity X", description: industry?.overview || "AI systems designed around real operational environments.", canonical: `https://infx.space/industries/${slug}`, robots: isLoading ? undefined : industry ? "index, follow" : "noindex, follow" });
 
-  if (isLoading) return (<div className={`min-h-screen flex items-center justify-center ${isLight ? 'bg-[#f8fafc]' : 'bg-[#020617]'}`}><Loader2 className="w-10 h-10 animate-spin text-cyan-500" /></div>);
-  if (!industry) return (<div className={`min-h-screen flex items-center justify-center ${isLight ? 'bg-[#f8fafc]' : 'bg-[#020617]'}`}><div className="text-center"><h1 className={`text-4xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>Industry Not Found</h1><Link href="/solutions"><Button className="bg-cyan-600 text-white">Back to Solutions</Button></Link></div></div>);
+  if (isLoading) return <div className={`grid min-h-screen place-items-center ${isLight ? "bg-[#fdfcf9]" : "bg-[#06101f]"}`}><Loader2 className="h-8 w-8 animate-spin text-[#165dcc]" /></div>;
+  if (!industry) return <div className={`grid min-h-screen place-items-center px-6 text-center ${isLight ? "bg-[#fdfcf9] text-[#102033]" : "bg-[#06101f] text-white"}`}><div><h1 className="text-4xl font-extrabold tracking-[-.05em]">{t("Industry not found.", "القطاع غير موجود.", "Industry not found.")}</h1><Link href="/industries"><Button className="mt-7 rounded-md bg-[#165dcc] text-white hover:bg-[#124ead]">{t("View industries", "عرض القطاعات", "View industries")}</Button></Link></div></div>;
 
-  const IndIcon = IndustryIcons[slug] || Factory;
   let painPoints: string[] = [];
   let painPointsAr: string[] = [];
-  try { painPoints = JSON.parse(industry.painPointsJson || '[]'); } catch {}
-  try { painPointsAr = JSON.parse(industry.painPointsArJson || '[]'); } catch {}
+  try { painPoints = JSON.parse(industry.painPointsJson || "[]"); } catch { painPoints = []; }
+  try { painPointsAr = JSON.parse(industry.painPointsArJson || "[]"); } catch { painPointsAr = []; }
   const services = industry.services || [];
-  const caseStudies = industry.caseStudies || [];
+  // Do not surface operational records as public evidence without publication approval.
+  const caseStudies: any[] = [];
+  const rule = isLight ? "border-slate-200" : "border-white/10";
+  const muted = isLight ? "text-slate-600" : "text-slate-300";
+  const text = (en: string | undefined, ar: string | undefined, fallback = "") => t(en, ar, fallback || en || "");
 
-  return (
-    <div className={`min-h-screen ${isRTL ? "rtl" : "ltr"} ${isLight ? 'bg-[#f8fafc] text-slate-900' : 'bg-[#020617] text-white'}`} dir={isRTL ? "rtl" : "ltr"}>
-      <Navigation />
-
-      {/* Hero */}
-      <section className={`pt-32 pb-20 relative overflow-hidden ${isLight ? 'bg-gradient-to-br from-slate-50 to-cyan-50/30' : ''}`}>
-        <div className="max-w-5xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Link href="/solutions"><span className={`inline-flex items-center gap-1.5 text-sm mb-8 cursor-pointer ${isLight ? 'text-slate-500' : 'text-slate-400'}`}><ArrowLeft className="w-4 h-4" /> {t("All Solutions", "كل الحلول", "Solutions")}</span></Link>
-            <div className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6 ${isLight ? 'bg-cyan-50 border border-cyan-200 text-cyan-700' : 'bg-cyan-500/10 border border-cyan-500/20 text-cyan-400'}`}>
-              <IndIcon className="w-4 h-4" />
-              <span className="text-xs font-bold uppercase tracking-wider">{t("Industry Solutions", "حلول القطاع", "Industry")}</span>
-            </div>
-            <h1 className={`text-4xl md:text-5xl font-extrabold tracking-tight mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(industry.title, industry.titleAr, industry.title)}</h1>
-            <p className={`text-lg max-w-3xl leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{t(industry.overview, industry.overviewAr, industry.overview)}</p>
-          </motion.div>
-        </div>
-      </section>
-
-      <div className={`${isLight ? 'bg-white' : 'bg-[#030712]'}`}>
-        <div className="max-w-5xl mx-auto px-6 py-16 space-y-20">
-
-          {/* Pain Points */}
-          {painPoints.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              <h2 className={`text-2xl font-extrabold mb-8 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t("Industry Challenges", "تحديات القطاع", "Challenges")}</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                {painPoints.map((pain, i) => (
-                  <div key={i} className={`p-5 rounded-xl border-l-4 border-amber-500 ${isLight ? 'bg-amber-50 border border-amber-200' : 'bg-amber-500/5 border border-amber-500/20'}`}>
-                    <p className={`text-sm font-medium ${isLight ? 'text-amber-900' : 'text-amber-200'}`}>{t(pain, painPointsAr[i] || pain, pain)}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Mapped Solutions */}
-          {services.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              <h2 className={`text-2xl font-extrabold mb-8 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t("Solutions for This Industry", "حلول لهذا القطاع", "Solutions")}</h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {services.map((svc: any) => {
-                  const SvcIcon = IconMap[svc.icon] || Cpu;
-                  return (
-                    <Link key={svc.id} href={`/solutions/${svc.slug}`}>
-                      <div className={`p-6 rounded-2xl border group cursor-pointer transition-all ${isLight ? 'bg-white border-slate-200 shadow-lg hover:shadow-xl hover:border-cyan-300' : 'bg-white/[0.02] border-white/[0.06] hover:border-cyan-500/30'}`}>
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isLight ? 'bg-cyan-50' : 'bg-cyan-500/10'}`}><SvcIcon className="w-5 h-5 text-cyan-500" /></div>
-                          <h3 className={`text-lg font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(svc.title, svc.title_ar, svc.title)}</h3>
-                        </div>
-                        <p className={`text-sm mb-4 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{t(svc.description, svc.description_ar, svc.description)}</p>
-                        <span className={`text-sm font-bold flex items-center gap-1 ${isLight ? 'text-cyan-600' : 'text-cyan-400'}`}>{t("View Solution", "عرض الحل", "View")} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Case Studies */}
-          {caseStudies.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              <h2 className={`text-2xl font-extrabold mb-8 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t("Industry Case Studies", "دراسات حالة القطاع", "Case Studies")}</h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {caseStudies.map((cs: any) => (
-                  <div key={cs.id} className={`p-6 rounded-2xl border ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-                    <div className="flex items-center gap-2 mb-3"><Globe className="w-4 h-4 text-cyan-500" /><span className={`text-xs font-bold uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{cs.industry}</span></div>
-                    <h4 className={`font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>{cs.client_name}</h4>
-                    <p className={`text-sm mb-3 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{cs.challenge}</p>
-                    {cs.outcome && <p className="text-sm font-medium text-emerald-500">{cs.outcome}</p>}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-
-      {/* CTA */}
-      <section className={`py-20 border-t ${isLight ? 'border-slate-200 bg-slate-50' : 'border-white/[0.04]'}`}>
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <IndIcon className="w-12 h-12 text-cyan-500 mx-auto mb-6" />
-          <h2 className={`text-3xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(`Transform Your ${industry.title} Operations`, `حوّل عمليات ${industry.titleAr}`, "Transform Operations")}</h2>
-          <p className={`mb-8 max-w-lg mx-auto ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{t("Get a custom proposal tailored to your industry challenges.", "احصل على مقترح مخصص لتحديات قطاعك.", "Custom proposal.")}</p>
-          <Link href="/consultation"><Button size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold px-10 py-6 rounded-xl shadow-lg">{t("Request Industry Proposal", "اطلب مقترحاً للقطاع", "Request Proposal")}</Button></Link>
-        </div>
-      </section>
-
-      <Footer />
-    </div>
-  );
+  return <div className={`min-h-screen ${isRTL ? "rtl" : "ltr"} ${isLight ? "bg-[#fdfcf9] text-[#102033]" : "bg-[#06101f] text-white"}`} dir={isRTL ? "rtl" : "ltr"}>
+    <Navigation />
+    <main>
+      <section className={`border-b pt-28 ${rule}`}><div className="mx-auto grid max-w-7xl gap-12 px-6 pb-20 lg:grid-cols-[1.1fr_.9fr] lg:px-8 lg:pb-24"><div className="max-w-3xl self-end"><Link href="/industries" className={`inline-flex items-center gap-2 text-sm font-bold ${isLight ? "text-slate-500 hover:text-slate-950" : "text-slate-400 hover:text-white"}`}><ArrowLeft className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} />{t("All industries", "كل القطاعات", "All industries")}</Link><p className="mt-12 text-xs font-bold uppercase tracking-[.16em] text-[#165dcc]">{t("Industry operating context", "سياق تشغيل القطاع", "Industry operating context")}</p><h1 className="mt-6 text-5xl font-extrabold tracking-[-.06em] sm:text-6xl lg:text-7xl">{text(industry.title, industry.titleAr, industry.title)}</h1><p className={`mt-7 max-w-2xl text-lg leading-8 ${muted}`}>{text(industry.overview, industry.overviewAr, industry.overview)}</p></div><div className={`self-end overflow-hidden border ${rule}`}>{industry.heroImageUrl ? <img src={industry.heroImageUrl} alt={text(industry.title, industry.titleAr, industry.title)} className="h-[270px] w-full object-cover sm:h-[360px]" /> : <div className={`flex min-h-[270px] flex-col justify-between p-7 sm:min-h-[360px] ${isLight ? "bg-[#f2f5f8]" : "bg-white/[.03]"}`}><span className="text-xs font-bold text-[#165dcc]">{t("INDUSTRY / SYSTEMS", "قطاع / أنظمة", "INDUSTRY / SYSTEMS")}</span><p className="max-w-sm text-3xl font-extrabold tracking-[-.04em]">{t("Technology shaped by the conditions of the operation.", "تقنية تتشكل وفق ظروف العملية.", "Technology shaped by operating conditions.")}</p></div>}</div></div></section>
+      {painPoints.length > 0 && <section className={`border-b ${isLight ? "border-slate-200 bg-[#f2f5f8]" : "border-white/10 bg-white/[.03]"}`}><div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[.8fr_2fr] lg:px-8"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-[#165dcc]">{t("Operational challenges", "تحديات تشغيلية", "Operational challenges")}</p><h2 className="mt-5 text-4xl font-extrabold tracking-[-.05em]">{t("The constraints a useful system needs to respect.", "القيود التي يجب أن يحترمها النظام المفيد.", "The constraints a useful system needs to respect.")}</h2></div><div className="grid gap-x-12 sm:grid-cols-2">{painPoints.map((pain, index) => <div key={`${pain}-${index}`} className={`border-t py-7 ${rule}`}><span className="text-sm font-bold text-[#165dcc]">{String(index + 1).padStart(2, "0")}</span><p className="mt-7 text-xl font-bold leading-8 tracking-[-.025em]">{text(pain, painPointsAr[index] || pain, pain)}</p></div>)}</div></div></section>}
+      {services.length > 0 && <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28"><div className="grid gap-12 lg:grid-cols-[.8fr_2fr]"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-[#165dcc]">{t("Applied systems", "أنظمة مطبقة", "Applied systems")}</p><h2 className="mt-5 text-4xl font-extrabold tracking-[-.05em]">{t("Capabilities relevant to this environment.", "قدرات مناسبة لهذه البيئة.", "Capabilities relevant to this environment.")}</h2></div><div className={`border-t ${rule}`}>{services.map((service: any, index: number) => <article key={service.id} className={`grid gap-5 border-b py-8 sm:grid-cols-[70px_1fr_auto] sm:items-start ${rule}`}><span className="text-sm font-bold text-[#165dcc]">{String(index + 1).padStart(2, "0")}</span><div><h3 className="text-2xl font-bold tracking-[-.035em]">{text(service.title, service.title_ar, service.title)}</h3><p className={`mt-3 max-w-xl text-sm leading-7 ${muted}`}>{text(service.description, service.description_ar, service.description)}</p></div><Link href={`/solutions/${service.slug}`} className="inline-flex items-center gap-2 text-sm font-bold text-[#165dcc] sm:mt-1">{t("Explore", "استكشف", "Explore")}<ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} /></Link></article>)}</div></div></section>}
+      {caseStudies.length > 0 && <section className={`border-y ${isLight ? "border-slate-200 bg-[#071321] text-white" : "border-white/10 bg-white/[.03]"}`}><div className="mx-auto max-w-7xl px-6 py-20 lg:px-8"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-cyan-300">{t("Relevant work", "أعمال ذات صلة", "Relevant work")}</p><h2 className="mt-5 text-4xl font-extrabold tracking-[-.05em]">{t("Evidence from a comparable operating context.", "أدلة من سياق تشغيلي مماثل.", "Evidence from a comparable operating context.")}</h2></div><Link href="/work" className="text-sm font-bold text-cyan-300">{t("View all work", "استعرض كل الأعمال", "View all work")}</Link></div><div className="mt-12 grid gap-px border border-white/10 bg-white/10 md:grid-cols-2">{caseStudies.map((study: any) => <article key={study.id} className="bg-[#071321] p-7"><p className="text-[11px] font-bold uppercase tracking-[.15em] text-cyan-300">{text(study.industry, study.industry_ar, study.industry)}</p><h3 className="mt-5 text-xl font-bold">{text(study.client_name, study.client_name_ar, study.client_name)}</h3><p className="mt-4 text-sm leading-7 text-slate-300">{text(study.challenge, study.challenge_ar, study.challenge)}</p>{study.outcome && <p className="mt-5 border-s-2 border-cyan-300 ps-3 text-sm font-bold">{text(study.outcome, study.outcome_ar, study.outcome)}</p>}</article>)}</div></div></section>}
+      <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8"><div className={`grid gap-8 border-y py-12 md:grid-cols-[1.5fr_1fr] ${rule}`}><div><p className="text-xs font-bold uppercase tracking-[.16em] text-[#165dcc]">{t("Next step", "الخطوة التالية", "Next step")}</p><h2 className="mt-5 text-4xl font-extrabold tracking-[-.05em]">{t("Start with your operation. We’ll map the system around it.", "ابدأ بعمليتك. وسنرسم النظام حولها.", "Start with your operation. We’ll map the system around it.")}</h2></div><div className="flex items-end"><Link href="/consultation"><Button className="h-12 rounded-md bg-[#165dcc] px-5 font-bold text-white hover:bg-[#124ead]">{t("Discuss your operation", "ناقش عملياتك", "Discuss your operation")}<ArrowUpRight className="ms-2 h-4 w-4" /></Button></Link></div></div></section>
+    </main>
+    <Footer />
+  </div>;
 }

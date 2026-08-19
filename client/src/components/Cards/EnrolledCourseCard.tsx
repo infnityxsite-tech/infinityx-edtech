@@ -1,42 +1,12 @@
 import { Link } from "wouter";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { BookOpen, PlayCircle } from "lucide-react";
+import { ArrowUpRight, BookOpen, PlayCircle } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export function EnrolledCourseCard({ course }: { course: any }) {
-    return (
-        <Card className="group overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 bg-white rounded-2xl">
-            <div className="relative h-44 bg-gradient-to-br from-indigo-600 to-purple-700 overflow-hidden">
-                {course.imageUrl ? (
-                    <img
-                        src={course.imageUrl}
-                        alt={course.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                        <BookOpen className="w-16 h-16 text-white/30" />
-                    </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-3 left-3">
-                    <span className="px-2 py-0.5 text-xs font-bold bg-indigo-500 text-white rounded-full uppercase tracking-wide">
-                        {course.courseType || "Recorded"}
-                    </span>
-                </div>
-            </div>
-            <CardContent className="p-5">
-                <h3 className="font-bold text-slate-900 text-lg leading-snug mb-2 line-clamp-2">{course.title}</h3>
-                {course.instructor && (
-                    <p className="text-sm text-slate-500 mb-4">By {course.instructor}</p>
-                )}
-                <Link href={`/learn/${course.id}`}>
-                    <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center gap-2 justify-center h-10">
-                        <PlayCircle className="w-4 h-4" />
-                        Continue Learning
-                    </Button>
-                </Link>
-            </CardContent>
-        </Card>
-    );
+  const { t } = useLanguage();
+  const { theme } = useTheme();
+  const isLight = theme === "light";
+  const copy = (en: string, ar: string) => t(en, ar, en);
+  return <Link href={`/learn/${course.id}`} className={`ix-interactive group grid min-h-[240px] overflow-hidden border ${isLight ? "border-slate-200 bg-white" : "border-white/10 bg-[#0b1829]"}`}><div className="relative min-h-[130px] overflow-hidden bg-[#0b1829]">{course.imageUrl ? <img src={course.imageUrl} alt={course.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.025]" /> : <div className="grid h-full place-items-center"><BookOpen className="h-8 w-8 text-white/35" /></div>}<div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#071321]/90 to-transparent p-4"><span className="text-[11px] font-bold uppercase tracking-[.14em] text-cyan-200">{course.courseType || copy("Current course", "المقرر الحالي")}</span></div></div><div className="flex flex-1 flex-col justify-between p-5"><div><h3 className="text-lg font-bold tracking-[-.025em]">{course.title}</h3>{course.instructor && <p className={`mt-2 text-sm ${isLight ? "text-slate-500" : "text-slate-400"}`}>{course.instructor}</p>}</div><span className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#165dcc]"><PlayCircle className="h-4 w-4" />{copy("Continue learning", "تابع التعلم")}<ArrowUpRight className="h-4 w-4" /></span></div></Link>;
 }

@@ -12,6 +12,8 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { autoInitializeDatabase } from "../auto-init-db";
 import { handleSitemap, handleRobots } from "../seo";
+import { routeRobots } from "../seoMeta";
+import { query } from "../database";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -60,6 +62,13 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+  // Keep private application surfaces out of search even before the SPA hydrates.
+  app.use((req, res, next) => {
+    const robots = routeRobots(req.path);
+    if (robots) res.set("X-Robots-Tag", robots);
+    next();
+  });
+
   // SEO: Dynamic sitemap.xml and robots.txt
   app.get("/sitemap.xml", handleSitemap);
   app.get("/robots.txt", handleRobots);
@@ -79,6 +88,37 @@ async function startServer() {
       createContext,
     })
   );
+
+  // Preserve the SPA's visual not-found experience while returning an actual
+  // 404 status to crawlers for missing public records. Without these guards,
+  // Vite's history fallback would serve the app shell with HTTP 200.
+  const forwardIfPublicRecordMissing = async (
+    table: "programs" | "services" | "industries" | "blog_posts" | "courses",
+    column: "id" | "slug",
+    value: string,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    try {
+      const result = await query(`SELECT 1 FROM ${table} WHERE ${column} = $1 LIMIT 1`, [value]);
+      if (result.rows.length === 0) res.status(404);
+    } catch {
+      // Keep the application available if a fresh database has not created a
+      // content table yet; the client will still render its not-found state.
+    }
+    next();
+  };
+
+  app.get("/program/:id", (req, res, next) => forwardIfPublicRecordMissing("programs", "id", req.params.id, res, next));
+  app.get("/solutions/:slug", (req, res, next) => forwardIfPublicRecordMissing("services", "slug", req.params.slug, res, next));
+  app.get("/industries/:slug", (req, res, next) => forwardIfPublicRecordMissing("industries", "slug", req.params.slug, res, next));
+  app.get("/blog/:id", (req, res, next) => forwardIfPublicRecordMissing("blog_posts", "id", req.params.id, res, next));
+  app.get("/courses/recorded/:id/preview", (req, res, next) => forwardIfPublicRecordMissing("courses", "id", req.params.id, res, next));
+
+  const academySchoolSlugs = new Set(["ai-and-data-science", "cybersecurity", "full-stack-solutions", "space-solutions"]);
+  const programCategorySlugs = new Set(["space", "ai", "software", "security"]);
+  app.get("/academy/:school", (req, res, next) => { if (!academySchoolSlugs.has(req.params.school)) res.status(404); next(); });
+  app.get("/programs/:category", (req, res, next) => { if (!programCategorySlugs.has(req.params.category)) res.status(404); next(); });
 
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {

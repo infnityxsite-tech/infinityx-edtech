@@ -6,12 +6,15 @@ import { BookOpen, Clock, BarChart, ExternalLink, ChevronDown, ChevronUp, Video,
 import { SyllabusModal } from "@/components/SyllabusModal";
 import { useStudentAuth } from "@/hooks/useStudentAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export const CourseCard = ({ course, currency, isEnrolled, studentId }: { course: any; currency: "EGP" | "USD", isEnrolled?: boolean, studentId: string | null }) => {
     const [expanded, setExpanded] = useState(false);
     const [, navigate] = useLocation();
     const { isLoggedIn } = useStudentAuth();
     const { t } = useLanguage();
+    const { theme } = useTheme();
+    const isLight = theme === "light";
     const isLive = course.courseType === "Live";
 
     const priceLabel = currency === "EGP"
@@ -32,8 +35,8 @@ export const CourseCard = ({ course, currency, isEnrolled, studentId }: { course
     };
 
     return (
-        <Card className={`group flex flex-col bg-[#0d1225]/80 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden rounded-2xl h-fit border p-0 gap-0
-      ${isLive ? "border-white/[0.06] hover:border-orange-500/30" : "border-white/[0.06] hover:border-cyan-500/30"}`}>
+        <Card className={`group flex flex-col transition-all duration-300 overflow-hidden rounded-md h-fit border p-0 gap-0 shadow-none
+      ${isLight ? "bg-white border-slate-200 hover:border-[#165dcc]" : "bg-[#0d1225]/80 border-white/[0.06] hover:border-cyan-500/30"}`}>
 
             {/* Image — fixed height, no cropping artifacts */}
             <div className="relative w-full h-48 overflow-hidden bg-slate-900">
@@ -64,28 +67,28 @@ export const CourseCard = ({ course, currency, isEnrolled, studentId }: { course
                 )}
             </div>
 
-            <CardContent className="flex-1 p-3.5 md:p-5 flex flex-col gap-2 md:gap-2.5">
+            <CardContent className="flex-1 p-5 flex flex-col gap-3">
                 {/* Meta pills */}
                 <div className="flex items-center gap-2 flex-wrap">
                     {course.level && (
-                        <div className="flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded-md">
+                        <div className={`flex items-center gap-1 text-[11px] font-medium border px-2 py-0.5 rounded-sm ${isLight ? "text-slate-600 bg-slate-50 border-slate-200" : "text-slate-400 bg-white/[0.04] border-white/[0.06]"}`}>
                             <BarChart className="w-3 h-3 text-indigo-400" />{course.level}
                         </div>
                     )}
                     {course.duration && (
-                        <div className="flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-white/[0.04] border border-white/[0.06] px-2 py-0.5 rounded-md">
+                        <div className={`flex items-center gap-1 text-[11px] font-medium border px-2 py-0.5 rounded-sm ${isLight ? "text-slate-600 bg-slate-50 border-slate-200" : "text-slate-400 bg-white/[0.04] border-white/[0.06]"}`}>
                             <Clock className="w-3 h-3 text-cyan-400" />{course.duration}
                         </div>
                     )}
                 </div>
 
-                <h3 className="text-base md:text-lg font-bold text-white leading-snug group-hover:text-cyan-400 transition-colors line-clamp-2 border-l-2 border-cyan-500/60 pl-3">
+                <h3 className={`text-lg font-bold leading-snug group-hover:text-[#165dcc] transition-colors line-clamp-2 border-s-2 border-[#165dcc] ps-3 ${isLight ? "text-slate-950" : "text-white"}`}>
                     {course.title}
                 </h3>
 
                 {course.description && (
                     <div>
-                        <p className={`text-slate-400 text-xs md:text-[13px] leading-relaxed ${expanded ? "" : "line-clamp-2"}`}>
+                        <p className={`text-xs md:text-[13px] leading-relaxed ${isLight ? "text-slate-600" : "text-slate-400"} ${expanded ? "" : "line-clamp-2"}`}>
                             {course.description}
                         </p>
                         {course.description.length > 100 && (
@@ -112,10 +115,10 @@ export const CourseCard = ({ course, currency, isEnrolled, studentId }: { course
                 )}
 
                 {/* Footer */}
-                <div className="mt-auto pt-2.5 border-t border-white/[0.04] space-y-2.5">
+                <div className={`mt-auto pt-3 border-t space-y-3 ${isLight ? "border-slate-200" : "border-white/[0.08]"}`}>
                     <div className="flex items-center justify-between">
                         <p className="text-[9px] uppercase tracking-widest font-semibold text-slate-500">Tuition</p>
-                        <div className="text-lg font-bold text-white">
+                        <div className={`text-lg font-bold ${isLight ? "text-slate-950" : "text-white"}`}>
                             {priceLabel ?? <span className="text-emerald-400 text-sm font-bold">Free</span>}
                         </div>
                     </div>
@@ -129,7 +132,7 @@ export const CourseCard = ({ course, currency, isEnrolled, studentId }: { course
                                         courseLink={course.courseLink}
                                         trigger={
                                             <Button variant="outline"
-                                                className="w-full border-white/[0.08] text-slate-300 hover:bg-amber-500/10 hover:border-amber-500/30 hover:text-amber-400 h-8 md:h-9 text-xs rounded-lg">
+                                                className={`w-full h-9 text-xs rounded-md ${isLight ? "border-slate-300 text-slate-700 hover:bg-slate-50" : "border-white/[0.08] text-slate-300 hover:bg-amber-500/10 hover:border-amber-500/30 hover:text-amber-400"}`}>
                                                 {t("Syllabus", "المحتوى الدراسي", "Syllabus")} <ExternalLink className="w-3 h-3 ml-1" />
                                             </Button>
                                         } 
@@ -139,7 +142,7 @@ export const CourseCard = ({ course, currency, isEnrolled, studentId }: { course
                                         {t("Syllabus", "المحتوى الدراسي", "Syllabus")}
                                     </Button>
                                 )}
-                                <Button asChild className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white h-8 md:h-9 text-xs font-semibold shadow-sm rounded-lg">
+                                <Button asChild className="w-full bg-[#165dcc] hover:bg-[#124ead] text-white h-9 text-xs font-semibold shadow-none rounded-md">
                                     <Link href={`/apply?courseId=${course.id}&courseName=${encodeURIComponent(course.title)}`}>
                                         {t("Apply Now", "قدم الآن", "Apply Now")}
                                     </Link>
@@ -148,13 +151,13 @@ export const CourseCard = ({ course, currency, isEnrolled, studentId }: { course
                         ) : (
                             <>
                                 <Button variant="outline" asChild
-                                    className="w-full border-white/[0.08] text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-400 hover:border-cyan-500/30 h-8 md:h-9 text-xs rounded-lg">
+                                    className={`w-full h-9 text-xs rounded-md ${isLight ? "border-slate-300 text-slate-700 hover:bg-slate-50" : "border-white/[0.08] text-slate-300 hover:bg-cyan-500/10 hover:text-cyan-400 hover:border-cyan-500/30"}`}>
                                     <Link href={`/courses/recorded/${course.id}/preview`}>
                                         Preview
                                     </Link>
                                 </Button>
                                 <Button onClick={handleBuyOrEnroll}
-                                    className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white transition-all h-8 md:h-9 text-xs font-semibold shadow-sm rounded-lg">
+                                    className="w-full bg-[#165dcc] hover:bg-[#124ead] text-white transition-all h-9 text-xs font-semibold shadow-none rounded-md">
                                     {isEnrolled ? "Enrolled" : (priceLabel ? "Buy Course" : "Enroll Free")}
                                 </Button>
                             </>

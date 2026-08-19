@@ -1,300 +1,39 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import PackageComparison from "@/components/solutions/PackageComparison";
 import ProposalGenerator from "@/components/solutions/ProposalGenerator";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useTheme } from "@/contexts/ThemeContext";
-import { useRoute, Link } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
-import { trpc } from "@/lib/trpc";
-import { ArrowLeft, ArrowRight, CheckCircle, Cpu, BarChart3, Database, Cloud, Loader2, Target, Package, ChevronDown, Globe, Layers, Zap, Eye, Brain, Code, TrendingUp, Shield, Clock, AlertTriangle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useSEO } from "@/hooks/useSEO";
+import { trpc } from "@/lib/trpc";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Braces, Check, CircleGauge, Database, Loader2, ShieldCheck, UsersRound, X } from "lucide-react";
+import { useState } from "react";
+import { Link, useRoute } from "wouter";
 
-const IconMap: any = { Eye, Database, Cloud, BarChart3, Brain, Code, Cpu, Layers, Zap, Target };
+const imageBySlug: Record<string, string> = { "computer-vision-systems": "/uploads/ix-solution-inspection.jpg", "industrial-ai-inspection": "/uploads/ix-solution-inspection.jpg", "ai-automation-systems": "/uploads/ix-hero-command-center.jpg" };
 
 export default function SolutionDetail() {
   const { t, isRTL } = useLanguage();
-  const { theme } = useTheme();
-  const isLight = theme === "light";
   const [, params] = useRoute("/solutions/:slug");
-  const slug = params?.slug || "ai";
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [showProposal, setShowProposal] = useState(false);
-
+  const slug = params?.slug || "";
+  const [proposalOpen, setProposalOpen] = useState(false); const [tab, setTab] = useState("problem");
   const { data: solution, isLoading } = trpc.admin.getSolutionBySlug.useQuery({ slug }, { staleTime: 1000 * 60 * 5 });
   const { data: hubData } = trpc.admin.getSolutionsHub.useQuery(undefined, { staleTime: 1000 * 60 * 5 });
-
-  // SEO: inject per-solution title, description, canonical, and OG tags
-  useSEO({
-    title: solution?.title ? `${solution.title} — AI Solutions` : isLoading ? "Loading Solution..." : "Solution Not Found",
-    description: solution?.description
-      ? solution.description.slice(0, 155)
-      : `Enterprise-grade ${slug.replace(/-/g, " ")} solutions by Infinity X — AI, Computer Vision, and custom software for MENA businesses.`,
-    canonical: `https://infx.space/solutions/${slug}`,
-    robots: solution ? "index, follow" : "noindex, follow",
-  });
-
-  if (isLoading) return (<div className={`min-h-screen flex items-center justify-center ${isLight ? 'bg-[#f8fafc]' : 'bg-[#020617]'}`}><Loader2 className="w-10 h-10 animate-spin text-cyan-500" /></div>);
-  if (!solution) return (<div className={`min-h-screen flex items-center justify-center ${isLight ? 'bg-[#f8fafc]' : 'bg-[#020617]'}`}><div className="text-center"><h1 className={`text-4xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>Solution Not Found</h1><Link href="/solutions"><Button className="bg-cyan-600 text-white">Back to Solutions</Button></Link></div></div>);
-
-  const Icon = IconMap[solution.icon] || Cpu;
-  const deliverables = solution.deliverables || [];
-  const useCases = solution.useCases || [];
-  const techStack = solution.techStack || [];
-  const gallery = solution.gallery || [];
-  const faq = solution.faq || [];
-  const pricingModels = solution.pricingModels || [];
-  const caseStudies = solution.relatedCaseStudies || [];
-  const impactMetrics = solution.impactMetrics || [];
-  let methodology: any[] = [];
-  try { methodology = JSON.parse(solution.process_methodology_json || '[]'); } catch {}
-  const allServices = hubData?.allServices || [];
-
-  const sectionTitle = (en: string, ar: string) => (
-    <h2 className={`text-2xl md:text-3xl font-extrabold mb-8 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(en, ar, en)}</h2>
-  );
-
-  return (
-    <div className={`min-h-screen ${isRTL ? "rtl" : "ltr"} ${isLight ? 'bg-[#f8fafc] text-slate-900' : 'bg-[#020617] text-white'}`} dir={isRTL ? "rtl" : "ltr"}>
-      <Navigation />
-
-      {/* HERO */}
-      <section className="relative pt-24 pb-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <img src={solution.hero_image_url || '/uploads/hero_ai_neural.png'} className="w-full h-full object-cover" alt={solution.title} />
-          <div className={`absolute inset-0 ${isLight ? 'bg-white/80' : 'bg-[#020617]/85'}`} />
-        </div>
-        <div className="max-w-5xl mx-auto px-6 relative z-10">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Link href="/solutions"><span className={`inline-flex items-center gap-1.5 text-sm mb-8 cursor-pointer ${isLight ? 'text-slate-500 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}><ArrowLeft className="w-4 h-4" /> {t("Back to Solutions", "العودة إلى الحلول", "Back")}</span></Link>
-            <div className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6 ${isLight ? 'bg-cyan-50 border border-cyan-200 text-cyan-700' : 'bg-cyan-500/10 border border-cyan-500/20 text-cyan-400'}`}>
-              <Icon className="w-4 h-4" />
-              <span className="text-xs font-bold uppercase tracking-wider">{solution.category_name || "Enterprise Solution"}</span>
-            </div>
-            <h1 className={`text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(solution.title, solution.title_ar, solution.title)}</h1>
-            <p className={`text-lg max-w-3xl leading-relaxed mb-6 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{t(solution.description, solution.description_ar, solution.description)}</p>
-            <div className="flex flex-wrap gap-4 items-center">
-              <Button onClick={() => setShowProposal(true)} size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold px-8 py-6 rounded-xl shadow-lg shadow-cyan-500/20">
-                {t("Request Proposal", "اطلب مقترحاً تقنياً", "Request Proposal")} <ArrowRight className="ms-2 w-5 h-5" />
-              </Button>
-              <div className="flex gap-3">
-                <div className={`px-4 py-2 rounded-xl border ${isLight ? 'bg-white border-slate-200' : 'bg-white/[0.03] border-white/[0.08]'}`}>
-                  <span className={`text-lg font-black ${isLight ? 'text-cyan-600' : 'text-cyan-400'}`}>{deliverables.length}</span>
-                  <span className={`text-xs ms-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{t("Deliverables", "مخرجات", "Deliverables")}</span>
-                </div>
-                <div className={`px-4 py-2 rounded-xl border ${isLight ? 'bg-white border-slate-200' : 'bg-white/[0.03] border-white/[0.08]'}`}>
-                  <span className={`text-lg font-black ${isLight ? 'text-purple-600' : 'text-purple-400'}`}>{useCases.length}</span>
-                  <span className={`text-xs ms-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{t("Use Cases", "حالات استخدام", "Use Cases")}</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Proposal Modal */}
-      <AnimatePresence>
-        {showProposal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowProposal(false)}>
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-              <ProposalGenerator services={allServices} preSelectedServiceId={solution.id} onClose={() => setShowProposal(false)} />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className={`${isLight ? 'bg-white' : 'bg-[#030712]'}`}>
-        <div className="max-w-5xl mx-auto px-6 py-16 space-y-20">
-
-          {/* PROBLEM */}
-          {solution.problem_statement && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              <div className={`p-8 rounded-2xl border-l-4 border-amber-500 ${isLight ? 'bg-amber-50 border border-amber-200' : 'bg-amber-500/5 border border-amber-500/20'}`}>
-                <div className="flex items-center gap-2 mb-3"><AlertTriangle className={`w-5 h-5 ${isLight ? 'text-amber-600' : 'text-amber-400'}`} />
-                  <h3 className={`text-lg font-bold ${isLight ? 'text-amber-800' : 'text-amber-400'}`}>{t("The Problem", "التحدي الذي نعالجه", "Problem")}</h3>
-                </div>
-                <p className={`text-sm leading-relaxed ${isLight ? 'text-amber-900' : 'text-amber-200'}`}>{t(solution.problem_statement, solution.problem_statement_ar, solution.problem_statement)}</p>
-              </div>
-            </motion.div>
-          )}
-
-          {/* IMPACT METRICS */}
-          {impactMetrics.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              {sectionTitle("Proof of Impact", "إثبات الأثر")}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {impactMetrics.map((m: any) => (
-                  <div key={m.id} className={`p-6 rounded-2xl border text-center ${isLight ? 'bg-gradient-to-br from-slate-50 to-white border-slate-200' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-                    <TrendingUp className={`w-6 h-6 mx-auto mb-3 ${m.impact_category === 'cost_reduction' ? 'text-emerald-500' : m.impact_category === 'risk_reduction' ? 'text-amber-500' : 'text-cyan-500'}`} />
-                    <p className={`text-3xl font-black mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>{m.metric_value}</p>
-                    <p className={`text-sm font-bold mb-1 ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>{t(m.metric_title, m.metric_title_ar, m.metric_title)}</p>
-                    <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{t(m.metric_description, m.metric_description_ar, m.metric_description)}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* OVERVIEW */}
-          {solution.overview_long && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              {sectionTitle("Overview", "نظرة عامة على الحل")}
-              <div className={`prose max-w-none text-sm leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                {(solution.overview_long || '').split('\n\n').map((p: string, i: number) => <p key={i} className="mb-4">{t(p, solution.overview_long_ar ? (solution.overview_long_ar.split('\n\n')[i] || p) : p, p)}</p>)}
-              </div>
-            </motion.div>
-          )}
-
-          {/* DELIVERABLES */}
-          {deliverables.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              {sectionTitle("What You Receive", "المخرجات التي تحصل عليها")}
-              <div className="grid md:grid-cols-2 gap-4">
-                {deliverables.map((d: any) => (
-                  <div key={d.id} className={`p-5 rounded-xl border flex gap-4 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-                    <CheckCircle className="w-5 h-5 text-cyan-500 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className={`font-bold mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(d.title, d.title_ar || d.title, d.title)}</h4>
-                      <p className={`text-sm ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{t(d.description, d.description_ar || d.description, d.description)}</p>
-                      {d.expected_timeline && <span className={`inline-flex items-center gap-1 mt-2 text-xs ${isLight ? 'text-slate-400' : 'text-slate-500'}`}><Clock className="w-3 h-3" /> {d.expected_timeline}</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* USE CASES */}
-          {useCases.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              {sectionTitle("Use Cases", "حالات الاستخدام")}
-              <div className="grid md:grid-cols-3 gap-6">
-                {useCases.map((uc: any) => (
-                  <div key={uc.id} className={`p-6 rounded-2xl border ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-                    <Target className={`w-8 h-8 mb-4 ${isLight ? 'text-purple-500' : 'text-purple-400'}`} />
-                    {uc.industry && <span className={`text-[10px] font-bold uppercase tracking-wider mb-2 block ${isLight ? 'text-cyan-600' : 'text-cyan-400'}`}>{uc.industry}</span>}
-                    <h4 className={`font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(uc.title, uc.title_ar || uc.title, uc.title)}</h4>
-                    <p className={`text-sm mb-3 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{t(uc.description, uc.description_ar || uc.description, uc.description)}</p>
-                    {uc.business_impact && <div className={`p-2 rounded-lg text-xs font-medium ${isLight ? 'bg-emerald-50 text-emerald-700' : 'bg-emerald-500/10 text-emerald-400'}`}>{t(uc.business_impact, uc.business_impact_ar || uc.business_impact, uc.business_impact)}</div>}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* TECH STACK */}
-          {techStack.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              {sectionTitle("Technology Stack", "التقنيات المستخدمة")}
-              <div className="flex flex-wrap gap-3">
-                {techStack.map((ts: any) => (
-                  <div key={ts.id} className={`px-5 py-3 rounded-xl border font-bold text-sm ${isLight ? 'bg-slate-50 border-slate-200 text-slate-700' : 'bg-white/[0.03] border-white/[0.08] text-white'}`}>{ts.name}</div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* METHODOLOGY */}
-          {methodology.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              {sectionTitle("Delivery Methodology", "منهجية التسليم")}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {methodology.map((step: any, i: number) => (
-                  <div key={i} className="text-center">
-                    <div className={`w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center text-lg font-black bg-gradient-to-br from-cyan-500 to-blue-600 text-white`}>{step.step || i + 1}</div>
-                    <h4 className={`text-sm font-bold mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(step.title, step.titleAr || step.title, step.title)}</h4>
-                    <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{step.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* GALLERY */}
-          {gallery.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              {sectionTitle("Gallery", "معرض الأعمال")}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {gallery.map((g: any) => (
-                  <div key={g.id} className="rounded-xl overflow-hidden relative group">
-                    <img src={g.image_url} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" alt={g.caption || 'Gallery'} />
-                    {g.caption && <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/80 to-transparent"><span className="text-white text-xs font-medium">{g.caption}</span></div>}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* PACKAGES */}
-          {pricingModels.length > 0 && <PackageComparison pricingModels={pricingModels} serviceTitle={solution.title} />}
-
-          {/* FAQ */}
-          {faq.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              {sectionTitle("FAQ", "الأسئلة الشائعة")}
-              <div className="space-y-3">
-                {faq.map((item: any, i: number) => (
-                  <div key={item.id} className={`rounded-xl border overflow-hidden ${isLight ? 'border-slate-200' : 'border-white/[0.06]'}`}>
-                    <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className={`w-full text-start px-6 py-4 flex items-center justify-between ${isLight ? 'hover:bg-slate-50' : 'hover:bg-white/[0.02]'}`}>
-                      <span className={`font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{t(item.question, item.question_ar, item.question)}</span>
-                      <ChevronDown className={`w-5 h-5 transition-transform ${isLight ? 'text-slate-400' : 'text-slate-500'} ${openFaq === i ? 'rotate-180' : ''}`} />
-                    </button>
-                    <AnimatePresence>
-                      {openFaq === i && (
-                        <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
-                          <div className={`px-6 pb-4 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                            <p className="text-sm leading-relaxed">{t(item.answer, item.answer_ar, item.answer)}</p>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* CASE STUDIES */}
-          {caseStudies.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
-              {sectionTitle("Related Case Studies", "دراسات حالة ذات صلة")}
-              <div className="grid md:grid-cols-2 gap-6">
-                {caseStudies.map((cs: any) => (
-                  <div key={cs.id} className={`p-6 rounded-2xl border ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-                    <div className="flex items-center gap-2 mb-3"><Globe className="w-4 h-4 text-cyan-500" /><span className={`text-xs font-bold uppercase ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{cs.industry}</span></div>
-                    <h4 className={`font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>{cs.client_name}</h4>
-                    <p className={`text-sm mb-3 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>{cs.challenge}</p>
-                    {cs.outcome && <p className="text-sm font-medium text-emerald-500">{cs.outcome}</p>}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-
-      {/* CTA */}
-      <section className={`py-20 border-t ${isLight ? 'border-slate-200 bg-slate-50' : 'border-white/[0.04]'}`}>
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <Cpu className="w-12 h-12 text-cyan-500 mx-auto mb-6" />
-          <h2 className={`text-3xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t("Ready to Build This?", "مستعد لبناء هذا النظام؟", "Ready?")}</h2>
-          <p className={`mb-8 max-w-lg mx-auto ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>{t("Get a custom proposal with timeline, deliverables, and pricing within 48 hours.", "احصل على مقترح تقني مخصص يتضمن الجدول الزمني والمخرجات والتسعير خلال ٤٨ ساعة.", "Custom proposal in 48 hours.")}</p>
-          <Button onClick={() => setShowProposal(true)} size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold px-10 py-6 rounded-xl shadow-lg shadow-cyan-500/20">
-            {t("Request Proposal", "اطلب مقترحاً", "Request Proposal")}
-          </Button>
-        </div>
-      </section>
-
-      {/* Sticky CTA */}
-      <div className={`fixed bottom-6 end-6 z-40`}>
-        <Button onClick={() => setShowProposal(true)} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold px-6 py-3 rounded-full shadow-2xl shadow-cyan-500/30 hover:-translate-y-1 transition-all">
-          <FileText className="w-4 h-4 me-2" /> {t("Get Proposal", "اطلب مقترحاً", "Proposal")}
-        </Button>
-      </div>
-
-      <Footer />
-    </div>
-  );
+  const copy = (en: string, ar: string) => t(en, ar, en);
+  const text = (en: string | undefined, ar: string | undefined, fallback = "") => t(en, ar, fallback || en || "");
+  useSEO({ title: solution?.title ? `${solution.title} | Infinity X Solutions` : "Solution | Infinity X Solutions", description: solution?.description || "Enterprise AI systems designed around real operations.", canonical: `https://infx.space/solutions/${slug}`, robots: isLoading ? undefined : solution ? "index, follow" : "noindex, follow" });
+  if (isLoading) return <div className="grid min-h-screen place-items-center bg-[#07131f] text-white"><Loader2 className="h-8 w-8 animate-spin text-[#7db2ff]" /></div>;
+  if (!solution) return <div className="grid min-h-screen place-items-center bg-[#f6f7f4] px-6 text-center text-[#10202d]"><div><h1 className="ix-display text-4xl font-bold">{copy("Solution not found.", "الحل غير موجود.")}</h1><Link href="/solutions" className="ix-button ix-button-primary mt-7">{copy("View solutions", "عرض الحلول")}</Link></div></div>;
+  const relatedServices = (hubData?.allServices || []).filter((item: any) => item.id !== solution.id).slice(0, 3);
+  const systemSteps = [{ icon: CircleGauge, title: copy("Frame", "حدد"), detail: copy("Define the decision, workflow, risk, and evidence before selecting the technology.", "حدد القرار وسير العمل والمخاطر والأدلة قبل اختيار التقنية.") }, { icon: Database, title: copy("Shape", "صمم"), detail: copy("Connect data, models, interfaces, and controls into one usable operating system.", "اربط البيانات والنماذج والواجهات والضوابط في نظام تشغيلي قابل للاستخدام.") }, { icon: UsersRound, title: copy("Transfer", "انقل"), detail: copy("Plan the handoff, monitoring, and team capability required to keep it useful.", "خطط للتسليم والمراقبة وقدرات الفريق اللازمة ليستمر النظام مفيداً.") }];
+  const tabs = [{ id: "problem", label: copy("The problem", "المشكلة") }, { id: "system", label: copy("The system", "النظام") }, { id: "ownership", label: copy("Ownership", "الملكية") }];
+  const activeTabContent: Record<string, { title: string; detail: string }> = { problem: { title: copy("Make the constraint visible.", "اجعل القيد مرئياً."), detail: text(solution.problem_statement || solution.description, solution.problem_statement_ar || solution.description_ar, copy("The opportunity starts with the operational problem, not the model.", "تبدأ الفرصة من المشكلة التشغيلية، وليس من النموذج.")) }, system: { title: copy("Design the system around the work.", "صمم النظام حول العمل."), detail: text(solution.description, solution.description_ar, copy("Data, decisions, interfaces, and controls belong in one operating shape.", "البيانات والقرارات والواجهات والضوابط تنتمي إلى شكل تشغيلي واحد.")) }, ownership: { title: copy("Leave capability behind.", "اترك قدرة مستمرة."), detail: copy("The handoff includes documentation, monitoring, ownership, and room to improve after launch.", "يشمل التسليم التوثيق والمراقبة والملكية ومساحة للتحسين بعد الإطلاق.") } };
+  const image = imageBySlug[slug] || solution.hero_image_url;
+  return <div className={`ix-page ${isRTL ? "rtl" : "ltr"}`} dir={isRTL ? "rtl" : "ltr"}><Navigation /><main>
+    <section className="bg-[#07131f] text-white"><div className="ix-shell py-28 sm:py-32"><Link href="/solutions" className="inline-flex items-center gap-2 text-sm font-semibold text-[#b9c8d1] hover:text-white"><ArrowLeft className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} />{copy("All solutions", "كل الحلول")}</Link><div className="mt-10 grid gap-10 lg:grid-cols-[.85fr_1.15fr] lg:items-end"><div><p className="ix-eyebrow text-[#a5d9c2]">{text(solution.category_name, solution.category_name, copy("Enterprise capability", "قدرة للمؤسسات"))}</p><h1 className="ix-display mt-6 max-w-3xl text-5xl font-bold sm:text-7xl">{text(solution.title, solution.title_ar, solution.title)}</h1><p className="mt-7 max-w-2xl text-lg leading-8 text-[#c0cdd3]">{text(solution.description, solution.description_ar, copy("A production-oriented system designed around the operational work it needs to support.", "نظام إنتاجي مصمم حول العمل التشغيلي الذي يحتاج إلى دعمه."))}</p><div className="mt-9 flex flex-col gap-3 sm:flex-row"><Button onClick={() => setProposalOpen(true)} className="ix-button ix-button-primary h-12">{copy("Request a project proposal", "اطلب مقترح مشروع")}<ArrowUpRight className="h-4 w-4" /></Button><a href="#system" className="ix-button ix-button-secondary ix-button-dark h-12">{copy("See the system shape", "شاهد شكل النظام")}<ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} /></a></div></div><div className="relative overflow-hidden border border-white/15 bg-[#102033]">{image ? <img src={image} alt={text(solution.title, solution.title_ar, solution.title)} className="aspect-[4/3] h-full w-full object-cover" /> : <div className="flex aspect-[4/3] flex-col justify-between p-8"><Braces className="h-7 w-7 text-[#7db2ff]" /><p className="max-w-sm text-3xl font-bold">{copy("Technology follows the operating problem.", "تتبع التقنية المشكلة التشغيلية.")}</p></div>}<div className="absolute inset-0 bg-gradient-to-t from-[#07131f]/75 via-transparent to-transparent" /><div className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#a5d9c2]">{copy("System profile", "ملف النظام")}</p><p className="mt-2 text-xl font-bold">{copy("Signal → decision → action", "إشارة ← قرار ← إجراء")}</p></div><span className="hidden border border-white/20 px-3 py-2 text-xs font-bold sm:block">LIVE / 01</span></div></div></div></div></section>
+    <section className="border-b" style={{ borderColor: "var(--ix-border)" }}><div className="ix-shell grid gap-0 sm:grid-cols-3">{systemSteps.map(({ icon: Icon, title, detail }, index) => <div key={title} className="border-b p-6 sm:border-b-0 sm:border-e sm:last:border-e-0 sm:p-8" style={{ borderColor: "var(--ix-border)" }}><Icon className="h-5 w-5 text-[#1268e5]" /><p className="mt-10 text-xs font-bold text-[#1268e5]">0{index + 1}</p><h3 className="mt-3 text-xl font-bold">{title}</h3><p className="mt-3 text-sm leading-7" style={{ color: "var(--ix-text-secondary)" }}>{detail}</p></div>)}</div></section>
+    <section id="system" className="ix-section"><div className="ix-shell grid gap-10 lg:grid-cols-[.65fr_1.35fr]"><div><p className="ix-kicker">{copy("System profile", "ملف النظام")}</p><h2 className="ix-display mt-5 text-4xl font-bold sm:text-5xl">{copy("The technology is only useful when the work changes.", "تكون التقنية مفيدة فقط عندما يتغير العمل.")}</h2><p className="mt-5 max-w-md text-lg leading-8" style={{ color: "var(--ix-text-secondary)" }}>{copy("Use the three views to understand the constraint, the system shape, and the ownership plan behind this capability.", "استخدم الرؤى الثلاث لفهم القيد وشكل النظام وخطة الملكية خلف هذه القدرة.")}</p></div><div className="border" style={{ borderColor: "var(--ix-border)" }}><div className="grid grid-cols-3 border-b" style={{ borderColor: "var(--ix-border)" }}>{tabs.map((item) => <button type="button" key={item.id} onClick={() => setTab(item.id)} className={`border-e px-4 py-4 text-sm font-bold last:border-e-0 sm:px-6 ${tab === item.id ? "bg-[#102033] text-white" : "bg-[#f0f3f1] text-[#52606b] hover:bg-white"}`} style={{ borderColor: "var(--ix-border)" }}>{item.label}</button>)}</div><div className="grid gap-8 p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end"><div><p className="ix-kicker">{tabs.find((item) => item.id === tab)?.label}</p><h3 className="mt-4 text-3xl font-bold">{activeTabContent[tab].title}</h3><p className="mt-4 max-w-xl text-lg leading-8" style={{ color: "var(--ix-text-secondary)" }}>{activeTabContent[tab].detail}</p></div><div className="grid h-24 w-24 place-items-center rounded-full border-4 border-[#dceaff] bg-[#f0f6ff] text-center text-xs font-bold text-[#1268e5]"><span>{tab === "problem" ? "01" : tab === "system" ? "02" : "03"}<br />/ 03</span></div></div></div></div></section>
+    <section className="border-y" style={{ borderColor: "var(--ix-border)", background: "var(--ix-surface-muted)" }}><div className="ix-shell py-16 lg:py-20"><div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr]"><div><p className="ix-kicker">{copy("Implementation layers", "طبقات التنفيذ")}</p><h2 className="ix-display mt-5 text-4xl font-bold">{copy("A usable system has to hold together.", "يجب أن يتماسك النظام القابل للاستخدام.")}</h2></div><div className="grid gap-0 border-t sm:grid-cols-2" style={{ borderColor: "var(--ix-border)" }}>{[ [copy("Signals", "الإشارات"), copy("What is available, trustworthy, timely, and permitted to inform the work.", "ما هو متاح وموثوق وفي الوقت المناسب ومسموح به لدعم العمل.")], [copy("Human decisions", "القرارات البشرية"), copy("Who needs the output, how they will use it, and where review belongs.", "من يحتاج إلى المخرج وكيف سيستخدمه وأين تنتمي المراجعة.")], [copy("Controls", "الضوابط"), copy("How the system fits existing tools, approvals, access, and safeguards.", "كيف ينسجم النظام مع الأدوات والموافقات والوصول والضمانات.")], [copy("Ownership", "الملكية"), copy("What the team needs to operate, monitor, improve, and govern over time.", "ما يحتاجه الفريق لتشغيل النظام ومراقبته وتحسينه وحوكمته.")] ].map(([title, detail], index) => <article key={title} className="border-b p-6 sm:p-8 sm:[&:nth-child(odd)]:border-e" style={{ borderColor: "var(--ix-border)" }}><div className="flex items-center justify-between"><span className="text-sm font-bold text-[#1268e5]">0{index + 1}</span><Check className="h-4 w-4 text-[#1268e5]" /></div><h3 className="mt-10 text-xl font-bold">{title}</h3><p className="mt-3 text-sm leading-7" style={{ color: "var(--ix-text-secondary)" }}>{detail}</p></article>)}</div></div></div></section>
+    {relatedServices.length > 0 && <section className="ix-section"><div className="ix-shell"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="ix-kicker">{copy("Related systems", "أنظمة ذات صلة")}</p><h2 className="ix-display mt-4 text-4xl font-bold">{copy("Keep exploring the operating map.", "واصل استكشاف خريطة التشغيل.")}</h2></div><Link href="/solutions" className="ix-link inline-flex items-center gap-2">{copy("All solutions", "كل الحلول")}<ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} /></Link></div><div className="mt-10 grid border-t sm:grid-cols-3" style={{ borderColor: "var(--ix-border)" }}>{relatedServices.map((item: any, index: number) => <Link key={item.id} href={`/solutions/${item.slug}`} className="group border-b p-6 sm:border-e sm:p-8 sm:last:border-e-0" style={{ borderColor: "var(--ix-border)" }}><p className="text-xs font-bold text-[#1268e5]">0{index + 1}</p><h3 className="mt-10 text-xl font-bold group-hover:text-[#1268e5]">{text(item.title, item.title_ar, item.title)}</h3><ArrowRight className={`mt-7 h-4 w-4 text-[#1268e5] transition-transform group-hover:translate-x-1 ${isRTL ? "rotate-180 group-hover:-translate-x-1" : ""}`} /></Link>)}</div></div></section>}
+    <section className="bg-[#102033] text-white"><div className="ix-shell grid gap-8 py-16 lg:grid-cols-[1.25fr_.75fr] lg:items-end"><div><p className="ix-eyebrow text-[#a5d9c2]">{copy("Next step", "الخطوة التالية")}</p><h2 className="ix-display mt-5 max-w-3xl text-4xl font-bold sm:text-6xl">{copy("Bring the operating problem. We’ll define the engineering plan.", "أحضر المشكلة التشغيلية. وسنحدد خطة الهندسة.")}</h2></div><Button onClick={() => setProposalOpen(true)} className="ix-button ix-button-primary lg:justify-self-end">{copy("Request a proposal", "اطلب مقترحاً")}<ArrowUpRight className="h-4 w-4" /></Button></div></section>
+  </main>{proposalOpen && <div className="fixed inset-0 z-[70] grid place-items-center bg-black/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true"><div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto"><button type="button" onClick={() => setProposalOpen(false)} className="absolute end-4 top-4 z-10 rounded-full bg-white/90 p-2 text-slate-800 shadow-sm" aria-label={copy("Close", "إغلاق")}><X className="h-4 w-4" /></button><ProposalGenerator services={hubData?.allServices || []} preSelectedServiceId={solution.id} onClose={() => setProposalOpen(false)} /></div></div>}<Footer /></div>;
 }

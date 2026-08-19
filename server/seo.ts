@@ -72,6 +72,8 @@ const STATIC_ROUTES: SitemapEntry[] = [
   // Top-level public pages
   { loc: `${PRODUCTION_URL}/about`, changefreq: "monthly", priority: "0.7" },
   { loc: `${PRODUCTION_URL}/solutions`, changefreq: "weekly", priority: "0.9" },
+  { loc: `${PRODUCTION_URL}/industries`, changefreq: "monthly", priority: "0.8" },
+  { loc: `${PRODUCTION_URL}/work`, changefreq: "monthly", priority: "0.8" },
   { loc: `${PRODUCTION_URL}/academy`, changefreq: "weekly", priority: "0.8" },
   { loc: `${PRODUCTION_URL}/courses`, changefreq: "weekly", priority: "0.9" },
   { loc: `${PRODUCTION_URL}/courses/live`, changefreq: "weekly", priority: "0.8" },
@@ -80,7 +82,6 @@ const STATIC_ROUTES: SitemapEntry[] = [
   { loc: `${PRODUCTION_URL}/blog`, changefreq: "daily", priority: "0.8" },
   { loc: `${PRODUCTION_URL}/careers`, changefreq: "weekly", priority: "0.7" },
   { loc: `${PRODUCTION_URL}/contact`, changefreq: "monthly", priority: "0.6" },
-  { loc: `${PRODUCTION_URL}/consultation`, changefreq: "monthly", priority: "0.6" },
 ];
 
 // Academy school pages — hardcoded slugs from schoolData.ts

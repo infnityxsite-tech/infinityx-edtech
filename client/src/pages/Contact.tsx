@@ -1,200 +1,57 @@
+import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Mail, Phone, MessageCircle, MapPin, Send, Loader2, Sparkles, Clock, ArrowRight
-} from "lucide-react";
-import { useState } from "react";
+import { Label } from "@/components/ui/label";
+import { ArrowRight, Building2, CheckCircle2, GraduationCap, Loader2, Mail, MessageCircle, Phone, Send } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSEO } from "@/hooks/useSEO";
+
+type Intent = "project" | "academy" | "general";
 
 export default function Contact() {
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
   const { t, isRTL } = useLanguage();
   const { theme } = useTheme();
-  const isLight = theme === 'light';
-
-  const createMessage = trpc.admin.createMessage.useMutation({
-    onSuccess: () => {
-      toast.success(t("Your message has been sent successfully!", "تم إرسال رسالتك بنجاح!", "Message sent!"));
-      setForm({ name: "", email: "", message: "" });
-      setLoading(false);
-    },
-    onError: () => {
-      toast.error(t("Failed to send your message. Please try again.", "فشل إرسال رسالتك. حاول مرة أخرى.", "Failed to send."));
-      setLoading(false);
-    },
+  const isLight = theme === "light";
+  const [intent, setIntent] = useState<Intent>("project");
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const copy = (en: string, ar: string) => t(en, ar, en);
+  const intents = [
+    { id: "project" as const, title: copy("Enterprise project", "مشروع مؤسسي"), detail: copy("Discuss a system, operation, or technical capability.", "ناقش نظاماً أو عملية أو قدرة تقنية."), icon: Building2 },
+    { id: "academy" as const, title: copy("Academy question", "سؤال عن الأكاديمية"), detail: copy("Ask about programs, applications, or learning formats.", "اسأل عن البرامج أو التقديم أو أنماط التعلم."), icon: GraduationCap },
+    { id: "general" as const, title: copy("General inquiry", "استفسار عام"), detail: copy("Get in touch about another Infinity X matter.", "تواصل معنا بخصوص أمر آخر يتعلق بإنفينيتي إكس."), icon: MessageCircle },
+  ];
+  const mutation = trpc.admin.createMessage.useMutation({
+    onSuccess: () => { setLoading(false); setSent(true); },
+    onError: () => { setLoading(false); toast.error(copy("We could not send your message. Please try again.", "تعذر إرسال رسالتك. يرجى المحاولة مرة أخرى.")); },
   });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name || !form.email || !form.message) {
-      toast.error(t("Please fill all fields before sending your message.", "يرجى ملء جميع الحقول قبل الإرسال.", "Fill all fields."));
-      return;
-    }
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!form.name || !form.email || !form.message) { toast.error(copy("Complete the required fields before sending.", "أكمل الحقول المطلوبة قبل الإرسال.")); return; }
     setLoading(true);
-    createMessage.mutate({ name: form.name, email: form.email, message: form.message, messageType: "contact" });
+    mutation.mutate({ name: form.name, email: form.email, message: `[${intent}] ${form.message}`, messageType: "contact" });
   };
+  const rule = isLight ? "border-slate-200" : "border-white/10";
+  const muted = isLight ? "text-slate-600" : "text-slate-300";
+  const panel = isLight ? "bg-white" : "bg-[#0b1829]";
 
-  const siteInfo = {
-    email: "support@infx.space",
-    phone: "+20 110 013 5225",
-    whatsapp: "https://wa.me/201100135225",
-    location: t("Cairo, Egypt", "القاهرة، مصر", "Cairo, Egypt"),
-  };
-
-  return (
-    <div className={`min-h-screen font-sans ${isLight ? 'bg-[#f0f4f8] text-slate-900' : 'bg-[#0a0e1a] text-white'}`} dir={isRTL ? 'rtl' : 'ltr'}>
-      <Navigation />
-
-      {/* Hero */}
-      <section className={`relative pt-36 pb-24 overflow-hidden ${isLight ? '' : 'bg-[#0b1120] text-white'}`}>
-        <div className={`absolute inset-0 pointer-events-none ${isLight ? 'opacity-10' : 'opacity-[0.03]'}`} style={{ backgroundImage: `linear-gradient(${isLight ? '#94a3b8' : '#334155'} 1px, transparent 1px), linear-gradient(90deg, ${isLight ? '#94a3b8' : '#334155'} 1px, transparent 1px)`, backgroundSize: '40px 40px' }} />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl bg-blue-600/15 blur-[150px] rounded-full pointer-events-none" />
-
-        <div className="relative max-w-5xl mx-auto px-6 text-center z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>{t("24/7 Support Team", "فريق دعم على مدار الساعة", "24/7 Support")}</span>
-          </div>
-          <h1 className={`text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-            {t("Let's Start a ", "لنبدأ ", "Let's Start a ")}<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">{t("Conversation.", "محادثة.", "Conversation.")}</span>
-          </h1>
-          <p className={`text-lg md:text-xl max-w-2xl mx-auto font-light leading-relaxed mb-6 ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-            {t(
-              "Whether you're a student with questions, a university looking to partner, or just want to say hi — we're here to help.",
-              "سواء كنت طالباً لديك أسئلة، أو جامعة تبحث عن شراكة، أو فقط تريد إلقاء التحية — نحن هنا للمساعدة.",
-              "We're here to help."
-            )}
-          </p>
-        </div>
+  return <div className={`min-h-screen ${isRTL ? "rtl" : "ltr"} ${isLight ? "bg-[#f8f8f5] text-[#102033]" : "bg-[#06101f] text-white"}`} dir={isRTL ? "rtl" : "ltr"}>
+    <Navigation />
+    <main>
+      <section className={`border-b pt-28 ${rule}`}><div className="mx-auto grid max-w-7xl gap-10 px-6 pb-14 lg:grid-cols-[1fr_1fr] lg:px-8 lg:pb-20"><div className="self-end"><p className="text-xs font-bold uppercase tracking-[.16em] text-[#165dcc]">{copy("Contact Infinity X", "تواصل مع إنفينيتي إكس")}</p><h1 className="mt-6 max-w-2xl text-5xl font-extrabold tracking-[-.065em] sm:text-6xl">{copy("Start with the conversation that fits your next move.", "ابدأ بالمحادثة التي تناسب خطوتك التالية.")}</h1></div><p className={`self-end max-w-xl border-s ps-0 text-lg leading-8 lg:ps-12 ${rule} ${muted}`}>{copy("Whether you are evaluating an enterprise system, choosing an Academy offering, or have another question, route your message to the right conversation.", "سواء كنت تقيّم نظاماً للمؤسسة، أو تختار عرضاً من الأكاديمية، أو لديك سؤال آخر، وجّه رسالتك إلى المحادثة المناسبة.")}</p></div></section>
+      <section className="mx-auto max-w-7xl px-6 py-12 lg:px-8 lg:py-16"><div className="grid border-t md:grid-cols-3" style={{ borderColor: isLight ? "#e2e8f0" : "rgba(255,255,255,.1)" }}>{intents.map(({ id, title, detail, icon: Icon }, index) => <button key={id} type="button" onClick={() => setIntent(id)} aria-pressed={intent === id} className={`ix-interactive border-b p-6 text-start md:border-e md:last:border-e-0 ${rule} ${intent === id ? isLight ? "bg-[#eaf1ff]" : "bg-white/[.06]" : ""}`}><div className="flex items-start justify-between"><Icon className="h-5 w-5 text-[#165dcc]" /><span className="text-sm font-bold text-[#165dcc]">0{index + 1}</span></div><h2 className="mt-9 text-xl font-bold tracking-[-.025em]">{title}</h2><p className={`mt-3 text-sm leading-6 ${muted}`}>{detail}</p></button>)}</div></section>
+      <section className="mx-auto grid max-w-7xl gap-10 px-6 pb-20 lg:grid-cols-[1.2fr_.8fr] lg:px-8 lg:pb-28">
+        <div className={`border ${rule} ${panel}`}>{sent ? <div className="p-8 sm:p-12"><CheckCircle2 className="h-9 w-9 text-[#165dcc]" /><p className="mt-8 text-xs font-bold uppercase tracking-[.16em] text-[#165dcc]">{copy("Message sent", "تم إرسال الرسالة")}</p><h2 className="mt-4 text-4xl font-extrabold tracking-[-.05em]">{copy("Thank you. We have your message.", "شكراً لك. استلمنا رسالتك.")}</h2><p className={`mt-5 max-w-lg leading-7 ${muted}`}>{copy("The Infinity X team will use the contact details you provided to continue this conversation.", "سيستخدم فريق إنفينيتي إكس بيانات الاتصال التي قدمتها لمتابعة هذه المحادثة.")}</p><Button variant="outline" className="mt-9 h-11 rounded-md" onClick={() => { setSent(false); setForm({ name: "", email: "", message: "" }); }}>{copy("Send another message", "أرسل رسالة أخرى")}</Button></div> : <form onSubmit={submit} className="p-7 sm:p-10"><div className="border-b pb-7"><p className="text-xs font-bold uppercase tracking-[.16em] text-[#165dcc]">{intents.find((item) => item.id === intent)?.title}</p><h2 className="mt-3 text-2xl font-extrabold tracking-[-.035em]">{copy("Tell us what you need.", "أخبرنا بما تحتاجه.")}</h2></div><div className="mt-8 grid gap-6 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="name">{copy("Full name", "الاسم الكامل")} <span aria-hidden="true">*</span></Label><Input id="name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required className="h-11 rounded-md" placeholder={copy("Your name", "اسمك")} /></div><div className="space-y-2"><Label htmlFor="email">{copy("Email", "البريد الإلكتروني")} <span aria-hidden="true">*</span></Label><Input id="email" type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required className="h-11 rounded-md" placeholder="name@example.com" /></div></div><div className="mt-6 space-y-2"><Label htmlFor="message">{copy("Message", "الرسالة")} <span aria-hidden="true">*</span></Label><Textarea id="message" value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} rows={7} required className="resize-none rounded-md" placeholder={intent === "project" ? copy("Describe the operating challenge, system, or outcome you are considering.", "صف التحدي التشغيلي أو النظام أو النتيجة التي تفكر فيها.") : copy("How can we help?", "كيف يمكننا مساعدتك؟")} /></div><div className={`mt-8 flex flex-col gap-4 border-t pt-7 sm:flex-row sm:items-center sm:justify-between ${rule}`}><p className={`max-w-sm text-xs leading-5 ${muted}`}>{copy("We use these details only to respond to your inquiry.", "نستخدم هذه البيانات فقط للرد على استفسارك.")}</p><Button type="submit" disabled={loading} className="h-12 rounded-md bg-[#165dcc] px-5 font-bold text-white hover:bg-[#124ead]">{loading ? <><Loader2 className="me-2 h-4 w-4 animate-spin" />{copy("Sending", "جارٍ الإرسال")}</> : <>{copy("Send message", "إرسال الرسالة")}<Send className="ms-2 h-4 w-4" /></>}</Button></div></form>}</div>
+        <aside className={`self-start border-s ps-0 pt-2 lg:ps-8 ${rule}`}><p className="text-xs font-bold uppercase tracking-[.16em] text-[#165dcc]">{copy("Direct contact", "تواصل مباشر")}</p><div className={`mt-6 space-y-6 border-t pt-6 ${rule}`}><div className="flex gap-3"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-[#165dcc]" /><div><p className="text-sm font-bold">{copy("Email", "البريد الإلكتروني")}</p><a className={`mt-1 inline-block text-sm ${muted} hover:text-[#165dcc]`} href="mailto:support@infx.space">support@infx.space</a></div></div><div className="flex gap-3"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-[#165dcc]" /><div><p className="text-sm font-bold">{copy("Phone", "الهاتف")}</p><a className={`mt-1 inline-block text-sm ${muted} hover:text-[#165dcc]`} href="tel:+201100135225">+20 110 013 5225</a></div></div><div className="flex gap-3"><MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#165dcc]" /><div><p className="text-sm font-bold">WhatsApp</p><a className={`mt-1 inline-block text-sm ${muted} hover:text-[#165dcc]`} href="https://wa.me/201100135225" target="_blank" rel="noreferrer">{copy("Start a WhatsApp conversation", "ابدأ محادثة عبر واتساب")}</a></div></div></div></aside>
       </section>
-
-      {/* Main Content */}
-      <section className="max-w-7xl mx-auto px-6 py-16 -mt-10 relative z-20">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-          {/* Left — Contact Info */}
-          <div className="space-y-6">
-            <div className={`backdrop-blur-xl rounded-2xl p-8 border ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#0d1225]/80 border-white/[0.06]'}`}>
-              <h3 className={`text-xl font-bold mb-6 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t("Get in Touch", "تواصل معنا", "Get in Touch")}</h3>
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
-                    <Mail className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 mb-1">{t("Email Support", "دعم البريد الإلكتروني", "Email Support")}</p>
-                    <a href={`mailto:${siteInfo.email}`} className={`font-semibold hover:text-cyan-400 transition ${isLight ? 'text-slate-900' : 'text-white'}`}>{siteInfo.email}</a>
-                    <p className="text-xs text-slate-600 mt-1">{t("Replies within 24 hours", "الرد خلال 24 ساعة", "Replies within 24 hours")}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-                    <Phone className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 mb-1">{t("Phone & WhatsApp", "الهاتف والواتساب", "Phone & WhatsApp")}</p>
-                    <a href={`tel:${siteInfo.phone}`} className={`font-semibold hover:text-cyan-400 transition block ${isLight ? 'text-slate-900' : 'text-white'}`}>{siteInfo.phone}</a>
-                    <a href={siteInfo.whatsapp} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1 mt-1">
-                      <MessageCircle className="w-3 h-3" /> {t("Chat on WhatsApp", "تحدث عبر الواتساب", "Chat on WhatsApp")}
-                    </a>
-                    <a href="https://chat.whatsapp.com/EagO7iuBsfM1zlTQSKGLfL" target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1 mt-1 ml-0 block">
-                      <MessageCircle className="w-3 h-3" /> {t("Join WhatsApp Community", "انضم لمجتمع الواتساب", "Join Community")}
-                    </a>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
-                    <MapPin className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 mb-1">{t("Headquarters", "المقر الرئيسي", "Headquarters")}</p>
-                    <p className={`font-semibold ${isLight ? 'text-slate-900' : 'text-white'}`}>{siteInfo.location}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
-                    <Clock className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 mb-1">{t("Working Hours", "ساعات العمل", "Working Hours")}</p>
-                    <p className={`font-medium text-sm ${isLight ? 'text-slate-900' : 'text-white'}`}>{t("Sun - Thu: 10:00 AM - 06:00 PM", "الأحد - الخميس: 10:00 ص - 06:00 م", "Sun - Thu: 10 AM - 6 PM")}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Map */}
-            <div className="bg-slate-800 rounded-2xl h-64 w-full overflow-hidden border border-white/[0.06] relative group">
-              <iframe
-                title="InfinityX Location"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3453.163777727914!2d31.2357!3d30.0444!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzDCsDAyJzQwLjAiTiAzMcKwMTQnMDguNSJF!5e0!3m2!1sen!2seg!4v1630000000000!5m2!1sen!2seg"
-                width="100%" height="100%"
-                style={{ border: 0, filter: 'grayscale(100%) brightness(0.6)' }}
-                allowFullScreen loading="lazy"
-                className="group-hover:brightness-75 transition-all duration-500"
-              ></iframe>
-              <div className="absolute bottom-4 left-4 bg-[#0d1225]/90 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-white border border-white/[0.06]">
-                Cairo, Egypt
-              </div>
-            </div>
-          </div>
-
-          {/* Right — Form */}
-          <div className="lg:col-span-2">
-            <div className={`backdrop-blur-xl rounded-2xl border h-full ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#0d1225]/80 border-white/[0.06]'}`}>
-              <div className="p-8 lg:p-10">
-                <div className="mb-8">
-                  <h2 className={`text-2xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{t("Send us a message", "أرسل لنا رسالة", "Send us a message")}</h2>
-                  <p className="text-slate-500 mt-2">{t("Have a specific inquiry? Fill out the form below and our team will get back to you shortly.", "لديك استفسار محدد؟ املأ النموذج أدناه وسيتواصل معك فريقنا قريباً.", "Fill out the form.")}</p>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label htmlFor="name" className="text-sm font-semibold text-slate-400">{t("Full Name", "الاسم الكامل", "Full Name")}</label>
-                      <Input
-                        id="name" placeholder={t("John Doe", "محمد أحمد", "John Doe")} value={form.name}
-                        onChange={(e) => setForm({ ...form, name: e.target.value })} required
-                        className={`h-12 rounded-xl focus:ring-cyan-500/30 focus:border-cyan-500/40 ${isLight ? 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-sm font-semibold text-slate-400">{t("Email Address", "البريد الإلكتروني", "Email Address")}</label>
-                      <Input
-                        id="email" type="email" placeholder="john@example.com" value={form.email}
-                        onChange={(e) => setForm({ ...form, email: e.target.value })} required
-                        className={`h-12 rounded-xl focus:ring-cyan-500/30 focus:border-cyan-500/40 ${isLight ? 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="message" className="text-sm font-semibold text-slate-400">{t("Message", "الرسالة", "Message")}</label>
-                    <Textarea
-                      id="message" placeholder={t("How can we help you?", "كيف يمكننا مساعدتك؟", "How can we help?")} rows={8} value={form.message}
-                      onChange={(e) => setForm({ ...form, message: e.target.value })} required
-                      className={`resize-none p-4 rounded-xl focus:ring-cyan-500/30 focus:border-cyan-500/40 ${isLight ? 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400' : 'bg-white/[0.04] border-white/[0.08] text-white placeholder:text-slate-600'}`}
-                    />
-                  </div>
-                  <Button type="submit" disabled={loading}
-                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-6 text-lg transition-all shadow-lg shadow-cyan-500/20 rounded-xl">
-                    {loading ? (<><Loader2 className="w-5 h-5 mr-2 animate-spin" /> {t("Sending...", "جاري الإرسال...", "Sending...")}</>) : (<>{t("Send Message", "إرسال الرسالة", "Send Message")} <ArrowRight className="w-5 h-5 ml-2" /></>)}
-                  </Button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <Footer />
-    </div>
-  );
+    </main>
+    <Footer />
+  </div>;
 }

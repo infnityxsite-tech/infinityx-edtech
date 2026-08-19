@@ -27,10 +27,12 @@ import {
   Award,
   Building,
   ArrowLeft,
+  ArrowRight,
   Save,
   Loader2,
   Menu,
-  X
+  X,
+  Layers
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -46,15 +48,18 @@ import StudentManager from "@/components/admin/StudentManager";
 import LeadsManager from "@/components/admin/LeadsManager";
 import ServicesManager from "@/components/admin/ServicesManager";
 import CaseStudiesManager from "@/components/admin/CaseStudiesManager";
+import ProgramsManager from "@/components/admin/ProgramsManager";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSEO } from "@/hooks/useSEO";
 
 // Menu items config (with generic English labels that will be translated in render)
 const MENU_ITEMS = [
   { key: "overview", label: "Overview", label_ar: "نظرة عامة", icon: LayoutDashboard, color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20" },
+  { key: "programs", label: "Programs", label_ar: "البرامج", icon: Layers, color: "text-violet-400", bg: "bg-violet-500/10", border: "border-violet-500/20" },
   { key: "courses", label: "Courses", label_ar: "الدورات", icon: BookOpen, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
   { key: "students", label: "Students", label_ar: "الطلاب", icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
   { key: "leads", label: "B2B Leads", label_ar: "العملاء المحتملين", icon: Phone, color: "text-lime-400", bg: "bg-lime-500/10", border: "border-lime-500/20" },
@@ -79,6 +84,7 @@ export default function AdminDashboard() {
   const { t, isRTL } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === "light";
+  useSEO({ title: "Admin Dashboard", description: "Private Infinity X operations dashboard.", canonical: "https://infx.space/admin", robots: "noindex, nofollow" });
 
   const [settings, setSettings] = useState({
     email: "",
@@ -138,7 +144,7 @@ export default function AdminDashboard() {
 
   const isLocalAdmin = localStorage.getItem("isAdminLoggedIn") === "true";
   if (!user && !isLocalAdmin) {
-    navigate("/admin/login");
+    navigate("/admin-login");
     return null;
   }
 
@@ -147,7 +153,7 @@ export default function AdminDashboard() {
       await logout?.();
     } catch { }
     localStorage.removeItem("isAdminLoggedIn");
-    navigate("/admin/login");
+    navigate("/admin-login");
   };
 
   const handleSettingFieldChange = (key: string, value: string) => {
@@ -162,22 +168,14 @@ export default function AdminDashboard() {
   const activeMenuItem = MENU_ITEMS.find(m => m.key === activeTab);
 
   return (
-    <div className={`min-h-screen ${isLight ? "bg-slate-50 text-slate-900" : "bg-[#0a0e1a] text-white"}`} dir={isRTL ? "rtl" : "ltr"}>
+    <div className={`ix-app-shell ${isRTL ? "rtl" : "ltr"}`} dir={isRTL ? "rtl" : "ltr"}>
       {/* HEADER */}
-      <header className={`${isLight ? "bg-white/90 border-slate-200" : "bg-[#0d1225]/90 border-white/[0.06]"} backdrop-blur-xl border-b sticky top-0 z-50`}>
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header className={`sticky top-0 z-50 border-b backdrop-blur-xl ${isLight ? "border-[#d9e0e4] bg-[#f6f7f4]/94" : "border-white/10 bg-[#07111b]/94"}`}>
+        <div className="mx-auto flex h-[72px] max-w-[1600px] items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-4">
-            {activeTab !== "overview" && (
-              <button
-                onClick={() => setActiveTab("overview")}
-                className="p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-slate-400" />
-              </button>
-            )}
             <div>
-              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 text-transparent bg-clip-text">
-                {t("InfinityX Admin", "لوحة تحكم InfinityX", "InfinityX Admin")}
+              <h1 className="text-xl font-bold tracking-[-.04em] text-[#1268e5] md:text-2xl">
+                {t("Infinity X Operations", "عمليات إنفينيتي إكس", "Infinity X Operations")}
               </h1>
               <p className={`text-xs ${isLight ? "text-slate-500" : "text-slate-500"}`}>
                 {t("Welcome, ", "أهلاً، ", "Welcome, ")}{user?.name || t("Administrator", "المدير", "Administrator")}
@@ -203,6 +201,22 @@ export default function AdminDashboard() {
           </div>
         </div>
       </header>
+
+      {/* Desktop product navigation. The mobile overlay below remains the narrow-screen equivalent. */}
+      <aside className={`fixed bottom-0 start-0 top-[72px] z-40 hidden w-64 border-e md:flex md:flex-col ${isLight ? "border-[#d9e0e4] bg-white" : "border-white/10 bg-[#0d1b28]"}`}>
+        <div className={`border-b px-5 py-5 ${isLight ? "border-slate-200" : "border-white/[0.06]"}`}>
+          <p className="text-[11px] font-bold uppercase tracking-[.16em] text-[#165dcc]">{t("Operations workspace", "مساحة العمليات", "Operations workspace")}</p>
+          <p className={`mt-2 text-sm ${isLight ? "text-slate-500" : "text-slate-400"}`}>{t("Learning, content, and pipeline.", "التعلم والمحتوى ومسار العمل.", "Learning, content, and pipeline.")}</p>
+        </div>
+        <nav aria-label={t("Admin navigation", "تنقل الإدارة", "Admin navigation")} className="flex-1 overflow-y-auto p-3">
+          {MENU_ITEMS.map(item => {
+            const Icon = item.icon;
+            const selected = activeTab === item.key;
+            return <button key={item.key} type="button" onClick={() => setActiveTab(item.key)} className={`mb-1 flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-start text-sm font-semibold transition-colors ${selected ? isLight ? "bg-blue-50 text-[#165dcc]" : "bg-white/10 text-cyan-200" : isLight ? "text-slate-600 hover:bg-slate-100 hover:text-slate-950" : "text-slate-400 hover:bg-white/[.05] hover:text-white"}`}><Icon className={`h-4 w-4 ${selected ? "text-[#165dcc]" : item.color}`} /><span>{t(item.label, item.label_ar, item.label)}</span></button>;
+          })}
+        </nav>
+        <div className={`border-t p-4 ${isLight ? "border-slate-200" : "border-white/[0.06]"}`}><button type="button" onClick={handleLogout} className={`flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold ${isLight ? "text-slate-500 hover:bg-red-50 hover:text-red-600" : "text-slate-400 hover:bg-red-500/10 hover:text-red-300"}`}><LogOut className="h-4 w-4" />{t("Sign out", "تسجيل الخروج", "Sign out")}</button></div>
+      </aside>
 
       {/* Mobile menu overlay */}
       {mobileMenuOpen && (
@@ -230,53 +244,21 @@ export default function AdminDashboard() {
       )}
 
       {/* MAIN CONTENT */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 md:ms-64 md:max-w-none md:px-10 lg:py-12">
 
-        {/* OVERVIEW — Card Grid Navigation */}
+        {/* OVERVIEW */}
         {activeTab === "overview" && (
-          <div className="space-y-8">
-            <div className="text-center mb-8">
-              <h2 className={`text-2xl md:text-3xl font-bold mb-2 ${isLight ? "text-slate-900" : "text-white"}`}>{t("Dashboard", "لوحة التحكم", "Dashboard")}</h2>
-              <p className="text-slate-500">{t("Select a section to manage your platform", "حدد قسمًا لإدارة منصتك", "Select a section to manage your platform")}</p>
+          <div className="space-y-10">
+            <div className="border-b pb-8" style={{ borderColor: "var(--ix-border)" }}>
+              <p className="text-xs font-bold uppercase tracking-[.16em] text-[#165dcc]">{t("Overview", "نظرة عامة", "Overview")}</p>
+              <h2 className={`mt-4 text-3xl font-extrabold tracking-[-.045em] ${isLight ? "text-slate-900" : "text-white"}`}>{t("Operations, organised around the next decision.", "عمليات منظمة حول القرار التالي.", "Operations, organised around the next decision.")}</h2>
+              <p className={`mt-3 max-w-2xl ${isLight ? "text-slate-500" : "text-slate-400"}`}>{t("Monitor incoming activity, then move directly into the workspace that needs attention.", "راقب النشاط الوارد ثم انتقل مباشرة إلى مساحة العمل التي تحتاج إلى اهتمام.", "Monitor incoming activity, then move into the workspace that needs attention.")}</p>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {MENU_ITEMS.filter(m => m.key !== "overview").map(item => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.key}
-                    onClick={() => setActiveTab(item.key)}
-                    className={`group ${item.bg} ${item.border} border rounded-2xl p-5 md:p-6 text-center transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]`}
-                  >
-                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl ${item.bg} border ${item.border} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform ${isLight ? "bg-white" : ""}`}>
-                      <Icon className={`w-6 h-6 md:w-7 md:h-7 ${item.color}`} />
-                    </div>
-                    <h3 className={`text-sm md:text-base font-semibold ${isLight ? "text-slate-800" : "text-white"}`}>{t(item.label, item.label_ar, item.label)}</h3>
-                  </button>
-                );
-              })}
+            <div className={`grid gap-px border ${isLight ? "border-slate-200 bg-slate-200" : "border-white/[.08] bg-white/[.08]"} md:grid-cols-2`}>
+              <button type="button" onClick={() => setActiveTab("applications")} className={`p-7 text-start transition-colors ${isLight ? "bg-white hover:bg-slate-50" : "bg-[#0d1225] hover:bg-white/[.03]"}`}><p className="text-xs font-bold uppercase tracking-[.15em] text-[#165dcc]">{t("Incoming applications", "الطلبات الواردة", "Incoming applications")}</p><p className="mt-6 text-4xl font-extrabold tracking-[-.05em]">{applications.length}</p><p className={`mt-2 text-sm ${isLight ? "text-slate-500" : "text-slate-400"}`}>{t("Review applications", "مراجعة الطلبات", "Review applications")}</p></button>
+              <button type="button" onClick={() => setActiveTab("messages")} className={`p-7 text-start transition-colors ${isLight ? "bg-white hover:bg-slate-50" : "bg-[#0d1225] hover:bg-white/[.03]"}`}><p className="text-xs font-bold uppercase tracking-[.15em] text-[#165dcc]">{t("Incoming messages", "الرسائل الواردة", "Incoming messages")}</p><p className="mt-6 text-4xl font-extrabold tracking-[-.05em]">{(messages as any[]).length}</p><p className={`mt-2 text-sm ${isLight ? "text-slate-500" : "text-slate-400"}`}>{t("Open inbox", "فتح صندوق الوارد", "Open inbox")}</p></button>
             </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className={`${isLight ? "bg-white border-slate-200 shadow-sm" : "bg-[#0d1225]/80 border-white/[0.06]"} border rounded-xl p-4 text-center`}>
-                <p className="text-2xl font-bold text-cyan-400">{applications.length}</p>
-                <p className="text-xs text-slate-500 mt-1">Applications</p>
-              </div>
-              <div className={`${isLight ? "bg-white border-slate-200 shadow-sm" : "bg-[#0d1225]/80 border-white/[0.06]"} border rounded-xl p-4 text-center`}>
-                <p className="text-2xl font-bold text-blue-400">{(messages as any[]).length}</p>
-                <p className="text-xs text-slate-500 mt-1">Messages</p>
-              </div>
-              <div className={`${isLight ? "bg-white border-slate-200 shadow-sm" : "bg-[#0d1225]/80 border-white/[0.06]"} border rounded-xl p-4 text-center`}>
-                <p className="text-2xl font-bold text-emerald-400">—</p>
-                <p className="text-xs text-slate-500 mt-1">Active Students</p>
-              </div>
-              <div className={`${isLight ? "bg-white border-slate-200 shadow-sm" : "bg-[#0d1225]/80 border-white/[0.06]"} border rounded-xl p-4 text-center`}>
-                <p className="text-2xl font-bold text-purple-400">—</p>
-                <p className="text-xs text-slate-500 mt-1">Courses</p>
-              </div>
-            </div>
+            <section><p className="text-xs font-bold uppercase tracking-[.16em] text-[#165dcc]">{t("Workspaces", "مساحات العمل", "Workspaces")}</p><div className={`mt-5 border-t ${isLight ? "border-slate-200" : "border-white/[0.06]"}`}>{MENU_ITEMS.filter(item => ["programs", "courses", "students", "leads", "services", "case-studies", "blog"].includes(item.key)).map((item, index) => { const Icon = item.icon; return <button key={item.key} type="button" onClick={() => setActiveTab(item.key)} className={`grid w-full grid-cols-[52px_1fr_auto] items-center gap-4 border-b py-5 text-start ${isLight ? "border-slate-200 hover:text-[#165dcc]" : "border-white/[0.06] hover:text-cyan-200"}`}><span className="text-sm font-bold text-[#165dcc]">{String(index + 1).padStart(2, "0")}</span><span className="flex items-center gap-3 font-bold"><Icon className={`h-4 w-4 ${item.color}`} />{t(item.label, item.label_ar, item.label)}</span><ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} /></button>; })}</div></section>
           </div>
         )}
 
@@ -305,6 +287,9 @@ export default function AdminDashboard() {
 
         {/* COURSES */}
         {activeTab === "courses" && <CoursesManager />}
+
+        {/* PROGRAMS */}
+        {activeTab === "programs" && <ProgramsManager />}
 
         {/* STUDENTS */}
         {activeTab === "students" && <StudentManager />}

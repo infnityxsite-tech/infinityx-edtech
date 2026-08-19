@@ -1,57 +1,17 @@
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2, BookOpen } from "lucide-react";
+import { ArrowRight, BookOpen, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export function AvailableCourseCard({ course, studentId }: { course: any; studentId: string }) {
-    const utils = trpc.useUtils();
-    const enrollMutation = trpc.admin.enrollUser.useMutation({
-        onSuccess: () => {
-            toast.success("Enrolled successfully! 🎉");
-            utils.admin.getEnrolledCourses.invalidate({ userId: studentId });
-        },
-        onError: (e) => toast.error(e.message),
-    });
-
-    return (
-        <Card className="group overflow-hidden border border-slate-200 hover:shadow-lg transition-all duration-300 bg-white rounded-2xl">
-            <div className="relative h-40 bg-gradient-to-br from-slate-700 to-slate-900 overflow-hidden">
-                {course.imageUrl ? (
-                    <img
-                        src={course.imageUrl}
-                        alt={course.title}
-                        className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                        <BookOpen className="w-12 h-12 text-white/20" />
-                    </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-            </div>
-            <CardContent className="p-5">
-                <h3 className="font-bold text-slate-900 leading-snug mb-1 line-clamp-2">{course.title}</h3>
-                <p className="text-sm text-slate-500 mb-4 line-clamp-2">{course.description || "Learn from industry experts."}</p>
-                <div className="flex items-center gap-2">
-                    {course.priceEgp === 0 && course.priceUsd === 0 ? (
-                        <Button
-                            className="flex-1 bg-green-600 hover:bg-green-700 text-white rounded-xl h-9 text-sm"
-                            onClick={() => enrollMutation.mutate({ userId: studentId, courseId: course.id })}
-                            disabled={enrollMutation.isPending}
-                        >
-                            {enrollMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enroll Free"}
-                        </Button>
-                    ) : (
-                        <Link href={`/courses`} className="flex-1">
-                            <Button variant="outline" className="w-full rounded-xl h-9 text-sm border-indigo-200 text-indigo-600 hover:bg-indigo-50">
-                                View Details
-                            </Button>
-                        </Link>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
-    );
+  const utils = trpc.useUtils();
+  const { t, isRTL } = useLanguage();
+  const { theme } = useTheme();
+  const isLight = theme === "light";
+  const copy = (en: string, ar: string) => t(en, ar, en);
+  const enroll = trpc.admin.enrollUser.useMutation({ onSuccess: () => { toast.success(copy("You are enrolled.", "تم تسجيلك.")); utils.admin.getEnrolledCourses.invalidate({ userId: studentId }); }, onError: (error) => toast.error(error.message) });
+  const isFree = Number(course.priceEgp) === 0 && Number(course.priceUsd) === 0;
+  return <article className={`ix-interactive flex min-h-[184px] flex-col border p-5 ${isLight ? "border-slate-200 bg-white" : "border-white/10 bg-[#0b1829]"}`}><div className="flex items-start justify-between gap-4"><BookOpen className="h-5 w-5 shrink-0 text-[#165dcc]" /><span className={`text-[11px] font-bold uppercase tracking-[.14em] ${isLight ? "text-slate-500" : "text-slate-400"}`}>{course.courseType || copy("Short course", "دورة قصيرة")}</span></div><h3 className="mt-7 text-lg font-bold tracking-[-.025em]">{course.title}</h3><p className={`mt-2 line-clamp-2 text-sm leading-6 ${isLight ? "text-slate-500" : "text-slate-400"}`}>{course.description || copy("Explore the course details and learning format.", "استكشف تفاصيل الدورة ونمط التعلم.")}</p><div className="mt-auto pt-5">{isFree ? <button type="button" onClick={() => enroll.mutate({ userId: studentId, courseId: course.id })} disabled={enroll.isPending} className="inline-flex items-center gap-2 text-sm font-bold text-[#165dcc] disabled:opacity-60">{enroll.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{copy("Enroll now", "سجل الآن")}<ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} /></button> : <Link href="/courses" className="inline-flex items-center gap-2 text-sm font-bold text-[#165dcc]">{copy("View course", "عرض الدورة")}<ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`} /></Link>}</div></article>;
 }

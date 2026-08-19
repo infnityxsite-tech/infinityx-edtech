@@ -21,12 +21,14 @@ import { Link } from "wouter";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSEO } from "@/hooks/useSEO";
 
 export default function Blog() {
   const { data: posts = [], isLoading } = trpc.admin.getBlogPosts.useQuery();
   const { t, isRTL } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === 'light';
+  useSEO({ title: "Insights | Infinity X Solutions", description: "Articles and technical insights from Infinity X Solutions on AI engineering and technology education.", canonical: "https://infx.space/blog", robots: "index, follow" });
 
   const sortedPosts = [...posts].sort(
     (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
@@ -222,7 +224,7 @@ export default function Blog() {
       {/* ✍️ CTA SECTION */}
       <section className={`py-24 text-center mt-12 relative overflow-hidden ${isLight ? 'bg-slate-100 text-slate-900 border-t border-slate-200' : 'bg-slate-900 text-white'}`}>
         {/* Decorative BG */}
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(22,93,204,.12),transparent_38%),radial-gradient(circle_at_82%_80%,rgba(22,93,204,.08),transparent_34%)]" />
 
         <div className="relative z-10 max-w-3xl mx-auto px-6">
           <Badge variant="outline" className={`mb-4 px-3 py-1 ${isLight ? 'border-indigo-300 text-indigo-600' : 'border-indigo-500/50 text-indigo-300'}`}>{t("Community", "المجتمع", "Community")}</Badge>
