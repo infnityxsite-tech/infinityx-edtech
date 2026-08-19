@@ -9,7 +9,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["@napi-rs/canvas"]
+  external_node_modules = ["@napi-rs/canvas", "@napi-rs/canvas-linux-x64-gnu"]
   included_files = ["uploads/certification.png", "client/public/fonts/*.ttf"]
 
 # Server routes must be evaluated before the SPA fallback.

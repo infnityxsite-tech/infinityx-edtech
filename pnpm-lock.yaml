@@ -14,6 +14,9 @@ importers:
       '@napi-rs/canvas':
         specifier: ^0.1.94
         version: 0.1.94
+      '@napi-rs/canvas-linux-x64-gnu':
+        specifier: 0.1.94
+        version: 0.1.94
       '@netlify/functions':
         specifier: ^6.0.0
         version: 6.0.0
@@ -5229,8 +5232,7 @@ snapshots:
   '@napi-rs/canvas-linux-riscv64-gnu@0.1.94':
     optional: true
 
-  '@napi-rs/canvas-linux-x64-gnu@0.1.94':
-    optional: true
+  '@napi-rs/canvas-linux-x64-gnu@0.1.94': {}
 
   '@napi-rs/canvas-linux-x64-musl@0.1.94':
     optional: true
