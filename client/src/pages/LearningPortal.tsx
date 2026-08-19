@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useParams, Link, useSearch } from "wouter";
 import { trpc } from "@/lib/trpc";
+import LessonEmbed from "@/components/LessonEmbed";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
     Loader2, PlayCircle, CheckCircle2, Lock, ChevronLeft, MonitorPlay,
-    LogOut, FileText, Download, BookOpen, HelpCircle, X, Check, XCircle,
+    LogOut, FileText, BookOpen, HelpCircle, X, Check, XCircle,
     LayoutDashboard, Menu, Maximize2, StickyNote, Save, Eye, ArrowRight,
     ShieldAlert, Mail, Phone
 } from "lucide-react";
@@ -225,13 +226,7 @@ export default function LearningPortal() {
     const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
     const [deviceBlocked, setDeviceBlocked] = useState(false);
 
-    // Helper to make Google Drive links embeddable
-    const getEmbedUrl = (url: string) => {
-        if (url.includes('drive.google.com/file/d/')) {
-            return url.replace(/\/view.*$/, '/preview');
-        }
-        return url;
-    };
+    // Note: raw Google Drive URL conversion is handled inside LessonEmbed.
 
     // Detect screen width for responsive sidebar default
     useEffect(() => {
@@ -548,11 +543,10 @@ export default function LearningPortal() {
                             {/* Video Player — mobile-optimized */}
                             <div className="bg-black w-full overflow-hidden">
                                 {activeLesson.videoUrl ? (
-                                    <iframe
-                                        src={getEmbedUrl(activeLesson.videoUrl)}
-                                        className="w-full aspect-video border-0 block"
-                                        allow="autoplay; fullscreen; encrypted-media"
-                                        allowFullScreen
+                                    <LessonEmbed
+                                        url={activeLesson.videoUrl}
+                                        title={activeLesson.title}
+                                        className="w-full aspect-video"
                                     />
                                 ) : (
                                     <div className="w-full aspect-video flex flex-col items-center justify-center text-slate-500 gap-3">
@@ -726,18 +720,15 @@ export default function LearningPortal() {
                                 <FileText className="w-5 h-5 text-indigo-500" />
                                 {activeMaterial?.title || "Document Viewer"}
                             </DialogTitle>
-                            <a href={activeMaterial?.url} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-full mr-6">
-                                <Download className="w-3 h-3" /> Open in New Tab
-                            </a>
                         </div>
                     </DialogHeader>
                     <div className="flex-1 bg-slate-100 w-full relative">
                         {activeMaterial && (
-                            <iframe 
-                                src={getEmbedUrl(activeMaterial.url)} 
-                                className="absolute inset-0 w-full h-full border-0"
+                            <LessonEmbed
+                                url={activeMaterial.url}
                                 title={activeMaterial.title}
-                                allow="autoplay"
+                                className="absolute inset-0 w-full h-full"
+                                isMaterial={true}
                             />
                         )}
                     </div>

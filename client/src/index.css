@@ -39,17 +39,17 @@
 :root,
 [data-theme="light"] {
   color-scheme: light;
-  --ix-page: #f6f7f4;
+  --ix-page: #F8F9FB;
   --ix-surface: #ffffff;
-  --ix-surface-muted: #edf1f3;
+  --ix-surface-muted: #EEF2F6;
   --ix-surface-dark: #091522;
-  --ix-text: #10202d;
-  --ix-text-secondary: #42515d;
-  --ix-text-muted: #71808b;
+  --ix-text: #111827;
+  --ix-text-secondary: #46505F;
+  --ix-text-muted: #6B7280;
   --ix-text-on-dark: #f6f8fa;
-  --ix-border: #d9e0e4;
+  --ix-border: #DDE3E8;
   --ix-border-dark: rgba(231, 239, 244, 0.16);
-  --ix-brand: #1268e5;
+  --ix-brand: #1769E8;
   --ix-brand-hover: #0d55bd;
   --ix-brand-soft: #e3efff;
   --ix-mint: #b9efd5;
@@ -179,6 +179,8 @@ button:not(:disabled), [role="button"]:not([aria-disabled="true"]), [type="butto
 .ix-hero-art img { position: relative; z-index: 1; height: 100%; width: 100%; object-fit: cover; opacity: .8; mix-blend-mode: screen; }
 .ix-section { padding-block: 5.5rem; }
 .ix-section-compact { padding-block: 4rem; }
+/* Nav offset: use on page wrappers to avoid content hiding under sticky nav */
+.ix-nav-offset { padding-top: 68px; }
 .ix-dark-surface .ix-button-secondary { border-color: rgba(255,255,255,.25); color: white; }
 .ix-dark-surface .ix-button-secondary:hover { background: rgba(255,255,255,.08); }
 
