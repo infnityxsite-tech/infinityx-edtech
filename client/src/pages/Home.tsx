@@ -1,24 +1,23 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Link } from "wouter";
-import { ArrowRight, ArrowUpRight, Check, ChevronRight, Loader2, ScanLine, Sparkles, Workflow } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, ChevronRight, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSEO } from "@/hooks/useSEO";
-
-const lenses = [
-  { id: "operate", label: "Run a better operation", short: "Operations", detail: "Make repetitive work visible, reliable, and easier to act on.", icon: Workflow },
-  { id: "see", label: "See what is happening", short: "Computer vision", detail: "Turn visual signals into quality, safety, and production decisions.", icon: ScanLine },
-  { id: "build", label: "Build an intelligent product", short: "Product systems", detail: "Move from an isolated model to a software experience people can own.", icon: Sparkles },
-];
+import { SOLUTION_CATEGORY_ORDER, solutionCategoryPresentation } from "@/lib/solutionCategories";
 
 export default function Home() {
   const { isRTL, t } = useLanguage();
   const { data: hubData, isLoading } = trpc.admin.getSolutionsHub.useQuery(undefined, { staleTime: 1000 * 60 * 5 });
   const services = (hubData?.allServices || []) as any[];
-  const [activeLens, setActiveLens] = useState("operate");
-  const active = lenses.find((lens) => lens.id === activeLens) || lenses[0];
+  const [activeLens, setActiveLens] = useState<(typeof SOLUTION_CATEGORY_ORDER)[number]>("operations");
+  const active = solutionCategoryPresentation[activeLens];
+  const visibleServices = useMemo(
+    () => services.filter((service) => service.category_slug === activeLens),
+    [activeLens, services]
+  );
   const copy = (en: string, ar: string) => t(en, ar, en);
   useSEO({ title: "Enterprise AI & Software Engineering", description: "Infinity X engineers production-ready AI, computer vision, automation, and software systems for organisations that need the work to move.", canonical: "https://infx.space/", robots: "index, follow" });
 
@@ -64,7 +63,7 @@ export default function Home() {
               </div>
               <div className="mt-12 grid max-w-xl grid-cols-3 border-y border-[#D8DDD8]">
                 <div className="py-4">
-                  <p className="text-2xl font-bold text-[#6453C2]">04</p>
+                  <p className="text-2xl font-bold text-[#6453C2]">{String(services.length).padStart(2, "0")}</p>
                   <p className="mt-1 text-[10px] uppercase tracking-[.15em] text-[#7B847F]">{copy("Core systems", "أنظمة أساسية")}</p>
                 </div>
                 <div className="border-s border-[#D8DDD8] py-4 ps-4">
@@ -110,14 +109,15 @@ export default function Home() {
           <div className="ix-shell grid gap-5 py-5 lg:grid-cols-[.75fr_1.25fr] lg:items-center">
             <p className="ix-kicker">{copy("Choose the work", "اختر العمل")}</p>
             <div className="grid gap-2 sm:grid-cols-3">
-              {lenses.map((lens) => {
-                const Icon = lens.icon;
-                const selected = activeLens === lens.id;
+              {SOLUTION_CATEGORY_ORDER.map((categorySlug) => {
+                const category = solutionCategoryPresentation[categorySlug];
+                const Icon = category.icon;
+                const selected = activeLens === categorySlug;
                 return (
                   <button
-                    key={lens.id}
+                    key={categorySlug}
                     type="button"
-                    onClick={() => setActiveLens(lens.id)}
+                    onClick={() => setActiveLens(categorySlug)}
                     className={`group flex items-center gap-3 border px-4 py-3 text-start transition-all ${
                       selected
                         ? "border-[#6453C2] bg-white shadow-[0_4px_16px_rgba(100,83,194,.08)]"
@@ -125,7 +125,7 @@ export default function Home() {
                     }`}
                   >
                     <Icon className={`h-4 w-4 ${selected ? "text-[#6453C2]" : "text-[#7B847F]"}`} />
-                    <span className={`text-sm font-bold ${selected ? "text-[#1F2925]" : "text-[#5E6862]"}`}>{copy(lens.short, lens.short)}</span>
+                    <span className={`text-sm font-bold ${selected ? "text-[#1F2925]" : "text-[#5E6862]"}`}>{copy(category.name.en, category.name.ar)}</span>
                     <ChevronRight className={`ms-auto h-4 w-4 ${selected ? "text-[#6453C2]" : "text-[#7B847F]"} ${isRTL ? "rotate-180" : ""}`} />
                   </button>
                 );
@@ -139,9 +139,9 @@ export default function Home() {
           <div className="ix-shell grid gap-12 lg:grid-cols-[.7fr_1.3fr] lg:items-start">
             <div>
               <p className="ix-kicker">{copy("The system behind the outcome", "النظام خلف النتيجة")}</p>
-              <h2 className="ix-display mt-5 text-4xl font-bold text-[#1F2925] sm:text-5xl">{copy(active.label, active.label)}</h2>
+              <h2 className="ix-display mt-5 text-4xl font-bold text-[#1F2925] sm:text-5xl">{copy(active.homeHeading.en, active.homeHeading.ar)}</h2>
               <p className="mt-5 max-w-md text-lg leading-8" style={{ color: "var(--ix-text-secondary)" }}>
-                {copy(active.detail, active.detail)}
+                {copy(active.homeDetail.en, active.homeDetail.ar)}
               </p>
               <Link href="/solutions" className="ix-button ix-button-secondary mt-8">
                 {copy("Explore the solution map", "استكشف خريطة الحلول")}
@@ -154,7 +154,7 @@ export default function Home() {
                   <Loader2 className="h-7 w-7 animate-spin text-[#6453C2]" />
                 </div>
               ) : (
-                services.slice(0, 4).map((service: any, index: number) => (
+                visibleServices.map((service: any, index: number) => (
                   <Link
                     key={service.id}
                     href={`/solutions/${service.slug}`}
@@ -180,6 +180,11 @@ export default function Home() {
                     </span>
                   </Link>
                 ))
+              )}
+              {!isLoading && visibleServices.length === 0 && (
+                <p className="py-10 text-sm leading-7 text-[#5E6862]">
+                  {copy("This system family is being prepared. Explore the full solution map in the meantime.", "يجري إعداد هذه الفئة من الأنظمة. استكشف خريطة الحلول الكاملة في الوقت الحالي.")}
+                </p>
               )}
             </div>
           </div>

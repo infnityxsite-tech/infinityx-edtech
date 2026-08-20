@@ -2,8 +2,8 @@
  * ServiceImage — resolves a service hero image with intelligent fallback hierarchy.
  *
  * Priority:
- *   1. Exact slug match from SLUG_FALLBACK dictionary (high-resolution WebP)
- *   2. Normalized DB hero_image_url (.webp / .png)
+ *   1. Managed DB hero_image_url
+ *   2. Exact slug match from SLUG_FALLBACK dictionary (high-resolution WebP)
  *   3. Keyword match on slug or title (e.g. 'vision', 'inspection', 'automation', 'rag', etc.)
  *   4. Deterministic distinct fallback by hash so no two services share an image
  *   5. Decorative CSS gradient placeholder
@@ -90,6 +90,17 @@ const DISTINCT_IMAGE_POOL = [
   "/uploads/mlops_dashboard.webp",
 ];
 
+const SERVICE_IMAGE_ALT: Record<string, string> = {
+  "predictive-analytics": "Operational forecasting dashboard with trend analysis and decision signals",
+  "ai-automation-systems": "Connected workflow interface for AI-assisted business automation",
+  "intelligent-dashboards": "Executive performance dashboard with live operational indicators",
+  "decision-support-systems": "Decision intelligence interface for scenario comparison and planning",
+  "computer-vision-systems": "Industrial camera monitoring a production environment",
+  "industrial-ai-inspection": "Automated visual inspection of manufactured components",
+  "custom-llm-solutions": "Secure enterprise language system working with internal knowledge",
+  "rag-knowledge-systems": "Knowledge retrieval system connecting documents to guided answers",
+};
+
 /** Keyword to WebP asset mappings for smart matching. */
 const KEYWORD_MAP: Array<{ keywords: string[]; asset: string }> = [
   { keywords: ["vision", "camera", "detect", "yolo", "spatial", "optical"], asset: "/uploads/hero_cv_industrial.webp" },
@@ -129,42 +140,86 @@ function getDeterministicFallback(identifier: string): string {
   return DISTINCT_IMAGE_POOL[index];
 }
 
+export interface ServiceImageSource {
+  slug?: string | null;
+  title?: string | null;
+  title_ar?: string | null;
+  hero_image_url?: string | null;
+}
+
+function normalizeSlug(slug?: string | null): string | undefined {
+  return slug?.trim().toLowerCase() || undefined;
+}
+
+/** Reject non-image schemes while allowing local assets and managed HTTP(S) URLs. */
+function getSafeHeroImageUrl(heroUrl?: string | null): string | null {
+  const trimmed = heroUrl?.trim();
+  if (!trimmed) return null;
+
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//") && !trimmed.includes("\\")) {
+    return trimmed;
+  }
+
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Resolve the initial image source in priority order.
+ * Return a safe, deterministic image URL for a service. This can also be used
+ * by non-visual consumers such as page-level social metadata.
  */
-function resolveInitialSrc(slug?: string, title?: string, heroUrl?: string | null): string {
-  // 1. Exact slug dictionary match
+export function resolveServiceImageUrl(service: ServiceImageSource): string {
+  const slug = normalizeSlug(service.slug);
+
+  // 1. Direct DB hero URL, if it uses a safe local or HTTP(S) URL.
+  // This is the editable content source. The slug map is only a resilient fallback.
+  const heroUrl = getSafeHeroImageUrl(service.hero_image_url);
+  if (heroUrl) return heroUrl;
+
+  // 2. Exact slug dictionary match
   if (slug && SLUG_FALLBACK[slug]) {
     return SLUG_FALLBACK[slug];
   }
 
-  // 2. Direct DB hero URL (normalize .png to .webp if applicable)
-  if (heroUrl && heroUrl.trim()) {
-    const trimmed = heroUrl.trim();
-    // If it's an /uploads/ URL ending in .png, return the .webp version
-    if (trimmed.startsWith("/uploads/") && trimmed.endsWith(".png")) {
-      return trimmed.replace(/\.png$/, ".webp");
-    }
-    return trimmed;
-  }
-
   // 3. Keyword matching on slug or title
-  if (slug) {
-    const kwMatch = matchKeyword(slug);
-    if (kwMatch) return kwMatch;
-  }
-  if (title) {
-    const kwMatch = matchKeyword(title);
+  const searchableText = [service.slug, service.title, service.title_ar]
+    .filter((value): value is string => Boolean(value?.trim()))
+    .join(" ");
+  if (searchableText) {
+    const kwMatch = matchKeyword(searchableText);
     if (kwMatch) return kwMatch;
   }
 
   // 4. Deterministic distinct fallback
-  return getDeterministicFallback(slug || title || "default");
+  return getDeterministicFallback(slug || service.title || service.title_ar || "default");
+}
+
+function humanizeSlug(slug?: string | null): string | null {
+  const normalized = normalizeSlug(slug);
+  if (!normalized) return null;
+  return normalized.replace(/-/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+/** Provide useful alt text even when API content supplies only a slug. */
+export function getServiceImageAlt(service: ServiceImageSource, alt?: string): string {
+  if (alt !== undefined) return alt;
+
+  const slugAlt = SERVICE_IMAGE_ALT[normalizeSlug(service.slug) || ""];
+  if (slugAlt) return slugAlt;
+
+  const serviceName = service.title?.trim() || service.title_ar?.trim() || humanizeSlug(service.slug);
+  return serviceName
+    ? `${serviceName} system visual`
+    : "Infinity X enterprise system visual";
 }
 
 interface ServiceImageProps {
   /** Service object from the API (needs slug + optional hero_image_url and title). */
-  service: { slug: string; title?: string; title_ar?: string; hero_image_url?: string | null };
+  service: ServiceImageSource;
   /** Alt text override. */
   alt?: string;
   /** Additional class names applied to the <img> element. */
@@ -182,26 +237,28 @@ export default function ServiceImage({
   loading = "lazy",
   fetchPriority = "auto",
 }: ServiceImageProps) {
-  const initSrc = resolveInitialSrc(service.slug, service.title, service.hero_image_url);
+  const initSrc = resolveServiceImageUrl(service);
   const [src, setSrc] = useState<string | null>(initSrc);
   const [failed, setFailed] = useState(false);
 
   // Re-synchronize state whenever the service prop changes (e.g. user selects a different service)
   useEffect(() => {
-    const newSrc = resolveInitialSrc(service.slug, service.title, service.hero_image_url);
+    const newSrc = resolveServiceImageUrl(service);
     setSrc(newSrc);
     setFailed(false);
-  }, [service.slug, service.hero_image_url, service.title]);
+  }, [service.slug, service.hero_image_url, service.title, service.title_ar]);
 
   const handleError = () => {
     // Stage 1: If custom DB URL failed, try slug fallback
-    if (service.slug && SLUG_FALLBACK[service.slug] && src !== SLUG_FALLBACK[service.slug]) {
-      setSrc(SLUG_FALLBACK[service.slug]);
+    const slug = normalizeSlug(service.slug);
+    const slugFallback = slug ? SLUG_FALLBACK[slug] : undefined;
+    if (slugFallback && src !== slugFallback) {
+      setSrc(slugFallback);
       return;
     }
 
     // Stage 2: Try keyword matching
-    const kw = matchKeyword(`${service.slug || ""} ${service.title || ""}`);
+    const kw = matchKeyword(`${service.slug || ""} ${service.title || ""} ${service.title_ar || ""}`);
     if (kw && src !== kw) {
       setSrc(kw);
       return;
@@ -219,7 +276,7 @@ export default function ServiceImage({
     setFailed(true);
   };
 
-  const label = alt ?? service.title ?? service.slug;
+  const label = getServiceImageAlt(service, alt);
 
   if (failed || !src) {
     return (

@@ -1654,9 +1654,16 @@ export interface ServicePackage {
   titleAr?: string | null;
   description?: string | null;
   descriptionAr?: string | null;
+  slug?: string | null;
+  categoryId?: number | null;
   featuresJson?: string | null;
   priceTier?: string | null;
   iconUrl?: string | null;
+  heroImageUrl?: string | null;
+  problemStatement?: string | null;
+  problemStatementAr?: string | null;
+  overviewLong?: string | null;
+  overviewLongAr?: string | null;
   isActive: boolean;
   orderIndex: number;
   createdAt: Date;
@@ -1669,8 +1676,9 @@ export async function getServicePackages(): Promise<ServicePackage[]> {
   return await queryMany<any>(
     `SELECT id, title, title_ar as "titleAr", description, description_ar as "descriptionAr",
             slug, icon, featured, show_on_homepage as "showOnHomepage", status,
-            price_tier as "priceTier", hero_image_url as "heroImageUrl",
-            problem_statement as "problemStatement", overview_long as "overviewLong",
+            category_id as "categoryId", price_tier as "priceTier", hero_image_url as "heroImageUrl",
+            problem_statement as "problemStatement", problem_statement_ar as "problemStatementAr",
+            overview_long as "overviewLong", overview_long_ar as "overviewLongAr",
             sort_order as "orderIndex",
             (status = 'active') as "isActive",
             created_at as "createdAt", updated_at as "updatedAt"
@@ -1689,17 +1697,34 @@ export async function getActiveServicePackages(): Promise<ServicePackage[]> {
 }
 
 export async function createServicePackage(pkg: InsertServicePackage): Promise<ServicePackage> {
-  const slug = (pkg.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const slug = (pkg.slug || pkg.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  const profileIsComplete = Boolean(
+    pkg.categoryId &&
+    pkg.titleAr?.trim() &&
+    pkg.description?.trim() &&
+    pkg.descriptionAr?.trim() &&
+    pkg.heroImageUrl?.trim() &&
+    pkg.problemStatement?.trim() &&
+    pkg.problemStatementAr?.trim() &&
+    pkg.overviewLong?.trim() &&
+    pkg.overviewLongAr?.trim()
+  );
+  const status = pkg.isActive && profileIsComplete ? 'active' : 'draft';
   const result = await queryOne<any>(
-    `INSERT INTO services (title, title_ar, description, description_ar, slug, price_tier, icon, status, sort_order)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `INSERT INTO services (
+       category_id, title, title_ar, description, description_ar, slug, price_tier, icon,
+       status, sort_order, features_json, hero_image_url, problem_statement,
+       problem_statement_ar, overview_long, overview_long_ar
+     )
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
      RETURNING id, title, title_ar as "titleAr", description, description_ar as "descriptionAr",
-               slug, price_tier as "priceTier", icon, status,
+               slug, category_id as "categoryId", price_tier as "priceTier", icon, status,
                sort_order as "orderIndex",
                created_at as "createdAt", updated_at as "updatedAt"`,
-    [pkg.title, pkg.titleAr, pkg.description, pkg.descriptionAr,
-     slug, pkg.priceTier, 'Cpu',
-     'active', pkg.orderIndex || 0]
+    [pkg.categoryId || null, pkg.title, pkg.titleAr, pkg.description, pkg.descriptionAr,
+     slug, pkg.priceTier, pkg.iconUrl || 'Cpu', status, pkg.orderIndex || 0,
+     pkg.featuresJson || null, pkg.heroImageUrl || null, pkg.problemStatement || null,
+     pkg.problemStatementAr || null, pkg.overviewLong || null, pkg.overviewLongAr || null]
   );
   return result!;
 }
@@ -1945,10 +1970,15 @@ export async function getSolutionsHub() {
   const categoriesRes = await query(`SELECT * FROM service_categories ORDER BY order_index ASC`);
   
   const allServicesRes = await query(`
-    SELECT s.*, c.name as category_name
+    SELECT s.*, c.name as category_name, c.slug as category_slug
     FROM services s
-    LEFT JOIN service_categories c ON s.category_id = c.id
+    INNER JOIN service_categories c ON s.category_id = c.id
     WHERE s.status = 'active'
+      AND NULLIF(TRIM(s.slug), '') IS NOT NULL
+      AND NULLIF(TRIM(s.title), '') IS NOT NULL
+      AND NULLIF(TRIM(s.description), '') IS NOT NULL
+      AND NULLIF(TRIM(s.problem_statement), '') IS NOT NULL
+      AND NULLIF(TRIM(s.overview_long), '') IS NOT NULL
     ORDER BY s.sort_order ASC
   `);
 
@@ -2001,15 +2031,19 @@ export async function getSolutionBySlug(slug: string) {
   const serviceRes = await queryOne(`
     SELECT s.*, c.name as category_name, c.slug as category_slug
     FROM services s
-    LEFT JOIN service_categories c ON s.category_id = c.id
-    WHERE s.slug = $1 AND s.status = 'active'
+    INNER JOIN service_categories c ON s.category_id = c.id
+    WHERE s.slug = $1
+      AND s.status = 'active'
+      AND NULLIF(TRIM(s.slug), '') IS NOT NULL
+      AND NULLIF(TRIM(s.problem_statement), '') IS NOT NULL
+      AND NULLIF(TRIM(s.overview_long), '') IS NOT NULL
   `, [slug]);
 
   if (!serviceRes) return null;
 
   const serviceId = serviceRes.id;
 
-  const [blocksRes, pricingRes, useCasesRes, deliverablesRes, caseStudiesRes, techStackRes, galleryRes, faqRes, impactRes] = await Promise.all([
+  const [blocksRes, pricingRes, useCasesRes, deliverablesRes, caseStudiesRes, techStackRes, galleryRes, faqRes, impactRes, relatedServicesRes] = await Promise.all([
     query(`SELECT * FROM service_blocks WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
     query(`SELECT * FROM service_pricing_models WHERE service_id = $1`, [serviceId]),
     query(`SELECT * FROM service_use_cases WHERE service_id = $1`, [serviceId]),
@@ -2019,6 +2053,20 @@ export async function getSolutionBySlug(slug: string) {
     query(`SELECT * FROM service_gallery WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
     query(`SELECT * FROM service_faq WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
     query(`SELECT * FROM service_impact_metrics WHERE service_id = $1 ORDER BY order_index ASC`, [serviceId]),
+    query(`
+      SELECT s.id, s.slug, s.title, s.title_ar, s.description, s.description_ar,
+             s.hero_image_url, c.name AS category_name, c.slug AS category_slug
+      FROM services s
+      INNER JOIN service_categories c ON c.id = s.category_id
+      WHERE s.category_id = $1
+        AND s.id <> $2
+        AND s.status = 'active'
+        AND NULLIF(TRIM(s.slug), '') IS NOT NULL
+        AND NULLIF(TRIM(s.problem_statement), '') IS NOT NULL
+        AND NULLIF(TRIM(s.overview_long), '') IS NOT NULL
+      ORDER BY s.sort_order ASC, s.id ASC
+      LIMIT 3
+    `, [serviceRes.category_id, serviceId]),
   ]);
 
   return {
@@ -2032,6 +2080,7 @@ export async function getSolutionBySlug(slug: string) {
     gallery: galleryRes.rows,
     faq: faqRes.rows,
     impactMetrics: impactRes.rows,
+    relatedServices: relatedServicesRes.rows,
   };
 }
 
@@ -2082,7 +2131,7 @@ export async function deleteServicePricingModel(id: string) {
 }
 
 export async function updateService(id: string, updates: any) {
-  const allowedKeys = ['title','titleAr','description','descriptionAr','icon','featured','showOnHomepage','status','sortOrder','priceTier','featuresJson','heroImageUrl','problemStatement','problemStatementAr','overviewLong','overviewLongAr','slug'];
+  const allowedKeys = ['title','titleAr','description','descriptionAr','icon','featured','showOnHomepage','status','sortOrder','priceTier','featuresJson','heroImageUrl','problemStatement','problemStatementAr','overviewLong','overviewLongAr','slug','categoryId'];
   const queryData = buildUpdateQuery('services', allowedKeys, updates, 'id', id);
   if (!queryData) return;
   await query(queryData.text, queryData.values);

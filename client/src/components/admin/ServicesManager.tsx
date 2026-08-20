@@ -8,6 +8,23 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 
+const emptyServiceForm = {
+  title: "",
+  titleAr: "",
+  slug: "",
+  categoryId: "",
+  description: "",
+  descriptionAr: "",
+  heroImageUrl: "",
+  problemStatement: "",
+  problemStatementAr: "",
+  overviewLong: "",
+  overviewLongAr: "",
+  featuresJson: "",
+  priceTier: "",
+  isActive: false,
+};
+
 function SubSection({ title, icon: Icon, color, children, count }: { title: string; icon: any; color: string; children: React.ReactNode; count?: number }) {
   const [open, setOpen] = useState(false);
   const { theme } = useTheme();
@@ -28,13 +45,21 @@ export default function ServicesManager() {
   const isLight = theme === "light";
   const utils = trpc.useUtils();
   const { data: services = [], isLoading } = trpc.admin.getServicePackages.useQuery();
+  const { data: hubData } = trpc.admin.getSolutionsHub.useQuery();
+  const categories = (hubData?.categories || []) as Array<{ id: number; name: string }>;
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: "", titleAr: "", description: "", descriptionAr: "", featuresJson: "", priceTier: "", isActive: true });
+  const [form, setForm] = useState(emptyServiceForm);
   const [newItem, setNewItem] = useState<Record<string, any>>({});
 
   const createMutation = trpc.admin.createServicePackage.useMutation({
-    onSuccess: () => { toast.success("Service created!"); utils.admin.getServicePackages.invalidate(); setShowForm(false); setForm({ title: "", titleAr: "", description: "", descriptionAr: "", featuresJson: "", priceTier: "", isActive: true }); },
+    onSuccess: (service: any) => {
+      toast.success(service?.status === "active" ? "System profile published." : "Draft created. Complete all profile fields before publishing.");
+      utils.admin.getServicePackages.invalidate();
+      utils.admin.getSolutionsHub.invalidate();
+      setShowForm(false);
+      setForm(emptyServiceForm);
+    },
     onError: () => toast.error("Failed"),
   });
   const deleteMutation = trpc.admin.deleteServicePackage.useMutation({ onSuccess: () => { toast.success("Deleted!"); utils.admin.getServicePackages.invalidate(); } });
@@ -74,11 +99,30 @@ export default function ServicesManager() {
             <div className="grid md:grid-cols-2 gap-4">
               <div><Label className="text-sm text-slate-400">Title (EN)</Label><Input value={form.title} onChange={e => setForm({...form, title: e.target.value})} className={inputCls} /></div>
               <div><Label className="text-sm text-slate-400">Title (AR)</Label><Input value={form.titleAr} onChange={e => setForm({...form, titleAr: e.target.value})} className={inputCls} dir="rtl" /></div>
+              <div><Label className="text-sm text-slate-400">Stable URL slug</Label><Input value={form.slug} onChange={e => setForm({...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")})} placeholder="e.g. predictive-analytics" className={inputCls} /></div>
+              <div>
+                <Label className="text-sm text-slate-400">Primary category</Label>
+                <select value={form.categoryId} onChange={e => setForm({...form, categoryId: e.target.value})} className={`${inputCls} w-full px-3`}>
+                  <option value="">Select a category</option>
+                  {categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
+                </select>
+              </div>
               <div><Label className="text-sm text-slate-400">Description (EN)</Label><Input value={form.description} onChange={e => setForm({...form, description: e.target.value})} className={inputCls} /></div>
               <div><Label className="text-sm text-slate-400">Description (AR)</Label><Input value={form.descriptionAr} onChange={e => setForm({...form, descriptionAr: e.target.value})} className={inputCls} dir="rtl" /></div>
               <div><Label className="text-sm text-slate-400">Price Tier</Label><Input value={form.priceTier} onChange={e => setForm({...form, priceTier: e.target.value})} placeholder="e.g. Enterprise" className={inputCls} /></div>
+              <div><Label className="text-sm text-slate-400">Hero image</Label><Input value={form.heroImageUrl} onChange={e => setForm({...form, heroImageUrl: e.target.value})} placeholder="/uploads/system-hero.webp" className={inputCls} /></div>
             </div>
-            <Button onClick={() => createMutation.mutate(form)} disabled={!form.title || createMutation.isPending} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div><Label className="text-sm text-slate-400">Business problem (EN)</Label><textarea value={form.problemStatement} onChange={e => setForm({...form, problemStatement: e.target.value})} className={`${inputCls} min-h-24 w-full p-3`} /></div>
+              <div><Label className="text-sm text-slate-400">Business problem (AR)</Label><textarea value={form.problemStatementAr} onChange={e => setForm({...form, problemStatementAr: e.target.value})} className={`${inputCls} min-h-24 w-full p-3`} dir="rtl" /></div>
+              <div><Label className="text-sm text-slate-400">Full overview (EN)</Label><textarea value={form.overviewLong} onChange={e => setForm({...form, overviewLong: e.target.value})} className={`${inputCls} min-h-32 w-full p-3`} /></div>
+              <div><Label className="text-sm text-slate-400">Full overview (AR)</Label><textarea value={form.overviewLongAr} onChange={e => setForm({...form, overviewLongAr: e.target.value})} className={`${inputCls} min-h-32 w-full p-3`} dir="rtl" /></div>
+            </div>
+            <label className="flex items-center gap-2 text-sm text-slate-400">
+              <input type="checkbox" checked={form.isActive} onChange={e => setForm({...form, isActive: e.target.checked})} />
+              Publish immediately when the complete bilingual profile is provided
+            </label>
+            <Button onClick={() => createMutation.mutate({...form, categoryId: form.categoryId ? Number(form.categoryId) : undefined})} disabled={!form.title || !form.categoryId || createMutation.isPending} className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white">
               {createMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Save
             </Button>
           </div>

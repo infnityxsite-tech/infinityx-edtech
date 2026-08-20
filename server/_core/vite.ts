@@ -39,7 +39,7 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`
       );
-      const page = await vite.transformIndexHtml(url, injectRouteMetadata(template, url));
+      const page = await vite.transformIndexHtml(url, await injectRouteMetadata(template, url));
       // Preserve a status code deliberately set by a route guard (for example
       // a missing dynamic public record) instead of converting it to a 200
       // SPA shell response.
@@ -68,7 +68,7 @@ export function serveStatic(app: Express) {
   app.use("*", async (req, res, next) => {
     try {
       const template = await fs.promises.readFile(path.resolve(distPath, "index.html"), "utf-8");
-      res.status(res.statusCode).type("html").send(injectRouteMetadata(template, req.originalUrl));
+      res.status(res.statusCode).type("html").send(await injectRouteMetadata(template, req.originalUrl));
     } catch (error) {
       next(error);
     }

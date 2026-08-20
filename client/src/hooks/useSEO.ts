@@ -16,6 +16,7 @@ import { useEffect } from "react";
 
 const BASE_URL = "https://infx.space";
 const DEFAULT_TITLE_SUFFIX = " | Infinity X Solutions";
+const DEFAULT_SOCIAL_IMAGE = `${BASE_URL}/uploads/hero_industrial_inspect.webp`;
 
 export interface SEOOptions {
   /** Page-specific title. Suffix is appended automatically. */
@@ -24,6 +25,8 @@ export interface SEOOptions {
   description: string;
   /** Full canonical URL including https://infx.space. */
   canonical: string;
+  /** Optional Open Graph/Twitter card image. Relative site paths are made absolute. */
+  image?: string | null;
   /**
    * robots directive.
    * - Pass undefined (or omit) while async data is still LOADING.
@@ -49,7 +52,33 @@ function getOrCreate<T extends HTMLElement>(
   return el;
 }
 
-export function useSEO({ title, description, canonical, robots }: SEOOptions) {
+function getOrCreateTwitterMeta(name: string): HTMLMetaElement {
+  let el = document.querySelector<HTMLMetaElement>(
+    `meta[name="${name}"], meta[property="${name}"]`
+  );
+  if (!el) {
+    el = document.createElement("meta");
+    el.setAttribute("name", name);
+    document.head.appendChild(el);
+  }
+  return el;
+}
+
+function resolveSocialImage(image?: string | null): string {
+  const candidate = image?.trim();
+  if (!candidate) return DEFAULT_SOCIAL_IMAGE;
+
+  try {
+    const url = new URL(candidate, BASE_URL);
+    return url.protocol === "https:" || url.protocol === "http:"
+      ? url.toString()
+      : DEFAULT_SOCIAL_IMAGE;
+  } catch {
+    return DEFAULT_SOCIAL_IMAGE;
+  }
+}
+
+export function useSEO({ title, description, canonical, image, robots }: SEOOptions) {
   useEffect(() => {
     // 1. <title>
     const fullTitle = title.endsWith(DEFAULT_TITLE_SUFFIX)
@@ -89,7 +118,19 @@ export function useSEO({ title, description, canonical, robots }: SEOOptions) {
 
     const ogUrl = getOrCreate<HTMLMetaElement>("meta", "property", "og:url");
     ogUrl.setAttribute("content", canonical);
-  }, [title, description, canonical, robots]);
+
+    // 6. Social card image. Always reset to the site's default when a page
+    // does not supply one, preventing a previous SPA route's image persisting.
+    const socialImage = resolveSocialImage(image);
+    const ogImage = getOrCreate<HTMLMetaElement>("meta", "property", "og:image");
+    ogImage.setAttribute("content", socialImage);
+
+    const twitterImage = getOrCreateTwitterMeta("twitter:image");
+    twitterImage.setAttribute("content", socialImage);
+
+    const twitterCard = getOrCreateTwitterMeta("twitter:card");
+    twitterCard.setAttribute("content", "summary_large_image");
+  }, [title, description, canonical, image, robots]);
 
   // Cleanup: when navigating away via SPA, reset robots to "index, follow"
   // so the NEXT page doesn't start with a stale noindex from this page.

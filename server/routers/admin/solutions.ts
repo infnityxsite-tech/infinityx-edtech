@@ -11,11 +11,7 @@ export const solutionsEndpoints = {
   
   getSolutionBySlug: publicProcedure
     .input(z.object({ slug: z.string() }))
-    .query(async ({ input }) => {
-      const solution = await db.getSolutionBySlug(input.slug);
-      if (!solution) throw new Error("Solution not found");
-      return solution;
-    }),
+    .query(({ input }) => db.getSolutionBySlug(input.slug)),
 
   // ==============================
   // 🚀 SERVICE PACKAGES
@@ -32,6 +28,13 @@ export const solutionsEndpoints = {
         titleAr: z.string().optional(),
         description: z.string().optional(),
         descriptionAr: z.string().optional(),
+        slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+        categoryId: z.number().int().positive().optional(),
+        heroImageUrl: z.string().optional(),
+        problemStatement: z.string().optional(),
+        problemStatementAr: z.string().optional(),
+        overviewLong: z.string().optional(),
+        overviewLongAr: z.string().optional(),
         featuresJson: z.string().optional(),
         priceTier: z.string().optional(),
         iconUrl: z.string().optional(),

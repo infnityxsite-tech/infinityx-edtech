@@ -61,8 +61,22 @@ async function markMissingPublicRecord(
   next: NextFunction
 ) {
   try {
-    const result = await query(`SELECT 1 FROM ${table} WHERE ${column} = $1 LIMIT 1`, [value]);
-    if (result.rows.length === 0) res.status(404);
+    const text = table === "services"
+      ? `SELECT 1
+         FROM services s
+         INNER JOIN service_categories c ON c.id = s.category_id
+         WHERE s.${column} = $1
+           AND s.status = 'active'
+           AND NULLIF(TRIM(s.slug), '') IS NOT NULL
+           AND NULLIF(TRIM(s.problem_statement), '') IS NOT NULL
+           AND NULLIF(TRIM(s.overview_long), '') IS NOT NULL
+         LIMIT 1`
+      : `SELECT 1 FROM ${table} WHERE ${column} = $1 LIMIT 1`;
+    const result = await query(text, [value]);
+    if (result.rows.length === 0) {
+      res.status(404);
+      res.set("X-Robots-Tag", "noindex, follow");
+    }
   } catch {
     // The SPA can still render if a content table is temporarily unavailable.
   }

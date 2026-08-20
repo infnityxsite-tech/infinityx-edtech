@@ -72,8 +72,6 @@ const STATIC_ROUTES: SitemapEntry[] = [
   // Top-level public pages
   { loc: `${PRODUCTION_URL}/about`, changefreq: "monthly", priority: "0.7" },
   { loc: `${PRODUCTION_URL}/solutions`, changefreq: "weekly", priority: "0.9" },
-  { loc: `${PRODUCTION_URL}/industries`, changefreq: "monthly", priority: "0.8" },
-  { loc: `${PRODUCTION_URL}/work`, changefreq: "monthly", priority: "0.8" },
   { loc: `${PRODUCTION_URL}/academy`, changefreq: "weekly", priority: "0.8" },
   { loc: `${PRODUCTION_URL}/courses`, changefreq: "weekly", priority: "0.9" },
   { loc: `${PRODUCTION_URL}/courses/live`, changefreq: "weekly", priority: "0.8" },
@@ -132,7 +130,14 @@ async function getDynamicRoutes(): Promise<SitemapEntry[]> {
 
   // 3. Solutions/Services (from `services` table)
   const services = await safeQuery<{ slug: string; updated_at?: Date }>(
-    `SELECT slug, updated_at FROM services WHERE status = 'active' AND slug IS NOT NULL ORDER BY sort_order ASC`
+    `SELECT s.slug, s.updated_at
+     FROM services s
+     INNER JOIN service_categories c ON c.id = s.category_id
+     WHERE s.status = 'active'
+       AND NULLIF(TRIM(s.slug), '') IS NOT NULL
+       AND NULLIF(TRIM(s.problem_statement), '') IS NOT NULL
+       AND NULLIF(TRIM(s.overview_long), '') IS NOT NULL
+     ORDER BY s.sort_order ASC`
   );
   for (const svc of services) {
     if (!svc.slug) continue;
@@ -144,21 +149,7 @@ async function getDynamicRoutes(): Promise<SitemapEntry[]> {
     });
   }
 
-  // 4. Industries (from `industries` table)
-  const industries = await safeQuery<{ slug: string; created_at?: Date }>(
-    `SELECT slug, created_at FROM industries ORDER BY order_index ASC`
-  );
-  for (const ind of industries) {
-    if (!ind.slug) continue;
-    entries.push({
-      loc: `${PRODUCTION_URL}/industries/${ind.slug}`,
-      lastmod: toW3CDate(ind.created_at),
-      changefreq: "monthly",
-      priority: "0.7",
-    });
-  }
-
-  // 5. Blog posts (from `blog_posts` table)
+  // 4. Blog posts (from `blog_posts` table)
   const posts = await safeQuery<{ id: number; updated_at?: Date }>(
     `SELECT id, updated_at FROM blog_posts ORDER BY published_at DESC`
   );
@@ -171,7 +162,7 @@ async function getDynamicRoutes(): Promise<SitemapEntry[]> {
     });
   }
 
-  // 6. Courses — recorded course preview pages (from `courses` table)
+  // 5. Courses — recorded course preview pages (from `courses` table)
   const courses = await safeQuery<{ id: number; updated_at?: Date }>(
     `SELECT id, updated_at FROM courses ORDER BY created_at DESC`
   );
@@ -184,7 +175,7 @@ async function getDynamicRoutes(): Promise<SitemapEntry[]> {
     });
   }
 
-  // 7. Programs — individual program detail pages (from `programs` table)
+  // 6. Programs — individual program detail pages (from `programs` table)
   const programs = await safeQuery<{ id: number; updated_at?: Date }>(
     `SELECT id, updated_at FROM programs ORDER BY created_at DESC`
   );

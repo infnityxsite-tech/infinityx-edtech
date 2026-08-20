@@ -1,14 +1,15 @@
-const BASE_URL = "https://infx.space";
+import { queryOne } from "./database";
 
-type RouteMeta = { title: string; description: string; robots: string };
+const BASE_URL = "https://infx.space";
+const DEFAULT_SOCIAL_IMAGE = `${BASE_URL}/uploads/hero_industrial_inspect.webp`;
+
+type RouteMeta = { title: string; description: string; robots: string; image?: string };
 
 const PUBLIC_META: Record<string, RouteMeta> = {
   "/": { title: "Enterprise AI & Software Engineering | Infinity X Solutions", description: "Infinity X engineers production-ready AI, computer vision, automation, and software systems for real operations.", robots: "index, follow" },
   "/about": { title: "Company | Infinity X Solutions", description: "Infinity X Solutions is an AI engineering company that builds, transfers, and supports production systems for real operations.", robots: "index, follow" },
   "/company": { title: "Company | Infinity X Solutions", description: "Infinity X Solutions is an AI engineering company that builds, transfers, and supports production systems for real operations.", robots: "index, follow" },
   "/solutions": { title: "Enterprise AI Systems | Infinity X", description: "Explore production-grade AI systems for automation, computer vision, predictive intelligence, and technical infrastructure.", robots: "index, follow" },
-  "/industries": { title: "AI Systems by Industry | Infinity X", description: "Operational AI systems designed for manufacturing, logistics, infrastructure, and enterprise operations.", robots: "index, follow" },
-  "/work": { title: "Engineering Work & Case Studies | Infinity X", description: "Selected Infinity X engineering engagements, built around real operational challenges, systems, and outcomes.", robots: "index, follow" },
   "/academy": { title: "Academy | Infinity X", description: "Project-based technology programs for people who build practical technical capability.", robots: "index, follow" },
   "/programs": { title: "Programs | Infinity X Academy", description: "Discover practical, project-based technology programs from Infinity X Academy.", robots: "index, follow" },
   "/courses": { title: "Learning Formats | Infinity X Academy", description: "Choose live cohort learning or self-paced recorded courses from Infinity X Academy.", robots: "index, follow" },
@@ -27,9 +28,46 @@ export function routeRobots(pathname: string): string {
   return PRIVATE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix)) ? "noindex, nofollow" : "";
 }
 
-function dynamicMeta(pathname: string): RouteMeta | undefined {
-  if (/^\/solutions\/[^/]+$/.test(pathname)) return { title: "AI System | Infinity X", description: "Explore an Infinity X enterprise AI system designed around a real operating context.", robots: "index, follow" };
-  if (/^\/industries\/[^/]+$/.test(pathname)) return { title: "Industry AI Systems | Infinity X", description: "Explore operational AI systems designed for this industry environment.", robots: "index, follow" };
+async function getSolutionMeta(pathname: string): Promise<RouteMeta | undefined> {
+  const match = pathname.match(/^\/solutions\/([^/]+)$/);
+  if (!match) return undefined;
+
+  try {
+    const service = await queryOne<{
+      title: string;
+      description: string | null;
+      hero_image_url: string | null;
+    }>(
+      `SELECT s.title, s.description, s.hero_image_url
+       FROM services s
+       INNER JOIN service_categories c ON c.id = s.category_id
+       WHERE s.slug = $1
+         AND s.status = 'active'
+         AND NULLIF(TRIM(s.slug), '') IS NOT NULL
+         AND NULLIF(TRIM(s.problem_statement), '') IS NOT NULL
+         AND NULLIF(TRIM(s.overview_long), '') IS NOT NULL`,
+      [decodeURIComponent(match[1])]
+    );
+    if (!service) return undefined;
+
+    const image = service.hero_image_url?.startsWith("/")
+      ? `${BASE_URL}${service.hero_image_url}`
+      : service.hero_image_url || DEFAULT_SOCIAL_IMAGE;
+    return {
+      title: `${service.title} | Infinity X Solutions`,
+      description: service.description || "Production-grade enterprise AI capability designed around operational constraints.",
+      robots: "index, follow",
+      image,
+    };
+  } catch {
+    // A temporary database issue should not turn a valid public route into an indexable generic page.
+    return undefined;
+  }
+}
+
+async function dynamicMeta(pathname: string): Promise<RouteMeta | undefined> {
+  const solutionMeta = await getSolutionMeta(pathname);
+  if (solutionMeta || /^\/solutions\/[^/]+$/.test(pathname)) return solutionMeta;
   if (/^\/program\/[^/]+$/.test(pathname)) return { title: "Academy Program | Infinity X", description: "Explore a practical, project-based technology program from Infinity X Academy.", robots: "index, follow" };
   if (/^\/courses\/recorded\/[^/]+\/preview$/.test(pathname)) return { title: "Course Preview | Infinity X Academy", description: "Preview a practical technology course from Infinity X Academy.", robots: "index, follow" };
   if (/^\/academy\/[^/]+$/.test(pathname)) return { title: "Academy Discipline | Infinity X", description: "Explore a practical discipline area from Infinity X Academy.", robots: "index, follow" };
@@ -43,16 +81,17 @@ function escapeHtml(value: string) {
 }
 
 /** Inject crawlable route metadata into the SPA shell before it reaches the client. */
-export function injectRouteMetadata(template: string, requestUrl: string) {
+export async function injectRouteMetadata(template: string, requestUrl: string) {
   const url = new URL(requestUrl, BASE_URL);
   const pathname = url.pathname.length > 1 ? url.pathname.replace(/\/$/, "") : "/";
   const privateRobots = routeRobots(pathname);
-  const meta = PUBLIC_META[pathname] || dynamicMeta(pathname) || { title: "Page Not Found | Infinity X Solutions", description: "The requested Infinity X page could not be found.", robots: privateRobots || "noindex, follow" };
+  const meta = PUBLIC_META[pathname] || await dynamicMeta(pathname) || { title: "Page Not Found | Infinity X Solutions", description: "The requested Infinity X page could not be found.", robots: privateRobots || "noindex, follow" };
   const canonicalPath = pathname === "/company" ? "/about" : pathname;
   const canonical = `${BASE_URL}${canonicalPath === "/" ? "" : canonicalPath}`;
   const title = escapeHtml(meta.title);
   const description = escapeHtml(meta.description);
   const robots = escapeHtml(privateRobots || meta.robots);
+  const socialImage = escapeHtml(meta.image || DEFAULT_SOCIAL_IMAGE);
 
   let result = template
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${title}</title>`)
@@ -64,7 +103,9 @@ export function injectRouteMetadata(template: string, requestUrl: string) {
     .replace(/<meta\s+property="og:description"[^>]*>/i, `<meta property="og:description" content="${description}" />`)
     .replace(/<meta\s+property="twitter:url"[^>]*>/i, `<meta property="twitter:url" content="${canonical}" />`)
     .replace(/<meta\s+property="twitter:title"[^>]*>/i, `<meta property="twitter:title" content="${title}" />`)
-    .replace(/<meta\s+property="twitter:description"[^>]*>/i, `<meta property="twitter:description" content="${description}" />`);
+    .replace(/<meta\s+property="twitter:description"[^>]*>/i, `<meta property="twitter:description" content="${description}" />`)
+    .replace(/<meta\s+property="og:image"[^>]*>/i, `<meta property="og:image" content="${socialImage}" />`)
+    .replace(/<meta\s+property="twitter:image"[^>]*>/i, `<meta property="twitter:image" content="${socialImage}" />`);
 
   result = result.replace("</head>", `<meta name="robots" content="${robots}" />\n</head>`);
   return result;

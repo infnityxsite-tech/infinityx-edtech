@@ -7,17 +7,24 @@ import { ArrowRight, ArrowUpRight, Check, ChevronDown, Loader2, Play, ShieldChec
 import { trpc } from "@/lib/trpc";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSEO } from "@/hooks/useSEO";
+import { SOLUTION_CATEGORY_ORDER, solutionCategoryPresentation } from "@/lib/solutionCategories";
 
 export default function Solutions() {
   const { t, isRTL } = useLanguage();
   const copy = (en: string, ar: string) => t(en, ar, en);
   const { data: hubData, isLoading } = trpc.admin.getSolutionsHub.useQuery(undefined, { staleTime: 1000 * 60 * 5 });
   const services = (hubData?.allServices || []) as any[];
+  const [selectedCategory, setSelectedCategory] = useState<(typeof SOLUTION_CATEGORY_ORDER)[number]>("operations");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const selected = useMemo(
-    () => services.find((service) => service.id === selectedId) || services[0],
-    [services, selectedId]
+  const categoryServices = useMemo(
+    () => services.filter((service) => service.category_slug === selectedCategory),
+    [services, selectedCategory]
   );
+  const selected = useMemo(
+    () => categoryServices.find((service) => service.id === selectedId) || categoryServices[0],
+    [categoryServices, selectedId]
+  );
+  const activeCategory = solutionCategoryPresentation[selectedCategory];
   useSEO({
     title: "Enterprise AI Systems",
     description: "Production-grade computer vision, automation, predictive intelligence, custom AI, and software systems for enterprise operations.",
@@ -94,6 +101,35 @@ export default function Solutions() {
               </p>
             </div>
 
+            <div className="mb-6 grid gap-2 sm:grid-cols-3">
+              {SOLUTION_CATEGORY_ORDER.map((categorySlug) => {
+                const category = solutionCategoryPresentation[categorySlug];
+                const Icon = category.icon;
+                const isActive = selectedCategory === categorySlug;
+                return (
+                  <button
+                    type="button"
+                    key={categorySlug}
+                    onClick={() => {
+                      setSelectedCategory(categorySlug);
+                      setSelectedId(null);
+                    }}
+                    className={`flex min-h-16 items-center gap-3 border px-4 py-3 text-start transition-colors ${
+                      isActive ? "border-[#6453C2] bg-[#6453C2] text-white shadow-sm" : "border-[#D8DDD8] bg-white text-[#1F2925] hover:border-[#6453C2]"
+                    }`}
+                  >
+                    <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#C8BFF5]" : "text-[#6453C2]"}`} />
+                    <span>
+                      <span className="block text-sm font-bold">{copy(category.name.en, category.name.ar)}</span>
+                      <span className={`mt-1 block text-xs leading-5 ${isActive ? "text-white/75" : "text-[#5E6862]"}`}>
+                        {copy(category.homeDetail.en, category.homeDetail.ar)}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
             {isLoading ? (
               <div className="grid min-h-[420px] place-items-center">
                 <Loader2 className="h-7 w-7 animate-spin text-[#6453C2]" />
@@ -103,10 +139,10 @@ export default function Solutions() {
                 {/* Service selector list */}
                 <div className="bg-[#EAEDEA] p-3 text-[#1F2925] border-b lg:border-b-0 lg:border-e border-[#D8DDD8]">
                   <p className="px-4 pb-3 pt-3 text-[10px] font-bold uppercase tracking-[.18em] text-[#6453C2]">
-                    {copy("Select a system", "اختر نظاماً")}
+                    {copy("Select a system", "اختر نظاماً")} · {copy(activeCategory.name.en, activeCategory.name.ar)}
                   </p>
                   <div className="grid gap-1">
-                    {services.map((service: any, index: number) => {
+                    {categoryServices.map((service: any, index: number) => {
                       const active = selected?.id === service.id;
                       return (
                         <button
@@ -127,6 +163,11 @@ export default function Solutions() {
                         </button>
                       );
                     })}
+                    {categoryServices.length === 0 && (
+                      <p className="px-4 py-6 text-sm leading-7 text-[#5E6862]">
+                        {copy("No published systems are available in this family yet.", "لا توجد أنظمة منشورة في هذه الفئة بعد.")}
+                      </p>
+                    )}
                   </div>
                   <Link
                     href="/consultation"

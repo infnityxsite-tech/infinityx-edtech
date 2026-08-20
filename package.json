@@ -7,12 +7,15 @@
     "dev": "cross-env NODE_ENV=development tsx watch server/_core/index.ts",
     "build": "vite build",
     "build:server": "esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js",
+    "prestart": "node scripts/reconcile-solutions-taxonomy.mjs",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run --passWithNoTests",
     "seed": "tsx server/seed.ts",
-    "init-db": "node init-db.js"
+    "init-db": "node init-db.js",
+    "db:solutions": "node scripts/reconcile-solutions-taxonomy.mjs",
+    "validate:solutions": "node --env-file=.env scripts/validate-solution-routes.mjs"
   },
   "engines": {
     "node": ">=24 <25"
