@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { toast } from "sonner";
 import { Loader2, Plus, Edit2, Trash2 } from "lucide-react";
 
 export default function BlogManager() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     author: "",
@@ -209,7 +211,7 @@ export default function BlogManager() {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => deleteMutation.mutate({ id: post.id })}
+                    onClick={() => setPendingDelete({ id: post.id, title: post.title })}
                     disabled={deleteMutation.isPending}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -220,6 +222,18 @@ export default function BlogManager() {
           </div>
         )}
       </CardContent>
+      <DeleteConfirmDialog
+        open={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (!pendingDelete || deleteMutation.isPending) return;
+          const post = pendingDelete;
+          setPendingDelete(null);
+          deleteMutation.mutate({ id: post.id });
+        }}
+        entityType="Blog Post"
+        entityTitle={pendingDelete?.title ?? ""}
+      />
     </Card>
   );
 }

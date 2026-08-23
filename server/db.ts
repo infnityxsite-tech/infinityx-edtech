@@ -489,7 +489,32 @@ export async function getAllLessonsWithModule() {
   );
 }
 
-/** Deep copy a module (with all lessons, materials, quizzes, questions) into a target course */
+async function copyLessonAssignment(client: any, sourceLessonId: string | number, targetLessonId: string | number) {
+  const assignment = (await client.query(
+    `SELECT instructions, rubric, max_score, allowed_file_types, max_file_size_mb, max_attempts, is_active
+     FROM course_assignments WHERE lesson_id = $1`,
+    [sourceLessonId]
+  )).rows[0];
+
+  if (!assignment) return;
+
+  await client.query(
+    `INSERT INTO course_assignments (lesson_id, instructions, rubric, max_score, allowed_file_types, max_file_size_mb, max_attempts, is_active)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+    [
+      targetLessonId,
+      assignment.instructions,
+      assignment.rubric,
+      assignment.max_score,
+      assignment.allowed_file_types,
+      assignment.max_file_size_mb,
+      assignment.max_attempts,
+      assignment.is_active,
+    ]
+  );
+}
+
+/** Deep copy a module (with lessons, grading configuration, materials, quizzes, and questions) into a target course */
 export async function deepCopyModule(sourceModuleId: string, targetCourseId: string, orderIndex: number): Promise<{ moduleId: string }> {
   const client = await getPool().connect();
   try {
@@ -512,6 +537,8 @@ export async function deepCopyModule(sourceModuleId: string, targetCourseId: str
         [newModuleId, lesson.title, lesson.video_url, lesson.duration, lesson.is_preview, lesson.order_index]
       );
       const newLessonId = newLesRes.rows[0].id;
+
+      await copyLessonAssignment(client, lesson.id, newLessonId);
 
       const mats = (await client.query(`SELECT * FROM materials WHERE lesson_id = $1`, [lesson.id])).rows;
       for (const mat of mats) {
@@ -549,7 +576,7 @@ export async function deepCopyModule(sourceModuleId: string, targetCourseId: str
   }
 }
 
-/** Deep copy a single lesson (with materials, quizzes, questions) into a target module */
+/** Deep copy a single lesson (with grading configuration, materials, quizzes, and questions) into a target module */
 export async function deepCopyLesson(sourceLessonId: string, targetModuleId: string, orderIndex: number): Promise<{ lessonId: string }> {
   const client = await getPool().connect();
   try {
@@ -564,6 +591,8 @@ export async function deepCopyLesson(sourceLessonId: string, targetModuleId: str
       [targetModuleId, srcLesson.title, srcLesson.video_url, srcLesson.duration, srcLesson.is_preview, orderIndex]
     );
     const newLessonId = String(newLesRes.rows[0].id);
+
+    await copyLessonAssignment(client, sourceLessonId, newLessonId);
 
     const mats = (await client.query(`SELECT * FROM materials WHERE lesson_id = $1`, [sourceLessonId])).rows;
     for (const mat of mats) {

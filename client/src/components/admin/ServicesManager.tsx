@@ -7,6 +7,7 @@ import { Loader2, Trash2, Plus, Save, Package, X, ChevronDown, ChevronRight, Eye
 import { toast } from "sonner";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
 const emptyServiceForm = {
   title: "",
@@ -150,8 +151,21 @@ function ServiceRow({ service: s, isLight, expanded, onToggle, onDelete, inputCl
   updatePricing, editPricing, setEditPricing }: any) {
   const slug = s.slug || s.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const { data: detail } = trpc.admin.getSolutionBySlug.useQuery({ slug }, { enabled: expanded });
+  const [deleteTarget, setDeleteTarget] = useState<{
+    entityType: string;
+    entityTitle: string;
+    childSummary?: string;
+    onConfirm: () => void;
+  } | null>(null);
+
+  const requestDelete = (target: NonNullable<typeof deleteTarget>) => setDeleteTarget(target);
+  const confirmDelete = () => {
+    deleteTarget?.onConfirm();
+    setDeleteTarget(null);
+  };
 
   return (
+    <>
     <div className={`rounded-xl border ${isLight ? "border-slate-200 bg-white" : "border-white/[0.06] bg-white/[0.02]"}`}>
       <div className="p-4 flex items-center justify-between cursor-pointer" onClick={onToggle}>
         <div>
@@ -160,7 +174,7 @@ function ServiceRow({ service: s, isLight, expanded, onToggle, onDelete, inputCl
         </div>
         <div className="flex items-center gap-2">
           {expanded ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
-          <Button variant="ghost" size="icon" className="text-red-400 hover:bg-red-500/10" onClick={(e) => { e.stopPropagation(); onDelete(); }}><Trash2 className="w-4 h-4" /></Button>
+          <Button variant="ghost" size="icon" className="text-red-400 hover:bg-red-500/10" onClick={(e) => { e.stopPropagation(); requestDelete({ entityType: "Service Package", entityTitle: s.title, childSummary: "This will also permanently delete all associated service content.", onConfirm: onDelete }); }}><Trash2 className="w-4 h-4" /></Button>
         </div>
       </div>
       {expanded && detail && (
@@ -168,7 +182,7 @@ function ServiceRow({ service: s, isLight, expanded, onToggle, onDelete, inputCl
           {/* Tech Stack */}
           <SubSection title="Tech Stack" icon={Cpu} color="text-blue-400" count={detail.techStack?.length}>
             {(detail.techStack || []).map((t: any) => (
-              <div key={t.id} className={itemCls}><span className="text-sm font-medium">{t.name}</span><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => delTech.mutate({ id: t.id })}><Trash2 className="w-3 h-3" /></Button></div>
+              <div key={t.id} className={itemCls}><span className="text-sm font-medium">{t.name}</span><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => requestDelete({ entityType: "Technology", entityTitle: t.name, onConfirm: () => delTech.mutate({ id: t.id }) })}><Trash2 className="w-3 h-3" /></Button></div>
             ))}
             <div className="flex gap-2 pt-2">
               <Input placeholder="Technology name" value={newItem[`tech_${s.id}`] || ''} onChange={e => setNewItem({ ...newItem, [`tech_${s.id}`]: e.target.value })} className={inputCls} />
@@ -179,7 +193,7 @@ function ServiceRow({ service: s, isLight, expanded, onToggle, onDelete, inputCl
           {/* Deliverables */}
           <SubSection title="Deliverables" icon={Package} color="text-cyan-400" count={detail.deliverables?.length}>
             {(detail.deliverables || []).map((d: any) => (
-              <div key={d.id} className={itemCls}><div><span className="text-sm font-bold">{d.title}</span><p className="text-xs text-slate-500">{d.description}</p></div><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => delDel.mutate({ id: d.id })}><Trash2 className="w-3 h-3" /></Button></div>
+              <div key={d.id} className={itemCls}><div><span className="text-sm font-bold">{d.title}</span><p className="text-xs text-slate-500">{d.description}</p></div><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => requestDelete({ entityType: "Deliverable", entityTitle: d.title, onConfirm: () => delDel.mutate({ id: d.id }) })}><Trash2 className="w-3 h-3" /></Button></div>
             ))}
             <div className="space-y-2 pt-2">
               <Input placeholder="Deliverable title" value={newItem[`del_t_${s.id}`] || ''} onChange={e => setNewItem({ ...newItem, [`del_t_${s.id}`]: e.target.value })} className={inputCls} />
@@ -191,7 +205,7 @@ function ServiceRow({ service: s, isLight, expanded, onToggle, onDelete, inputCl
           {/* Use Cases */}
           <SubSection title="Use Cases" icon={Target} color="text-purple-400" count={detail.useCases?.length}>
             {(detail.useCases || []).map((uc: any) => (
-              <div key={uc.id} className={itemCls}><div><span className="text-sm font-bold">{uc.title}</span><p className="text-xs text-slate-500">{uc.description}</p></div><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => delUC.mutate({ id: uc.id })}><Trash2 className="w-3 h-3" /></Button></div>
+              <div key={uc.id} className={itemCls}><div><span className="text-sm font-bold">{uc.title}</span><p className="text-xs text-slate-500">{uc.description}</p></div><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => requestDelete({ entityType: "Use Case", entityTitle: uc.title, onConfirm: () => delUC.mutate({ id: uc.id }) })}><Trash2 className="w-3 h-3" /></Button></div>
             ))}
             <div className="space-y-2 pt-2">
               <Input placeholder="Use case title" value={newItem[`uc_t_${s.id}`] || ''} onChange={e => setNewItem({ ...newItem, [`uc_t_${s.id}`]: e.target.value })} className={inputCls} />
@@ -203,7 +217,7 @@ function ServiceRow({ service: s, isLight, expanded, onToggle, onDelete, inputCl
           {/* Gallery */}
           <SubSection title="Gallery" icon={Image} color="text-emerald-400" count={detail.gallery?.length}>
             {(detail.gallery || []).map((g: any) => (
-              <div key={g.id} className={itemCls}><div className="flex items-center gap-3"><img src={g.image_url} className="w-12 h-8 object-cover rounded" alt="" /><span className="text-sm">{g.caption || g.image_url}</span></div><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => delGal.mutate({ id: g.id })}><Trash2 className="w-3 h-3" /></Button></div>
+              <div key={g.id} className={itemCls}><div className="flex items-center gap-3"><img src={g.image_url} className="w-12 h-8 object-cover rounded" alt="" /><span className="text-sm">{g.caption || g.image_url}</span></div><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => requestDelete({ entityType: "Gallery Image", entityTitle: g.caption || g.image_url, onConfirm: () => delGal.mutate({ id: g.id }) })}><Trash2 className="w-3 h-3" /></Button></div>
             ))}
             <div className="space-y-2 pt-2">
               <Input placeholder="Image URL (/uploads/...)" value={newItem[`gal_u_${s.id}`] || ''} onChange={e => setNewItem({ ...newItem, [`gal_u_${s.id}`]: e.target.value })} className={inputCls} />
@@ -215,7 +229,7 @@ function ServiceRow({ service: s, isLight, expanded, onToggle, onDelete, inputCl
           {/* FAQ */}
           <SubSection title="FAQ" icon={HelpCircle} color="text-amber-400" count={detail.faq?.length}>
             {(detail.faq || []).map((f: any) => (
-              <div key={f.id} className={itemCls}><div><span className="text-sm font-bold">{f.question}</span><p className="text-xs text-slate-500">{f.answer?.substring(0, 80)}...</p></div><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => delFaq.mutate({ id: f.id })}><Trash2 className="w-3 h-3" /></Button></div>
+              <div key={f.id} className={itemCls}><div><span className="text-sm font-bold">{f.question}</span><p className="text-xs text-slate-500">{f.answer?.substring(0, 80)}...</p></div><Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => requestDelete({ entityType: "FAQ", entityTitle: f.question, onConfirm: () => delFaq.mutate({ id: f.id }) })}><Trash2 className="w-3 h-3" /></Button></div>
             ))}
             <div className="space-y-2 pt-2">
               <Input placeholder="Question" value={newItem[`faq_q_${s.id}`] || ''} onChange={e => setNewItem({ ...newItem, [`faq_q_${s.id}`]: e.target.value })} className={inputCls} />
@@ -240,7 +254,7 @@ function ServiceRow({ service: s, isLight, expanded, onToggle, onDelete, inputCl
                         if (isEditing) { setEditPricing({...editPricing, [`id_${pm.id}`]: false}); }
                         else { setEditPricing({...editPricing, [`id_${pm.id}`]: true, [`mt_${pm.id}`]: pm.model_type, [`sp_${pm.id}`]: pm.starting_price, [`ep_${pm.id}`]: pm.price_egp || '', [`desc_${pm.id}`]: pm.description || '', [`feat_${pm.id}`]: pm.features_json || '[]'}); }
                       }}><Edit className="w-3 h-3" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => delPricing.mutate({ id: pm.id })}><Trash2 className="w-3 h-3" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => requestDelete({ entityType: "Pricing Model", entityTitle: pm.model_type, onConfirm: () => delPricing.mutate({ id: pm.id }) })}><Trash2 className="w-3 h-3" /></Button>
                     </div>
                   </div>
                   {isEditing && (
@@ -273,5 +287,14 @@ function ServiceRow({ service: s, isLight, expanded, onToggle, onDelete, inputCl
         </div>
       )}
     </div>
+    <DeleteConfirmDialog
+      open={deleteTarget !== null}
+      onClose={() => setDeleteTarget(null)}
+      onConfirm={confirmDelete}
+      entityType={deleteTarget?.entityType || "Item"}
+      entityTitle={deleteTarget?.entityTitle || ""}
+      childSummary={deleteTarget?.childSummary}
+    />
+    </>
   );
 }

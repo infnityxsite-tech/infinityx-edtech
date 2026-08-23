@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { toast } from "sonner";
 import { Loader2, Plus, Edit2, Trash2 } from "lucide-react";
 
 export default function CareersManager() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     location: "",
@@ -227,7 +229,7 @@ export default function CareersManager() {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => deleteMutation.mutate({ id: job.id })}
+                    onClick={() => setPendingDelete({ id: job.id, title: job.title })}
                     disabled={deleteMutation.isPending}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -238,6 +240,18 @@ export default function CareersManager() {
           </div>
         )}
       </CardContent>
+      <DeleteConfirmDialog
+        open={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (!pendingDelete || deleteMutation.isPending) return;
+          const job = pendingDelete;
+          setPendingDelete(null);
+          deleteMutation.mutate({ id: job.id });
+        }}
+        entityType="Job Listing"
+        entityTitle={pendingDelete?.title ?? ""}
+      />
     </Card>
   );
 }

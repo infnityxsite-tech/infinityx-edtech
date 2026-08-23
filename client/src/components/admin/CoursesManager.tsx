@@ -10,11 +10,7 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle
-} from "@/components/ui/alert-dialog";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { toast } from "sonner";
 import {
   Loader2, Plus, Edit2, Trash2, ChevronRight, ChevronLeft,
@@ -51,47 +47,61 @@ const makeLesson = (): LessonBlock => ({
 const makeModule = (): ModuleBlock => ({
   id: uid(), title: "", orderIndex: 0, lessons: [makeLesson()]
 });
+
+const toLessonBlock = (lesson: any): LessonBlock => {
+  const defaultAssignment = makeAssignment();
+  const assignment = lesson.assignment;
+  const isGradingEnabled = Boolean(assignment?.isActive ?? assignment?.enableGrading);
+
+  return {
+    id: lesson.id ? String(lesson.id) : uid(),
+    title: lesson.title || "",
+    videoUrl: lesson.videoUrl || "",
+    materials: Array.isArray(lesson.materials) ? lesson.materials : [],
+    duration: lesson.duration || "",
+    isPreview: lesson.isPreview || false,
+    orderIndex: lesson.orderIndex || 0,
+    assignment: isGradingEnabled ? {
+      enableGrading: true,
+      instructions: assignment.instructions ?? defaultAssignment.instructions,
+      rubric: assignment.rubric ?? defaultAssignment.rubric,
+      maxScore: assignment.maxScore ?? defaultAssignment.maxScore,
+      allowedFileTypes: assignment.allowedFileTypes ?? defaultAssignment.allowedFileTypes,
+      maxFileSizeMb: assignment.maxFileSizeMb ?? defaultAssignment.maxFileSizeMb,
+      maxAttempts: assignment.maxAttempts ?? defaultAssignment.maxAttempts,
+    } : defaultAssignment,
+    quizzes: (lesson.quizzes || []).flatMap((quiz: any) =>
+      Array.isArray(quiz.questions) ? quiz.questions.map((questionData: any, quizIndex: number) => {
+        const options = [
+          { text: questionData.optionA || "" },
+          { text: questionData.optionB || "" },
+          { text: questionData.optionC || "" },
+          { text: questionData.optionD || "" }
+        ];
+        const correctIndex = ['A', 'B', 'C', 'D'].indexOf(questionData.correctAnswer);
+        return {
+          id: uid(),
+          question: questionData.question || "",
+          options,
+          correctIndex: correctIndex >= 0 ? correctIndex : 0,
+          orderIndex: quizIndex,
+        };
+      }) : []
+    ),
+  };
+};
+
+const toModuleBlocks = (sourceModules: any[]): ModuleBlock[] => sourceModules.map((module: any) => ({
+  id: module.id ? String(module.id) : uid(),
+  title: module.title || "",
+  orderIndex: module.orderIndex || 0,
+  lessons: (module.lessons || []).map(toLessonBlock),
+}));
 const DEFAULT_INFO = (): CourseFormData => ({
   title: "", description: "", imageUrl: "", duration: "", level: "",
   instructor: "", priceEgp: 0, priceUsd: 0, courseLink: "",
   category: "", courseType: "Recorded", syllabus: "", scheduleDetails: ""
 });
-
-// ─── DELETE CONFIRMATION MODAL ────────────────────────────────────────────────
-
-function DeleteConfirmModal({ open, onClose, onConfirm, entityType, entityTitle, childSummary }: {
-  open: boolean; onClose: () => void; onConfirm: () => void;
-  entityType: string; entityTitle: string; childSummary?: string;
-}) {
-  return (
-    <AlertDialog open={open} onOpenChange={v => !v && onClose()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            <Trash2 className="w-5 h-5 text-red-500" /> Delete {entityType}?
-          </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <span className="block">
-              Are you sure you want to delete <strong className="text-slate-800">{entityTitle || `this ${entityType.toLowerCase()}`}</strong>?
-            </span>
-            {childSummary && (
-              <span className="block text-red-600 font-medium text-xs bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-2">
-                ⚠️ {childSummary}
-              </span>
-            )}
-            <span className="block text-xs text-slate-500 mt-2">This action cannot be undone.</span>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700 text-white">
-            Delete {entityType}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-}
 
 // ─── IMPORT MODULE MODAL ──────────────────────────────────────────────────────
 
@@ -248,6 +258,7 @@ function ImportLessonModal({ open, onClose, onImport, excludeModuleId }: {
 // ─── QUIZ BUILDER ─────────────────────────────────────────────────────────────
 
 function QuizBuilder({ quizzes, onChange }: { quizzes: QuizBlock[]; onChange: (q: QuizBlock[]) => void }) {
+  const [deleteTarget, setDeleteTarget] = useState<QuizBlock | null>(null);
   const addQuiz = () => onChange([...quizzes, { ...makeQuiz(), orderIndex: quizzes.length }]);
   const removeQuiz = (id: string) => onChange(quizzes.filter(q => q.id !== id));
   const updateQuiz = (id: string, patch: Partial<QuizBlock>) =>
@@ -274,7 +285,7 @@ function QuizBuilder({ quizzes, onChange }: { quizzes: QuizBlock[]; onChange: (q
         <div key={quiz.id} className="bg-purple-50/60 border border-purple-100 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-purple-700">Q{qi + 1}</span>
-            <button type="button" onClick={() => removeQuiz(quiz.id)} className="text-slate-300 hover:text-red-500 transition-colors p-1 rounded">
+            <button type="button" onClick={() => setDeleteTarget(quiz)} className="text-slate-300 hover:text-red-500 transition-colors p-1 rounded">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -302,6 +313,15 @@ function QuizBuilder({ quizzes, onChange }: { quizzes: QuizBlock[]; onChange: (q
           <p className="text-[10px] text-slate-400 italic">Circle = correct answer</p>
         </div>
       ))}
+      {deleteTarget && (
+        <DeleteConfirmDialog
+          open={!!deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={() => { removeQuiz(deleteTarget.id); setDeleteTarget(null); }}
+          entityType="Quiz Question"
+          entityTitle={deleteTarget.question || "this quiz question"}
+        />
+      )}
     </div>
   );
 }
@@ -309,6 +329,7 @@ function QuizBuilder({ quizzes, onChange }: { quizzes: QuizBlock[]; onChange: (q
 // ─── MATERIAL BUILDER ─────────────────────────────────────────────────────────
 
 function MaterialBuilder({ materials, onChange }: { materials: Material[]; onChange: (m: Material[]) => void }) {
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const add = () => onChange([...materials, { title: "", url: "" }]);
   const remove = (i: number) => onChange(materials.filter((_, idx) => idx !== i));
   const update = (i: number, patch: Partial<Material>) => {
@@ -330,11 +351,20 @@ function MaterialBuilder({ materials, onChange }: { materials: Material[]; onCha
             placeholder="Label (e.g. Slides)" className="flex-1 h-8 text-xs" />
           <Input value={mat.url} onChange={e => update(i, { url: e.target.value })}
             placeholder="URL" className="flex-[2] h-8 text-xs" />
-          <button type="button" onClick={() => remove(i)} className="text-slate-300 hover:text-red-500 p-1 rounded transition-colors flex-shrink-0">
+          <button type="button" onClick={() => setDeleteIndex(i)} className="text-slate-300 hover:text-red-500 p-1 rounded transition-colors flex-shrink-0">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
       ))}
+      {deleteIndex !== null && (
+        <DeleteConfirmDialog
+          open={deleteIndex !== null}
+          onClose={() => setDeleteIndex(null)}
+          onConfirm={() => { remove(deleteIndex); setDeleteIndex(null); }}
+          entityType="Material"
+          entityTitle={materials[deleteIndex]?.title || "this material"}
+        />
+      )}
     </div>
   );
 }
@@ -642,7 +672,7 @@ function ModuleBuilder({ module, index, onChange, onRemove, onDuplicate, onImpor
 
       {/* Delete Confirmation for lessons within this module */}
       {deleteTarget && (
-        <DeleteConfirmModal
+        <DeleteConfirmDialog
           open={!!deleteTarget}
           onClose={() => setDeleteTarget(null)}
           onConfirm={() => { removeLesson(deleteTarget.id); setDeleteTarget(null); toast.success(`Deleted ${deleteTarget.type}`); }}
@@ -670,6 +700,7 @@ export default function CoursesManager() {
 
   // Delete confirmation state
   const [deleteTarget, setDeleteTarget] = useState<{ type: string; title: string; id: string; childSummary?: string } | null>(null);
+  const [courseDeleteTarget, setCourseDeleteTarget] = useState<{ id: string; title: string } | null>(null);
 
   // Import modal state
   const [importModuleOpen, setImportModuleOpen] = useState(false);
@@ -701,47 +732,7 @@ export default function CoursesManager() {
       });
 
       if (completeData.modules && completeData.modules.length > 0) {
-        setModules(completeData.modules.map((m: any) => ({
-          id: m.id ? String(m.id) : uid(), // Preserve real DB ID
-          title: m.title || "",
-          orderIndex: m.orderIndex || 0,
-          lessons: (m.lessons || []).map((l: any) => ({
-            id: l.id ? String(l.id) : uid(), // Preserve real DB ID
-            title: l.title || "",
-            videoUrl: l.videoUrl || "",
-            materials: Array.isArray(l.materials) ? l.materials : [],
-            duration: l.duration || "",
-            isPreview: l.isPreview || false,
-            orderIndex: l.orderIndex || 0,
-            assignment: l.assignment && l.assignment.isActive ? {
-              enableGrading: true,
-              instructions: l.assignment.instructions || '',
-              rubric: l.assignment.rubric || '',
-              maxScore: l.assignment.maxScore || 100,
-              allowedFileTypes: l.assignment.allowedFileTypes || '.txt,.py,.ipynb,.csv,.pdf',
-              maxFileSizeMb: l.assignment.maxFileSizeMb || 5,
-              maxAttempts: l.assignment.maxAttempts || 3,
-            } : makeAssignment(),
-            quizzes: (l.quizzes || []).flatMap((q: any) =>
-              Array.isArray(q.questions) ? q.questions.map((questionData: any, qi: number) => {
-                const opts = [
-                  { text: questionData.optionA || "" },
-                  { text: questionData.optionB || "" },
-                  { text: questionData.optionC || "" },
-                  { text: questionData.optionD || "" }
-                ];
-                const cIdx = ['A', 'B', 'C', 'D'].indexOf(questionData.correctAnswer);
-                return {
-                  id: uid(), // Quiz IDs are always client-side
-                  question: questionData.question || "",
-                  options: opts,
-                  correctIndex: cIdx >= 0 ? cIdx : 0,
-                  orderIndex: qi
-                };
-              }) : []
-            )
-          }))
-        })));
+        setModules(toModuleBlocks(completeData.modules));
       } else {
         setModules([makeModule()]);
       }
@@ -883,32 +874,7 @@ export default function CoursesManager() {
       // Reload the course data to pick up the newly imported module
       const refreshed = await utils.admin.getCourseComplete.fetch({ id: editingId });
       if (refreshed && refreshed.modules) {
-        setModules(refreshed.modules.map((m: any) => ({
-          id: m.id ? String(m.id) : uid(),
-          title: m.title || "",
-          orderIndex: m.orderIndex || 0,
-          lessons: (m.lessons || []).map((l: any) => ({
-            id: l.id ? String(l.id) : uid(),
-            title: l.title || "",
-            videoUrl: l.videoUrl || "",
-            materials: Array.isArray(l.materials) ? l.materials : [],
-            duration: l.duration || "",
-            isPreview: l.isPreview || false,
-            orderIndex: l.orderIndex || 0,
-            quizzes: (l.quizzes || []).flatMap((q: any) =>
-              Array.isArray(q.questions) ? q.questions.map((questionData: any, qi: number) => {
-                const opts = [
-                  { text: questionData.optionA || "" },
-                  { text: questionData.optionB || "" },
-                  { text: questionData.optionC || "" },
-                  { text: questionData.optionD || "" }
-                ];
-                const cIdx = ['A', 'B', 'C', 'D'].indexOf(questionData.correctAnswer);
-                return { id: uid(), question: questionData.question || "", options: opts, correctIndex: cIdx >= 0 ? cIdx : 0, orderIndex: qi };
-              }) : []
-            )
-          }))
-        })));
+        setModules(toModuleBlocks(refreshed.modules));
       }
     } catch (e: any) {
       console.error(e);
@@ -942,32 +908,7 @@ export default function CoursesManager() {
       // Reload course data
       const refreshed = await utils.admin.getCourseComplete.fetch({ id: editingId });
       if (refreshed && refreshed.modules) {
-        setModules(refreshed.modules.map((m: any) => ({
-          id: m.id ? String(m.id) : uid(),
-          title: m.title || "",
-          orderIndex: m.orderIndex || 0,
-          lessons: (m.lessons || []).map((l: any) => ({
-            id: l.id ? String(l.id) : uid(),
-            title: l.title || "",
-            videoUrl: l.videoUrl || "",
-            materials: Array.isArray(l.materials) ? l.materials : [],
-            duration: l.duration || "",
-            isPreview: l.isPreview || false,
-            orderIndex: l.orderIndex || 0,
-            quizzes: (l.quizzes || []).flatMap((q: any) =>
-              Array.isArray(q.questions) ? q.questions.map((questionData: any, qi: number) => {
-                const opts = [
-                  { text: questionData.optionA || "" },
-                  { text: questionData.optionB || "" },
-                  { text: questionData.optionC || "" },
-                  { text: questionData.optionD || "" }
-                ];
-                const cIdx = ['A', 'B', 'C', 'D'].indexOf(questionData.correctAnswer);
-                return { id: uid(), question: questionData.question || "", options: opts, correctIndex: cIdx >= 0 ? cIdx : 0, orderIndex: qi };
-              }) : []
-            )
-          }))
-        })));
+        setModules(toModuleBlocks(refreshed.modules));
       }
     } catch (e: any) {
       console.error(e);
@@ -1024,9 +965,7 @@ export default function CoursesManager() {
                   <Button variant="outline" size="sm" onClick={() => handleEdit(course)}>
                     <Edit2 className="w-4 h-4" />
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={() => {
-                    if (window.confirm(`Delete "${course.title}"?`)) deleteCourse.mutate({ id: course.id });
-                  }}>
+                  <Button variant="destructive" size="sm" onClick={() => setCourseDeleteTarget({ id: course.id, title: course.title })}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -1237,9 +1176,22 @@ export default function CoursesManager() {
         </DialogContent>
       </Dialog>
 
+      {courseDeleteTarget && (
+        <DeleteConfirmDialog
+          open={!!courseDeleteTarget}
+          onClose={() => setCourseDeleteTarget(null)}
+          onConfirm={() => {
+            deleteCourse.mutate({ id: courseDeleteTarget.id });
+            setCourseDeleteTarget(null);
+          }}
+          entityType="Course"
+          entityTitle={courseDeleteTarget.title}
+        />
+      )}
+
       {/* Module-level delete confirmation */}
       {deleteTarget && (
-        <DeleteConfirmModal
+        <DeleteConfirmDialog
           open={!!deleteTarget}
           onClose={() => setDeleteTarget(null)}
           onConfirm={() => { removeModule(deleteTarget.id); setDeleteTarget(null); toast.success(`Deleted ${deleteTarget.type}`); }}

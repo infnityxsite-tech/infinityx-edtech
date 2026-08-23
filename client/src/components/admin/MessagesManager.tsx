@@ -3,10 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash2, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
 export default function MessagesManager() {
   const utils = trpc.useUtils();
   const { data: messages = [], isLoading } = trpc.admin.getMessages.useQuery();
+  const [messageToDelete, setMessageToDelete] = useState<any>(null);
   const deleteMutation = trpc.admin.deleteMessage.useMutation({
     onSuccess: () => {
       toast.success("✅ Message deleted successfully");
@@ -60,7 +63,7 @@ export default function MessagesManager() {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => deleteMutation.mutate({ id: msg.id })}
+                  onClick={() => setMessageToDelete(msg)}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -69,6 +72,17 @@ export default function MessagesManager() {
           </div>
         )}
       </CardContent>
+      <DeleteConfirmDialog
+        open={!!messageToDelete}
+        onClose={() => setMessageToDelete(null)}
+        onConfirm={() => {
+          if (!messageToDelete) return;
+          deleteMutation.mutate({ id: messageToDelete.id });
+          setMessageToDelete(null);
+        }}
+        entityType="Message"
+        entityTitle={messageToDelete?.subject || messageToDelete?.name || "this message"}
+      />
     </Card>
   );
 }

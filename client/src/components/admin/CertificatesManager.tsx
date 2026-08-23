@@ -19,11 +19,13 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export default function CertificatesManager() {
     const [isOpen, setIsOpen] = useState(false);
+    const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
     const [formData, setFormData] = useState({
         studentName: "",
         studentEmail: "",
@@ -228,11 +230,8 @@ export default function CertificatesManager() {
                                         variant="ghost"
                                         size="icon"
                                         className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                        onClick={() => {
-                                            if (window.confirm(`Are you sure you want to delete certificate ${cert.certId} for ${cert.studentName}?`)) {
-                                                deleteMutation.mutate({ id: cert.id });
-                                            }
-                                        }}
+                                        onClick={() => setPendingDelete({ id: String(cert.id), title: `${cert.certId} for ${cert.studentName}` })}
+                                        disabled={deleteMutation.isPending}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </Button>
@@ -242,6 +241,18 @@ export default function CertificatesManager() {
                     </div>
                 )}
             </CardContent>
+            <DeleteConfirmDialog
+                open={pendingDelete !== null}
+                onClose={() => setPendingDelete(null)}
+                onConfirm={() => {
+                    if (!pendingDelete || deleteMutation.isPending) return;
+                    const certificate = pendingDelete;
+                    setPendingDelete(null);
+                    deleteMutation.mutate({ id: certificate.id });
+                }}
+                entityType="Certificate"
+                entityTitle={pendingDelete?.title ?? ""}
+            />
         </Card>
     );
 }

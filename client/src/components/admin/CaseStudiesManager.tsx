@@ -7,6 +7,7 @@ import { Loader2, Trash2, Plus, Save, FileText, X, Globe, Edit, ChevronDown, Che
 import { toast } from "sonner";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
 export default function CaseStudiesManager() {
   const { theme } = useTheme();
@@ -17,6 +18,7 @@ export default function CaseStudiesManager() {
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState({ clientName: "", clientNameAr: "", industry: "", industryAr: "", challenge: "", challengeAr: "", solution: "", solutionAr: "", outcome: "", outcomeAr: "", imageUrl: "", isPublished: false });
   const [editForm, setEditForm] = useState<any>({});
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
 
   const createMutation = trpc.admin.createClientCaseStudy.useMutation({
     onSuccess: () => { toast.success("Created!"); utils.admin.getClientCaseStudies.invalidate(); setShowForm(false); setForm({ clientName: "", clientNameAr: "", industry: "", industryAr: "", challenge: "", challengeAr: "", solution: "", solutionAr: "", outcome: "", outcomeAr: "", imageUrl: "", isPublished: false }); },
@@ -95,7 +97,7 @@ export default function CaseStudiesManager() {
                 </div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon" className="text-cyan-400 hover:bg-cyan-500/10" onClick={() => editId === cs.id ? setEditId(null) : startEdit(cs)}><Edit className="w-4 h-4" /></Button>
-                  <Button variant="ghost" size="icon" className="text-red-400 hover:bg-red-500/10" onClick={() => deleteMutation.mutate({ id: cs.id })}><Trash2 className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon" className="text-red-400 hover:bg-red-500/10" onClick={() => setPendingDelete({ id: String(cs.id), title: cs.clientName || cs.client_name || "" })} disabled={deleteMutation.isPending}><Trash2 className="w-4 h-4" /></Button>
                 </div>
               </div>
               {editId === cs.id && (
@@ -126,6 +128,18 @@ export default function CaseStudiesManager() {
           ))}
         </div>
       </CardContent>
+      <DeleteConfirmDialog
+        open={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (!pendingDelete || deleteMutation.isPending) return;
+          const caseStudy = pendingDelete;
+          setPendingDelete(null);
+          deleteMutation.mutate({ id: caseStudy.id });
+        }}
+        entityType="Case Study"
+        entityTitle={pendingDelete?.title ?? ""}
+      />
     </Card>
   );
 }

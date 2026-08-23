@@ -55,6 +55,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSEO } from "@/hooks/useSEO";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
 // Menu items config (with generic English labels that will be translated in render)
 const MENU_ITEMS = [
@@ -81,6 +82,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [appTab, setAppTab] = useState("course");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [applicationToDelete, setApplicationToDelete] = useState<any>(null);
   const { t, isRTL } = useLanguage();
   const { theme } = useTheme();
   const isLight = theme === "light";
@@ -409,9 +411,7 @@ export default function AdminDashboard() {
                         variant="ghost"
                         size="icon"
                         className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                        onClick={() =>
-                          deleteApplicationMutation.mutate({ id: app.id })
-                        }
+                        onClick={() => setApplicationToDelete(app)}
                         title="Delete Application"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -506,6 +506,18 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         )}
+
+        <DeleteConfirmDialog
+          open={!!applicationToDelete}
+          onClose={() => setApplicationToDelete(null)}
+          onConfirm={() => {
+            if (!applicationToDelete) return;
+            deleteApplicationMutation.mutate({ id: applicationToDelete.id });
+            setApplicationToDelete(null);
+          }}
+          entityType="Application"
+          entityTitle={applicationToDelete?.full_name || applicationToDelete?.fullName || applicationToDelete?.email || "this application"}
+        />
       </main>
     </div>
   );

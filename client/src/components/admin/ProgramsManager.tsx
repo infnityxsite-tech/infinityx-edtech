@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2, Plus, Edit2, Trash2, GripVertical, BookOpen, X, Search } from "lucide-react";
@@ -30,6 +31,13 @@ interface ProgramModule {
   courses: ModuleCourse[];
 }
 
+interface PendingDestructiveAction {
+  entityType: string;
+  entityTitle: string;
+  childSummary?: string;
+  onConfirm: () => void;
+}
+
 const emptyModule = (): ProgramModule => ({
   title: "", description: "", duration: "", imageUrl: "", links: "",
   orderIndex: 0, deliveryMode: "Recorded", courses: [],
@@ -50,6 +58,7 @@ export default function ProgramsManager() {
   });
 
   const [modules, setModules] = useState<ProgramModule[]>([]);
+  const [pendingDestructiveAction, setPendingDestructiveAction] = useState<PendingDestructiveAction | null>(null);
 
   const { data: programs = [], isLoading } = trpc.admin.getPrograms.useQuery();
   const { data: allCourses = [] } = trpc.admin.getCourses.useQuery();
@@ -278,7 +287,17 @@ export default function ProgramsManager() {
                           <GripVertical className="w-4 h-4 text-slate-300" />
                           <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Module {modIdx + 1}</span>
                         </div>
-                        <Button variant="ghost" size="icon" className="text-red-400 hover:text-red-600 h-7 w-7" onClick={() => removeModule(modIdx)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-400 hover:text-red-600 h-7 w-7"
+                          onClick={() => setPendingDestructiveAction({
+                            entityType: "Module",
+                            entityTitle: mod.title || `Module ${modIdx + 1}`,
+                            childSummary: "This module and its course links will be removed when you save the program.",
+                            onConfirm: () => removeModule(modIdx),
+                          })}
+                        >
                           <X className="w-4 h-4" />
                         </Button>
                       </div>
@@ -314,7 +333,17 @@ export default function ProgramsManager() {
                         {mod.courses.map((c, cIdx) => (
                           <div key={cIdx} className="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 mb-1.5 text-sm">
                             <span className="flex-1 font-medium text-slate-700 truncate">{c.title || `Course #${c.courseId}`}</span>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600" onClick={() => removeCourseFromModule(modIdx, cIdx)}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-red-400 hover:text-red-600"
+                              onClick={() => setPendingDestructiveAction({
+                                entityType: "Course Link",
+                                entityTitle: c.title || `Course #${c.courseId}`,
+                                childSummary: "This course will be unlinked from the module when you save the program. The course itself will not be deleted.",
+                                onConfirm: () => removeCourseFromModule(modIdx, cIdx),
+                              })}
+                            >
                               <X className="w-3 h-3" />
                             </Button>
                           </div>
@@ -390,13 +419,35 @@ export default function ProgramsManager() {
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => handleEdit(program)}><Edit2 className="w-4 h-4" /></Button>
-                  <Button variant="destructive" size="sm" onClick={() => { if (window.confirm("Delete this program?")) deleteMutation.mutate({ id: program.id }); }}><Trash2 className="w-4 h-4" /></Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setPendingDestructiveAction({
+                      entityType: "Program",
+                      entityTitle: program.title,
+                      onConfirm: () => deleteMutation.mutate({ id: program.id }),
+                    })}
+                    disabled={deleteMutation.isPending}
+                  ><Trash2 className="w-4 h-4" /></Button>
                 </div>
               </div>
             ))}
           </div>
         )}
       </CardContent>
+      <DeleteConfirmDialog
+        open={pendingDestructiveAction !== null}
+        onClose={() => setPendingDestructiveAction(null)}
+        onConfirm={() => {
+          if (!pendingDestructiveAction) return;
+          const action = pendingDestructiveAction;
+          setPendingDestructiveAction(null);
+          action.onConfirm();
+        }}
+        entityType={pendingDestructiveAction?.entityType ?? "Item"}
+        entityTitle={pendingDestructiveAction?.entityTitle ?? ""}
+        childSummary={pendingDestructiveAction?.childSummary}
+      />
     </Card>
   );
 }

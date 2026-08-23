@@ -20,9 +20,11 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
 export default function SponsorsManager() {
     const [isOpen, setIsOpen] = useState(false);
+    const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
     const [formData, setFormData] = useState({
         name: "",
         logoUrl: "",
@@ -204,11 +206,8 @@ export default function SponsorsManager() {
                                         variant="ghost"
                                         size="icon"
                                         className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                        onClick={() => {
-                                            if (window.confirm(`Are you sure you want to delete ${sponsor.name}?`)) {
-                                                deleteMutation.mutate({ id: sponsor.id });
-                                            }
-                                        }}
+                                        onClick={() => setPendingDelete({ id: String(sponsor.id), title: sponsor.name })}
+                                        disabled={deleteMutation.isPending}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </Button>
@@ -218,6 +217,18 @@ export default function SponsorsManager() {
                     </div>
                 )}
             </CardContent>
+            <DeleteConfirmDialog
+                open={pendingDelete !== null}
+                onClose={() => setPendingDelete(null)}
+                onConfirm={() => {
+                    if (!pendingDelete || deleteMutation.isPending) return;
+                    const sponsor = pendingDelete;
+                    setPendingDelete(null);
+                    deleteMutation.mutate({ id: sponsor.id });
+                }}
+                entityType="Sponsor"
+                entityTitle={pendingDelete?.title ?? ""}
+            />
         </Card>
     );
 }

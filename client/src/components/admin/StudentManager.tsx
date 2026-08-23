@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Loader2, RefreshCcw, Search, User, Edit, Trash2, ShieldCheck, Database } from "lucide-react";
 import { collection, getDocs } from "firebase/firestore";
 import { db as firebaseDb } from "@/lib/firebase";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
 export default function StudentManager() {
     const utils = trpc.useUtils();
@@ -22,6 +23,7 @@ export default function StudentManager() {
     const [editOpen, setEditOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState<any>(null);
     const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
+    const [studentToDelete, setStudentToDelete] = useState<any>(null);
 
     // tRPC mutations
     const enrollUserMutation = trpc.admin.enrollUser.useMutation({
@@ -240,11 +242,7 @@ export default function StudentManager() {
 
                                                 <Button variant="ghost" size="icon"
                                                     className="w-8 h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                    onClick={() => {
-                                                        if (window.confirm(`Are you absolutely sure you want to delete student ${student.name}? This will remove all their enrollments and data.`)) {
-                                                            handleDelete(String(student.id));
-                                                        }
-                                                    }}
+                                                    onClick={() => setStudentToDelete(student)}
                                                     disabled={deleteStudentMutation.isPending}
                                                     title="Delete Student">
                                                     <Trash2 className="w-4 h-4" />
@@ -314,6 +312,19 @@ export default function StudentManager() {
                     )}
                 </DialogContent>
             </Dialog>
+
+            <DeleteConfirmDialog
+                open={!!studentToDelete}
+                onClose={() => setStudentToDelete(null)}
+                onConfirm={() => {
+                    if (!studentToDelete) return;
+                    handleDelete(String(studentToDelete.id));
+                    setStudentToDelete(null);
+                }}
+                entityType="Student"
+                entityTitle={studentToDelete?.name || studentToDelete?.email || "this student"}
+                childSummary="This will remove all enrollments and data."
+            />
         </Card>
     );
 }

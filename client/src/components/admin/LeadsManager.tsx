@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Trash2, Phone, Mail, Building, Calendar, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useState } from "react";
+import { DeleteConfirmDialog } from "@/components/admin/DeleteConfirmDialog";
 
 const STATUS_OPTIONS = [
   { value: "new", label: "New", color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
@@ -19,6 +21,7 @@ export default function LeadsManager() {
   const { theme } = useTheme();
   const isLight = theme === "light";
   const utils = trpc.useUtils();
+  const [leadToDelete, setLeadToDelete] = useState<any>(null);
 
   const { data: leads = [], isLoading } = trpc.admin.getConsultationLeads.useQuery();
 
@@ -133,7 +136,7 @@ export default function LeadsManager() {
                       variant="ghost"
                       size="icon"
                       className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                      onClick={() => deleteMutation.mutate({ id: lead.id })}
+                      onClick={() => setLeadToDelete(lead)}
                     >
                       <Trash2 className="w-5 h-5" />
                     </Button>
@@ -144,6 +147,17 @@ export default function LeadsManager() {
           </div>
         )}
       </CardContent>
+      <DeleteConfirmDialog
+        open={!!leadToDelete}
+        onClose={() => setLeadToDelete(null)}
+        onConfirm={() => {
+          if (!leadToDelete) return;
+          deleteMutation.mutate({ id: leadToDelete.id });
+          setLeadToDelete(null);
+        }}
+        entityType="Lead"
+        entityTitle={leadToDelete?.name || leadToDelete?.email || "this lead"}
+      />
     </Card>
   );
 }
