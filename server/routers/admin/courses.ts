@@ -102,6 +102,15 @@ export const coursesEndpoints = {
             return await db.deepCopyModule(input.sourceModuleId, input.targetCourseId, input.orderIndex);
         }),
 
+    importModules: protectedProcedure
+        .input(z.object({
+            sourceModuleIds: z.array(z.union([z.string(), z.number()]).transform(String)).min(1).max(50),
+            targetCourseId: z.union([z.string(), z.number()]).transform(String),
+        }))
+        .mutation(async ({ input }) => {
+            return await db.deepCopyModules(input.sourceModuleIds, input.targetCourseId);
+        }),
+
     importLesson: protectedProcedure
         .input(z.object({
             sourceLessonId: z.union([z.string(), z.number()]).transform(String),

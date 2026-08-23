@@ -105,11 +105,48 @@ const DEFAULT_INFO = (): CourseFormData => ({
 
 // ─── IMPORT MODULE MODAL ──────────────────────────────────────────────────────
 
-function ImportModuleModal({ open, onClose, onImport, excludeCourseId }: {
-  open: boolean; onClose: () => void; onImport: (moduleId: string) => void; excludeCourseId?: string;
+function ImportModuleModal({ open, onClose, onImport, excludeCourseId, isImporting }: {
+  open: boolean; onClose: () => void; onImport: (moduleIds: string[]) => Promise<void>; excludeCourseId?: string; isImporting: boolean;
 }) {
   const { data: allModules = [], isLoading } = trpc.admin.getAllModulesWithCourse.useQuery(undefined, { enabled: open });
   const [search, setSearch] = useState("");
+  const [selectedModuleIds, setSelectedModuleIds] = useState<Set<string>>(() => new Set());
+  const importInFlightRef = useRef(false);
+
+  useEffect(() => {
+    if (!open) {
+      setSearch("");
+      setSelectedModuleIds(new Set());
+      importInFlightRef.current = false;
+    }
+  }, [open]);
+
+  const close = () => {
+    if (isImporting || importInFlightRef.current) return;
+    onClose();
+  };
+
+  const toggleModule = (moduleId: string) => {
+    if (isImporting) return;
+    setSelectedModuleIds(previous => {
+      const next = new Set(previous);
+      if (next.has(moduleId)) next.delete(moduleId);
+      else next.add(moduleId);
+      return next;
+    });
+  };
+
+  const handleAdd = async () => {
+    if (isImporting || importInFlightRef.current || selectedModuleIds.size === 0) return;
+    importInFlightRef.current = true;
+    try {
+      await onImport(Array.from(selectedModuleIds));
+    } finally {
+      importInFlightRef.current = false;
+    }
+  };
+  const selectedCount = selectedModuleIds.size;
+  const addLabel = selectedCount === 0 ? "Add" : `Add ${selectedCount} Module${selectedCount !== 1 ? 's' : ''}`;
 
   const filtered = allModules.filter((m: any) => {
     if (excludeCourseId && String(m.courseId) === String(excludeCourseId)) return false;
@@ -126,7 +163,7 @@ function ImportModuleModal({ open, onClose, onImport, excludeCourseId }: {
   }
 
   return (
-    <Dialog open={open} onOpenChange={v => !v && onClose()}>
+    <Dialog open={open} onOpenChange={v => !v && close()}>
       <DialogContent className="max-w-lg max-h-[75vh] flex flex-col p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-5 py-4 border-b border-slate-200 flex-shrink-0">
           <DialogTitle className="text-base font-bold flex items-center gap-2">
@@ -136,7 +173,7 @@ function ImportModuleModal({ open, onClose, onImport, excludeCourseId }: {
         <div className="px-5 pt-3 pb-2 flex-shrink-0">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search modules or courses..." className="pl-9 h-9 text-sm" />
+            <Input value={search} onChange={e => setSearch(e.target.value)} disabled={isImporting} placeholder="Search modules or courses..." className="pl-9 h-9 text-sm" />
           </div>
         </div>
         <div className="flex-1 overflow-y-auto px-5 pb-4 space-y-4">
@@ -149,24 +186,47 @@ function ImportModuleModal({ open, onClose, onImport, excludeCourseId }: {
               <div key={courseTitle}>
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">📚 {courseTitle}</p>
                 <div className="space-y-1.5">
-                  {mods.map((mod: any) => (
-                    <button
-                      key={mod.id}
-                      type="button"
-                      onClick={() => onImport(String(mod.id))}
-                      className="w-full text-left flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50/50 transition-all group"
-                    >
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm text-slate-800 truncate">{mod.title}</p>
-                        <p className="text-xs text-slate-400">{mod.lessonCount} lesson{mod.lessonCount !== 1 ? 's' : ''}</p>
-                      </div>
-                      <Download className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 flex-shrink-0 transition-colors" />
-                    </button>
-                  ))}
+                  {mods.map((mod: any) => {
+                    const moduleId = String(mod.id);
+                    const selected = selectedModuleIds.has(moduleId);
+                    return (
+                      <button
+                        key={mod.id}
+                        type="button"
+                        aria-pressed={selected}
+                        disabled={isImporting}
+                        onClick={() => toggleModule(moduleId)}
+                        className={`w-full text-left flex items-center gap-3 p-3 border rounded-lg transition-all ${selected
+                          ? "border-indigo-400 bg-indigo-50"
+                          : "border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50"} disabled:cursor-not-allowed disabled:opacity-60`}
+                      >
+                        <span className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${selected
+                          ? "border-indigo-600 bg-indigo-600 text-white"
+                          : "border-slate-300 bg-white"}`}>
+                          {selected && <Check className="w-3 h-3" />}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm text-slate-800 truncate">{mod.title}</p>
+                          <p className="text-xs text-slate-400">{mod.lessonCount} lesson{mod.lessonCount !== 1 ? 's' : ''}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ))
           )}
+        </div>
+        <div className="px-5 py-3 border-t border-slate-200 flex items-center justify-between gap-3 flex-shrink-0 bg-slate-50">
+          <p className="text-sm text-slate-500">
+            Selected: {selectedCount} module{selectedCount !== 1 ? 's' : ''}
+          </p>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={close} disabled={isImporting}>Cancel</Button>
+            <Button type="button" onClick={handleAdd} disabled={isImporting || selectedCount === 0} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+              {isImporting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Adding {selectedCount} module{selectedCount !== 1 ? 's' : ''}…</> : addLabel}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -712,7 +772,7 @@ export default function CoursesManager() {
   const deleteCourse = trpc.admin.deleteCourse.useMutation({
     onSuccess: () => { toast.success("Course deleted"); utils.admin.getCourses.invalidate(); }
   });
-  const importModuleMutation = trpc.admin.importModule.useMutation();
+  const importModulesMutation = trpc.admin.importModules.useMutation();
   const importLessonMutation = trpc.admin.importLesson.useMutation();
 
   const resetForm = () => { setInfo(DEFAULT_INFO()); setModules([makeModule()]); setStep(1); setEditingId(null); };
@@ -854,8 +914,8 @@ export default function CoursesManager() {
   const updateModule = (id: string, m: ModuleBlock) =>
     setModules(prev => prev.map(mod => mod.id === id ? m : mod));
 
-  // Import module handler — deep copies via API, then reloads
-  const handleImportModule = async (sourceModuleId: string) => {
+  // Import selected modules atomically, then use the persisted server graph as editor state.
+  const handleImportModules = async (sourceModuleIds: string[]) => {
     if (!editingId) {
       // For new (unsaved) courses, we can't import from DB yet.
       // Close modal and show info
@@ -863,22 +923,32 @@ export default function CoursesManager() {
       setImportModuleOpen(false);
       return;
     }
+    const uniqueSourceModuleIds = Array.from(new Set(sourceModuleIds.map(String)));
+    if (uniqueSourceModuleIds.length === 0) {
+      toast.error("Select at least one module to import.");
+      return;
+    }
     try {
-      await importModuleMutation.mutateAsync({
-        sourceModuleId,
+      const result = await importModulesMutation.mutateAsync({
+        sourceModuleIds: uniqueSourceModuleIds,
         targetCourseId: editingId,
-        orderIndex: modules.length,
       });
-      toast.success("Module imported! Reloading...");
+      setModules(toModuleBlocks(result.modules));
+      utils.admin.getCourseComplete.setData({ id: editingId }, current =>
+        current ? { ...current, modules: result.modules } : current
+      );
       setImportModuleOpen(false);
-      // Reload the course data to pick up the newly imported module
-      const refreshed = await utils.admin.getCourseComplete.fetch({ id: editingId });
-      if (refreshed && refreshed.modules) {
-        setModules(toModuleBlocks(refreshed.modules));
+
+      if (result.importedSourceModuleIds.length > 0) {
+        const importedCount = result.importedSourceModuleIds.length;
+        const skippedCount = result.skippedSourceModuleIds.length;
+        toast.success(`${importedCount} module${importedCount !== 1 ? 's' : ''} added successfully.${skippedCount ? ` ${skippedCount} already present.` : ''}`);
+      } else {
+        toast.info("The selected modules are already in this course.");
       }
     } catch (e: any) {
       console.error(e);
-      toast.error(e.message || "Failed to import module");
+      toast.error(e.message || "Unable to add the selected modules.");
     }
   };
 
@@ -1205,8 +1275,9 @@ export default function CoursesManager() {
       <ImportModuleModal
         open={importModuleOpen}
         onClose={() => setImportModuleOpen(false)}
-        onImport={handleImportModule}
+        onImport={handleImportModules}
         excludeCourseId={editingId || undefined}
+        isImporting={importModulesMutation.isPending}
       />
 
       {/* Import Lesson Modal */}

@@ -514,6 +514,127 @@ async function copyLessonAssignment(client: any, sourceLessonId: string | number
   );
 }
 
+async function copyModuleGraph(client: any, sourceModule: any, targetCourseId: string, orderIndex: number): Promise<string> {
+  const newModRes = await client.query(
+    `INSERT INTO modules (course_id, title, order_index) VALUES ($1, $2, $3) RETURNING id`,
+    [targetCourseId, sourceModule.title, orderIndex]
+  );
+  const newModuleId = String(newModRes.rows[0].id);
+
+  const srcLessons = (await client.query(`SELECT * FROM lessons WHERE module_id = $1 ORDER BY order_index, id`, [sourceModule.id])).rows;
+  for (const lesson of srcLessons) {
+    const newLesRes = await client.query(
+      `INSERT INTO lessons (module_id, title, video_url, duration, is_preview, order_index)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      [newModuleId, lesson.title, lesson.video_url, lesson.duration, lesson.is_preview, lesson.order_index]
+    );
+    const newLessonId = newLesRes.rows[0].id;
+
+    await copyLessonAssignment(client, lesson.id, newLessonId);
+
+    const mats = (await client.query(`SELECT * FROM materials WHERE lesson_id = $1 ORDER BY id`, [lesson.id])).rows;
+    for (const mat of mats) {
+      await client.query(
+        `INSERT INTO materials (lesson_id, material_title, material_url) VALUES ($1, $2, $3)`,
+        [newLessonId, mat.material_title, mat.material_url]
+      );
+    }
+
+    const quizzes = (await client.query(`SELECT * FROM quizzes WHERE lesson_id = $1 ORDER BY id`, [lesson.id])).rows;
+    for (const quiz of quizzes) {
+      const newQuizRes = await client.query(
+        `INSERT INTO quizzes (lesson_id, title) VALUES ($1, $2) RETURNING id`,
+        [newLessonId, quiz.title]
+      );
+      const newQuizId = newQuizRes.rows[0].id;
+
+      const questions = (await client.query(`SELECT * FROM quiz_questions WHERE quiz_id = $1 ORDER BY id`, [quiz.id])).rows;
+      for (const q of questions) {
+        await client.query(
+          `INSERT INTO quiz_questions (quiz_id, question, option_a, option_b, option_c, option_d, correct_answer) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [newQuizId, q.question, q.option_a, q.option_b, q.option_c, q.option_d, q.correct_answer]
+        );
+      }
+    }
+  }
+
+  return newModuleId;
+}
+
+async function readModuleGraph(client: any, module: any) {
+  const lessonsRaw = (await client.query(
+    `SELECT id, title, video_url as "videoUrl", duration, is_preview as "isPreview", order_index as "orderIndex"
+     FROM lessons WHERE module_id = $1 ORDER BY order_index ASC, id ASC`,
+    [module.id]
+  )).rows;
+
+  const lessons = await Promise.all(lessonsRaw.map(async (lesson: any) => {
+    const materials = (await client.query(
+      `SELECT material_title as "title", material_url as "url" FROM materials WHERE lesson_id = $1 ORDER BY id ASC`,
+      [lesson.id]
+    )).rows;
+    const quizzesRaw = (await client.query(
+      `SELECT id, title FROM quizzes WHERE lesson_id = $1 ORDER BY id ASC`,
+      [lesson.id]
+    )).rows;
+    const quizzes = await Promise.all(quizzesRaw.map(async (quiz: any) => {
+      const questions = (await client.query(
+        `SELECT question, option_a as "optionA", option_b as "optionB", option_c as "optionC", option_d as "optionD", correct_answer as "correctAnswer"
+         FROM quiz_questions WHERE quiz_id = $1 ORDER BY id ASC`,
+        [quiz.id]
+      )).rows;
+      return { ...quiz, questions };
+    }));
+    const assignment = (await client.query(
+      `SELECT instructions, rubric, max_score as "maxScore", allowed_file_types as "allowedFileTypes",
+              max_file_size_mb as "maxFileSizeMb", max_attempts as "maxAttempts", is_active as "isActive"
+       FROM course_assignments WHERE lesson_id = $1`,
+      [lesson.id]
+    )).rows[0] || null;
+
+    return { ...lesson, materials, quizzes, assignment };
+  }));
+
+  return { id: module.id, title: module.title, orderIndex: module.orderIndex, lessons };
+}
+
+function moduleImportSignature(module: any) {
+  return JSON.stringify({
+    title: module.title ?? "",
+    lessons: (module.lessons || []).map((lesson: any) => ({
+      title: lesson.title ?? "",
+      videoUrl: lesson.videoUrl ?? null,
+      duration: lesson.duration ?? null,
+      isPreview: Boolean(lesson.isPreview),
+      orderIndex: lesson.orderIndex ?? 0,
+      materials: (lesson.materials || []).map((material: any) => ({
+        title: material.title ?? null,
+        url: material.url ?? null,
+      })),
+      quizzes: (lesson.quizzes || []).map((quiz: any) => ({
+        title: quiz.title ?? null,
+        questions: (quiz.questions || []).map((question: any) => ({
+          question: question.question ?? null,
+          optionA: question.optionA ?? null,
+          optionB: question.optionB ?? null,
+          optionC: question.optionC ?? null,
+          optionD: question.optionD ?? null,
+          correctAnswer: question.correctAnswer ?? null,
+        })),
+      })),
+      assignment: lesson.assignment ? {
+        instructions: lesson.assignment.instructions ?? null,
+        rubric: lesson.assignment.rubric ?? null,
+        maxScore: lesson.assignment.maxScore ?? null,
+        allowedFileTypes: lesson.assignment.allowedFileTypes ?? null,
+        maxFileSizeMb: lesson.assignment.maxFileSizeMb ?? null,
+        maxAttempts: lesson.assignment.maxAttempts ?? null,
+        isActive: Boolean(lesson.assignment.isActive),
+      } : null,
+    })),
+  });
+}
+
 /** Deep copy a module (with lessons, grading configuration, materials, quizzes, and questions) into a target course */
 export async function deepCopyModule(sourceModuleId: string, targetCourseId: string, orderIndex: number): Promise<{ moduleId: string }> {
   const client = await getPool().connect();
@@ -523,51 +644,85 @@ export async function deepCopyModule(sourceModuleId: string, targetCourseId: str
     const srcMod = (await client.query(`SELECT * FROM modules WHERE id = $1`, [sourceModuleId])).rows[0];
     if (!srcMod) throw new Error('Source module not found');
 
-    const newModRes = await client.query(
-      `INSERT INTO modules (course_id, title, order_index) VALUES ($1, $2, $3) RETURNING id`,
-      [targetCourseId, srcMod.title, orderIndex]
-    );
-    const newModuleId = String(newModRes.rows[0].id);
-
-    const srcLessons = (await client.query(`SELECT * FROM lessons WHERE module_id = $1 ORDER BY order_index`, [sourceModuleId])).rows;
-    for (const lesson of srcLessons) {
-      const newLesRes = await client.query(
-        `INSERT INTO lessons (module_id, title, video_url, duration, is_preview, order_index)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-        [newModuleId, lesson.title, lesson.video_url, lesson.duration, lesson.is_preview, lesson.order_index]
-      );
-      const newLessonId = newLesRes.rows[0].id;
-
-      await copyLessonAssignment(client, lesson.id, newLessonId);
-
-      const mats = (await client.query(`SELECT * FROM materials WHERE lesson_id = $1`, [lesson.id])).rows;
-      for (const mat of mats) {
-        await client.query(
-          `INSERT INTO materials (lesson_id, material_title, material_url) VALUES ($1, $2, $3)`,
-          [newLessonId, mat.material_title, mat.material_url]
-        );
-      }
-
-      const quizzes = (await client.query(`SELECT * FROM quizzes WHERE lesson_id = $1`, [lesson.id])).rows;
-      for (const quiz of quizzes) {
-        const newQuizRes = await client.query(
-          `INSERT INTO quizzes (lesson_id, title) VALUES ($1, $2) RETURNING id`,
-          [newLessonId, quiz.title]
-        );
-        const newQuizId = newQuizRes.rows[0].id;
-
-        const questions = (await client.query(`SELECT * FROM quiz_questions WHERE quiz_id = $1`, [quiz.id])).rows;
-        for (const q of questions) {
-          await client.query(
-            `INSERT INTO quiz_questions (quiz_id, question, option_a, option_b, option_c, option_d, correct_answer) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-            [newQuizId, q.question, q.option_a, q.option_b, q.option_c, q.option_d, q.correct_answer]
-          );
-        }
-      }
-    }
+    const newModuleId = await copyModuleGraph(client, srcMod, targetCourseId, orderIndex);
 
     await client.query('COMMIT');
     return { moduleId: newModuleId };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Import selected modules as one transaction and return the persisted module graph.
+ * The destination course row is locked so overlapping imports use consecutive orders.
+ */
+export async function deepCopyModules(sourceModuleIds: string[], targetCourseId: string) {
+  const uniqueSourceModuleIds = Array.from(new Set(sourceModuleIds.map(String)));
+  if (uniqueSourceModuleIds.length === 0) throw new Error('Select at least one module to import');
+
+  const client = await getPool().connect();
+  try {
+    await client.query('BEGIN');
+
+    const targetCourse = (await client.query(`SELECT id FROM courses WHERE id = $1 FOR UPDATE`, [targetCourseId])).rows[0];
+    if (!targetCourse) throw new Error('Target course not found');
+
+    const existingModules = (await client.query(
+      `SELECT id, title, order_index as "orderIndex" FROM modules WHERE course_id = $1 ORDER BY order_index ASC, id ASC`,
+      [targetCourseId]
+    )).rows;
+    // Modules have no source/provenance field, so the copied graph is the durable in-scope duplicate key.
+    const targetSignatures = new Set<string>();
+    for (const existingModule of existingModules) {
+      targetSignatures.add(moduleImportSignature(await readModuleGraph(client, existingModule)));
+    }
+
+    const nextOrderResult = await client.query(
+      `SELECT COALESCE(MAX(order_index) + 1, 0) as "nextOrderIndex" FROM modules WHERE course_id = $1`,
+      [targetCourseId]
+    );
+    let nextOrderIndex = Number(nextOrderResult.rows[0]?.nextOrderIndex ?? 0);
+    const importedModuleIds: string[] = [];
+    const importedSourceModuleIds: string[] = [];
+    const skippedSourceModuleIds: string[] = [];
+
+    for (const sourceModuleId of uniqueSourceModuleIds) {
+      const sourceModule = (await client.query(`SELECT * FROM modules WHERE id = $1`, [sourceModuleId])).rows[0];
+      if (!sourceModule) throw new Error('Source module not found');
+      if (String(sourceModule.course_id) === String(targetCourseId)) {
+        throw new Error('A module cannot be imported into its current course');
+      }
+
+      const sourceGraph = await readModuleGraph(client, {
+        id: sourceModule.id,
+        title: sourceModule.title,
+        orderIndex: sourceModule.order_index,
+      });
+      const sourceSignature = moduleImportSignature(sourceGraph);
+      if (targetSignatures.has(sourceSignature)) {
+        skippedSourceModuleIds.push(sourceModuleId);
+        continue;
+      }
+
+      const newModuleId = await copyModuleGraph(client, sourceModule, targetCourseId, nextOrderIndex);
+      importedModuleIds.push(newModuleId);
+      importedSourceModuleIds.push(sourceModuleId);
+      targetSignatures.add(sourceSignature);
+      nextOrderIndex += 1;
+    }
+
+    const persistedModules = (await client.query(
+      `SELECT id, title, order_index as "orderIndex" FROM modules WHERE course_id = $1 ORDER BY order_index ASC, id ASC`,
+      [targetCourseId]
+    )).rows;
+    const modules = await Promise.all(persistedModules.map((module: any) => readModuleGraph(client, module)));
+
+    await client.query('COMMIT');
+    return { modules, importedModuleIds, importedSourceModuleIds, skippedSourceModuleIds };
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
