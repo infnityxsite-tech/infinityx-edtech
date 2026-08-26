@@ -12,6 +12,7 @@ export interface AdminUser {
   username: string;
   email?: string;
   name?: string;
+  updatedAt?: Date | string | null;
 }
 
 export interface JWTPayload {
@@ -68,7 +69,7 @@ export async function authenticateAdmin(username: string, password: string): Pro
   try {
     // Get user from database
     const user = await queryOne<any>(
-      `SELECT id, username, password_hash, email, name 
+      `SELECT id, username, password_hash, email, name, updated_at 
        FROM admin_users 
        WHERE username = $1`,
       [username]
@@ -99,6 +100,7 @@ export async function authenticateAdmin(username: string, password: string): Pro
       username: user.username,
       email: user.email,
       name: user.name,
+      updatedAt: user.updated_at,
     };
   } catch (error) {
     console.error('Authentication error:', error);
@@ -112,13 +114,21 @@ export async function authenticateAdmin(username: string, password: string): Pro
 export async function getAdminById(userId: number): Promise<AdminUser | null> {
   try {
     const user = await queryOne<any>(
-      `SELECT id, username, email, name 
+      `SELECT id, username, email, name, updated_at 
        FROM admin_users 
        WHERE id = $1`,
       [userId]
     );
 
-    return user || null;
+    if (!user) return null;
+
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      name: user.name,
+      updatedAt: user.updated_at,
+    };
   } catch (error) {
     console.error('Error fetching admin user:', error);
     return null;
@@ -133,13 +143,21 @@ export async function createAdmin(username: string, password: string, email?: st
     const passwordHash = await hashPassword(password);
     
     const result = await queryOne<any>(
-      `INSERT INTO admin_users (username, password_hash, email, name)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, username, email, name`,
+      `INSERT INTO admin_users (username, password_hash, email, name, updated_at)
+       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+       RETURNING id, username, email, name, updated_at`,
       [username, passwordHash, email, name]
     );
 
-    return result || null;
+    if (!result) return null;
+
+    return {
+      id: result.id,
+      username: result.username,
+      email: result.email,
+      name: result.name,
+      updatedAt: result.updated_at,
+    };
   } catch (error) {
     console.error('Error creating admin user:', error);
     return null;
@@ -154,7 +172,7 @@ export async function updateAdminPassword(userId: number, newPassword: string): 
     const passwordHash = await hashPassword(newPassword);
     
     await query(
-      `UPDATE admin_users SET password_hash = $1 WHERE id = $2`,
+      `UPDATE admin_users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
       [passwordHash, userId]
     );
 

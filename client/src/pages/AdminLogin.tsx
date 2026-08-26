@@ -104,10 +104,8 @@ export default function AdminLogin() {
               )}
             </Button>
 
-            <div className="text-xs text-slate-500 text-center mt-4 space-y-1">
+            <div className="text-xs text-slate-500 text-center mt-4">
               <p>Only authorized administrators can access this area.</p>
-              <p className="text-blue-400">Default: username: <strong>admin</strong> / password: <strong>admin123</strong></p>
-              <p className="text-red-400">⚠️ Change password after first login!</p>
             </div>
           </form>
         </CardContent>

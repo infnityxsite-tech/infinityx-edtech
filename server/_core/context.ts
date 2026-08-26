@@ -39,7 +39,29 @@ export async function createContext(opts: { req: any; res: any }): Promise<TrpcC
       try {
         const payload = verifyToken(token);
         if (payload && payload.userId) {
-          user = await getAdminById(payload.userId);
+          const dbUser = await getAdminById(payload.userId);
+
+          if (dbUser) {
+            // Invalidate if username does not match (e.g. username changed from admin)
+            const usernameMatches = !payload.username || payload.username === dbUser.username;
+
+            // Invalidate if token was issued before the admin record was last updated
+            let isTokenFresh = true;
+            if (payload.iat && dbUser.updatedAt) {
+              const updatedAtSeconds = Math.floor(new Date(dbUser.updatedAt).getTime() / 1000);
+              // Give 2 seconds tolerance for minor clock skew
+              if (updatedAtSeconds > (payload.iat + 2)) {
+                isTokenFresh = false;
+              }
+            }
+
+            if (usernameMatches && isTokenFresh) {
+              user = dbUser;
+            } else {
+              console.log(`Stale/invalidated token rejected for admin user: ${payload.username}`);
+              user = null;
+            }
+          }
         }
       } catch (tokenError) {
         // Token is invalid or expired - this is normal, just set user to null
